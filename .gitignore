@@ -1,0 +1,12 @@
+.DS_Store
+logs
+/node_modules/
+
+**/dist/
+/concat/
+/coverage/
+
+.vscode
+
+# IntelliJ project files
+/.idea/
