@@ -2,7 +2,9 @@
   "name": "truex-shared",
   "version": "1.0.0",
   "description": "Common JS code shared across true[X] repos",
-  "files": ["src/"],
+  "private": true,
+  "files": ["src"],
+  "main": "./src/",
   "scripts": {
     "test": "jest",
     "watch": "jest --watch",
