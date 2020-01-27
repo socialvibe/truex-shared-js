@@ -1,0 +1,13 @@
+.DS_Store
+logs
+/node_modules/
+yarn-error.log
+
+**/dist/
+/concat/
+/coverage/
+
+.vscode
+
+# IntelliJ project files
+/.idea/
