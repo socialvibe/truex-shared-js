@@ -1,6 +1,6 @@
 {
   "name": "truex-shared",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Common JS code shared across true[X] repos",
   "private": true,
   "files": ["src"],
@@ -20,5 +20,6 @@
     "babel-plugin-webpack-alias": "^2.1.2",
     "jest": "^24.0.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "browserify": {"transform": ["babelify"]}
 }
