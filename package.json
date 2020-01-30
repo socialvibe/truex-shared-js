@@ -20,5 +20,6 @@
     "babel-plugin-webpack-alias": "^2.1.2",
     "jest": "^24.0.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "browserify": {"transform": ["babelify"]}
 }
