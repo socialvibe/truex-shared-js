@@ -11,13 +11,11 @@
     "coverage": "jest --coverage"
   },
   "devDependencies": {
-    "@babel/core": "^7.2.0",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/runtime": "^7.3.1",
-    "@babel/plugin-proposal-class-properties": "^7.0.0",
-    "babel-jest": "^24.1.0",
-    "babel-loader": "^8.0.5",
-    "babel-plugin-webpack-alias": "^2.1.2",
+    "@babel/core": "^7.8.3",
+    "@babel/preset-env": "^7.4.1",
+    "@babel/runtime": "^7.4.1",
+    "babel-jest": "^25.1.0",
+    "core-js": "3",
     "jest": "^24.0.0"
   },
   "dependencies": {},
