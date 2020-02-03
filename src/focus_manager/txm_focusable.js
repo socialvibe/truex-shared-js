@@ -19,15 +19,13 @@ import { inputActions } from './txm_input_actions';
  */
 export class Focusable {
 
-    #elementRef;
-
     /**
      * Convenience constructor to allow for component view model JS instances to be associated with
      * @param elementRef an optional DOM element reference or query selector string used to refer to the associated DOM
      *   element associated with the component.
      */
     constructor(elementRef) {
-        this.#elementRef = elementRef;
+        this._elementRef = elementRef;
     }
 
     /**
@@ -36,7 +34,7 @@ export class Focusable {
      * @return {HTMLElement}
      */
     get element() {
-        let ref = this.#elementRef;
+        let ref = this._elementRef;
         if (typeof ref == "string") return document.querySelector(ref);
         return ref;
     }

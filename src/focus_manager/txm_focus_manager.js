@@ -7,38 +7,39 @@ import { Focusable }            from './txm_focusable';
  * abstract notion of the current focused component.
  */
 export class TXMFocusManager {
-    platform;
-
-    #focus;
-
-    #topChromeFocusables = [];
-    #contentFocusables = [];
-    #bottomChromeFocusables = [];
 
     constructor(platformOverride) {
         this.platform = platformOverride || new TXMPlatform();
+        this._focus = undefined;
+        this._topChromeFocusables = [];
+        this._contentFocusables = [];
+        this._bottomChromeFocusables = [];
+
+        // make convenient for direct callbacks
+        this.onKeyDown = this.onKeyDown.bind(this);
+        this.onInputAction = this.onInputAction.bind(this);
     }
 
     get currentFocus() {
-        return this.#focus;
+        return this._focus;
     }
 
     setFocus(newFocus) {
         let oldFocus = this.currentFocus;
         if (oldFocus === newFocus) return;
         if (oldFocus) {
-            this.#focus = undefined;
+            this._focus = undefined;
             if (oldFocus.onFocusSet) oldFocus.onFocusSet(false);
         }
         if (newFocus) {
-            this.#focus = newFocus;
+            this._focus = newFocus;
             if (newFocus.onFocusSet) newFocus.onFocusSet(true);
         }
     }
 
     addKeyEventListener(toElement) {
         if (!toElement) toElement = document.body;
-        toElement.addEventListener("keydown", (event) => { this.onKeyDown(event) });
+        toElement.addEventListener("keydown", this.onKeyDown);
     }
 
     onKeyDown(event) {
@@ -179,33 +180,33 @@ export class TXMFocusManager {
         }
 
         let newFocus;
-        let pos = this.findFocusPosition(focus, this.#topChromeFocusables);
+        let pos = this.findFocusPosition(focus, this._topChromeFocusables);
         if (pos) {
             // Focus is in the top chrome.
-            newFocus = this.getNewFocus(pos, action, this.#topChromeFocusables);
+            newFocus = this.getNewFocus(pos, action, this._topChromeFocusables);
             if (!newFocus && action == inputActions.moveDown) {
-                newFocus = this.getFirstFocusIn(this.#contentFocusables);
-                if (!newFocus) newFocus = this.getFirstFocusIn(this.#bottomChromeFocusables);
+                newFocus = this.getFirstFocusIn(this._contentFocusables);
+                if (!newFocus) newFocus = this.getFirstFocusIn(this._bottomChromeFocusables);
             }
 
-        } else if (pos = this.findFocusPosition(focus, this.#contentFocusables)) {
+        } else if (pos = this.findFocusPosition(focus, this._contentFocusables)) {
             // Focus is in the content area.
-            newFocus = this.getNewFocus(pos, action, this.#contentFocusables);
+            newFocus = this.getNewFocus(pos, action, this._contentFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
-                    newFocus = this.getLastFocusIn(this.#topChromeFocusables);
+                    newFocus = this.getLastFocusIn(this._topChromeFocusables);
                 } else if (action == inputActions.moveDown) {
-                    newFocus = this.getFirstFocusIn(this.#bottomChromeFocusables);
+                    newFocus = this.getFirstFocusIn(this._bottomChromeFocusables);
                 }
             }
 
-        } else if (pos = this.findFocusPosition(focus, this.#bottomChromeFocusables)) {
+        } else if (pos = this.findFocusPosition(focus, this._bottomChromeFocusables)) {
             // Focus is in the bottom chrome.
-            newFocus = this.getNewFocus(pos, action, this.#bottomChromeFocusables);
+            newFocus = this.getNewFocus(pos, action, this._bottomChromeFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
-                    newFocus = this.getLastFocusIn(this.#contentFocusables);
-                    if (!newFocus) newFocus = this.getLastFocusIn(this.#topChromeFocusables)
+                    newFocus = this.getLastFocusIn(this._contentFocusables);
+                    if (!newFocus) newFocus = this.getLastFocusIn(this._topChromeFocusables)
                 }
             }
         } else {
@@ -223,7 +224,7 @@ export class TXMFocusManager {
      * @param focusables array of focusable components, typically extending the {Focusable} class
      */
     setTopChromeFocusables(focusables) {
-        this.#topChromeFocusables = this.ensure2DArray(focusables);
+        this._topChromeFocusables = this.ensure2DArray(focusables);
     }
 
     /**
@@ -231,7 +232,7 @@ export class TXMFocusManager {
      * @param focusables array of focusable components, typically extending the {Focusable} class
      */
     setBottomChromeFocusables(focusables) {
-        this.#bottomChromeFocusables = this.ensure2DArray(focusables);
+        this._bottomChromeFocusables = this.ensure2DArray(focusables);
     }
 
     /**
@@ -243,14 +244,14 @@ export class TXMFocusManager {
      *   If not specified, the first focusable is used.
      */
     setContentFocusables(focusables, initialFocus) {
-        this.#contentFocusables = this.ensure2DArray(focusables);
+        this._contentFocusables = this.ensure2DArray(focusables);
         if (!this.currentFocus) this.setFocus(initialFocus || this.getFirstFocus());
     }
 
     getFirstFocus() {
-        let focus = this.getFirstFocusIn(this.#contentFocusables);
-        if (!focus) focus = this.getFirstFocusIn(this.#topChromeFocusables);
-        if (!focus) focus = this.getFirstFocusIn(this.#bottomChromeFocusables);
+        let focus = this.getFirstFocusIn(this._contentFocusables);
+        if (!focus) focus = this.getFirstFocusIn(this._topChromeFocusables);
+        if (!focus) focus = this.getFirstFocusIn(this._bottomChromeFocusables);
         return focus;
     }
 
@@ -270,9 +271,9 @@ export class TXMFocusManager {
     }
 
     getLastFocus() {
-        let focus = this.getLastFocusIn(this.#contentFocusables);
-        if (!focus) focus = this.getLastFocusIn(this.#bottomChromeFocusables);
-        if (!focus) focus = this.getLastFocusIn(this.#topChromeFocusables);
+        let focus = this.getLastFocusIn(this._contentFocusables);
+        if (!focus) focus = this.getLastFocusIn(this._bottomChromeFocusables);
+        if (!focus) focus = this.getLastFocusIn(this._topChromeFocusables);
         return focus;
     }
 
@@ -335,6 +336,7 @@ export class TXMFocusManager {
     }
 
     ensure2DArray(array) {
+        if (!array) return []; // i.e. empty, no focusables
         if (!Array.isArray(array)) return [[array]]; // treat as a single element matrix
         let hasSubArrays = array.find(e => Array.isArray(e));
         if (hasSubArrays) {
