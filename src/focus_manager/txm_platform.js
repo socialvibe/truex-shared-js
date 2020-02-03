@@ -43,30 +43,56 @@ export const keyCodes = {
  */
 export class TXMPlatform {
 
-    name = "Unknown";
-    model = "Unknown";
-    version = "Unknown";
+    /**
+    * Allow user agent overrides for testing. Defaults to standard one if not provided.
+    * @param userAgentOverride
+    */
+    constructor(userAgentOverride) {
+        this.name = "Unknown";
+        this.model = "Unknown";
+        this.version = "Unknown";
+        this.isUnknown = false;
 
-    userAgent;
+        this.isIOS = false;
+        this.isTVOS = false;
+        this.isIPad = false;
+        this.isIPhone = false;
 
-    isUnknown = false;
+        this.isVizio = false;
+        this.isLG = false;
+        this.isTizen = false;
+        this.isPS4 = false;
 
-    isIOS = false;
-    isTVOS = false;
-    isIPad = false;
-    isIPhone = false;
+        this.isFireTV = false;
+        this.isAndroidTV = false;
 
-    isVizio = false;
-    isLG = false;
-    isTizen = false;
-    isPS4 = false;
+        this.isXboxOne = false;
+        this.isNintendoSwitch = false;
 
-    isFireTV = false;
-    isAndroidTV = false;
+        // Scroll support:
+
+        // If true (e.g. for LG WebOS), scrolling only works via scrollTop changes on a top level div.
+        this.useScrollTop = false;
+
+        // Otherwise we rely on window.scrollTo, but that only works if we are not scaled.
+        this.useWindowScroll = true;
+
+        this.supportsGyro = false; // on all platforms except perhaps for the Switch?
+
+
+        // Most platforms allow http: image GETs when running under https:, even the latest Chrome.
+        // AndroidTV/FireTV does not however.
+        this.supportsHttpImagesWithHttps = true;
+
+        this._inputKeyMap = {};
+
+        let userAgent = userAgentOverride || window.navigator.userAgent;
+        this.userAgent = userAgent;
+
+        this._configure(userAgent);
+    }
+
     get isAndroidOrFireTV() { return this.isAndroidTV || this.isFireTV }
-
-    isXboxOne = false;
-    isNintendoSwitch = false;
 
     get isHandheld() { return this.isIPhone || this.isAndroid && /Mobile/.test(this.userAgent) }
     get isTablet() { return this.isIPad || this.isAndroid && !this.isHandheld }
@@ -74,13 +100,6 @@ export class TXMPlatform {
     get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV }
     get isConsole() { return this.isXboxOne || this.isPS4 || this.isNintendoSwitch }
 
-    // Scroll support:
-
-    // If true (e.g. for LG WebOS), scrolling only works via scrollTop changes on a top level div.
-    useScrollTop = false;
-
-    // Otherwise we rely on window.scrollTo, but that only works if we are not scaled.
-    useWindowScroll = true;
 
     // Otherwise the fallback scroll approach is to absolutely position a page's content div within its parent.
     get useContentScroll() {
@@ -89,12 +108,6 @@ export class TXMPlatform {
             // TODO: verify if this is still the case
              || this.isTizen;
     }
-
-    supportsGyro = false; // on all platforms except perhaps for the Switch?
-
-    // Most platforms allow http: image GETs when running under https:, even the latest Chrome.
-    // AndroidTV/FireTV does not however.
-    supportsHttpImagesWithHttps = true;
 
     get screenSize() {
         var root = document.documentElement;
@@ -107,13 +120,11 @@ export class TXMPlatform {
         return keyCodes;
     }
 
-    #inputKeyMap = {};
-
     /**
      * Maps a key event's keycode into a platform independent input action.
      */
     getInputAction(keyCode) {
-        return this.#inputKeyMap[keyCode];
+        return this._inputKeyMap[keyCode];
     }
 
     /**
@@ -160,17 +171,9 @@ export class TXMPlatform {
         return this.describeError(error, true);
     }
 
-    /**
-     * Allow user agent overrides for testing. Defaults to standard one if not provided.
-     * @param userAgentOverride
-     */
-    constructor(userAgentOverride) {
-
+    _configure(userAgent) {
         const self = this;
         const actionKeyCodes = {};
-
-        let userAgent = userAgentOverride || window.navigator.userAgent;
-        this.userAgent = userAgent;
 
         // Detect which platform we are running on.
         if (window.PalmSystem) {
@@ -208,16 +211,16 @@ export class TXMPlatform {
         }
 
         // Establish the direct key code to input action mapping.
-        self.#inputKeyMap = {};
+        self._inputKeyMap = {};
         for(let action in actionKeyCodes) {
             let actionCodes = actionKeyCodes[action];
             if (Array.isArray(actionCodes)) {
                 actionCodes.forEach(keyCode => {
-                    self.#inputKeyMap[keyCode] = action;
+                    self._inputKeyMap[keyCode] = action;
                 });
             } else {
                 // Assume a single key code.
-                self.#inputKeyMap[actionCodes] = action;
+                self._inputKeyMap[actionCodes] = action;
             }
         }
 
