@@ -312,7 +312,7 @@ export class TXMPlatform {
             self.name = "Vizio";
 
             // We need to query the smartcast details once its library has loaded.
-            var companionLibLoader = new ScriptLoader("http://localhost:12345/scfs/cl/js/vizio-companion-lib");
+            var companionLibLoader = new ScriptLoader("http://localhost:12345/scfs/cl/js/vizio-companion-lib.js");
             companionLibLoader.promise.then(() => {
                 var VIZIO = window.VIZIO;
                 if (!VIZIO) {
