@@ -1,5 +1,4 @@
 import { inputActions } from './txm_input_actions';
-import { ScriptLoader } from '../utils/loaders';
 
 /**
  * Standard ASCII key codes
@@ -311,20 +310,11 @@ export class TXMPlatform {
             self.isVizio = true;
             self.name = "Vizio";
 
-            // We need to query the smartcast details once its library has loaded.
-            var companionLibLoader = new ScriptLoader("http://localhost:12345/scfs/cl/js/vizio-companion-lib");
-            companionLibLoader.promise.then(() => {
-                var VIZIO = window.VIZIO;
-                if (!VIZIO) {
-                    console.error("TXPlatform: did not load Vizio companion lib");
-                    return;
-                }
-                self.model = VIZIO.deviceModel;
-                VIZIO.getFirmwareVersion(firmwareVersion => {
-                    self.version = firmwareVersion;
-                });
-            });
-            companionLibLoader.load();
+            const modelMatch = userAgent.match(/Model\/([^\s)]+)/);
+            self.model = modelMatch && modelMatch[1] || "Unknown";
+
+            const versionMatch = userAgent.match(/FW\/([^\s)]+)/);
+            self.version = versionMatch && versionMatch[1] || "?.?.?";
 
             // disable to ensure scrollbars are always hidden in auto-scale situations.
             self.useWindowScroll = false;

@@ -47,6 +47,8 @@ describe("TXMPlatform", () => {
             expect(platform.name).toBe("Vizio");
             expect(platform.isCTV).toBe(true);
             expect(platform.isConsole).toBe(false);
+            expect(platform.model).toBe("E50x-E1");
+            expect(platform.version).toBe("9.0.5.2");
         });
 
         test("vizio key mapping", () => {
