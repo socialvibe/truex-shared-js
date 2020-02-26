@@ -195,7 +195,7 @@ describe("TXMPlatform", () => {
             }
         };
 
-        let platform = new TXMPlatform();
+        let platform = new TXMPlatform("need just 'Xbox' in the user agent");
 
         // Should no longer be needed.
         delete window.Windows;

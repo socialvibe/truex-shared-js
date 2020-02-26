@@ -15,6 +15,11 @@ describe("TXMFocusManager", () => {
     let focus2 = new Focusable(testDiv2);
     document.body.appendChild(testDiv2);
 
+    let testDiv3 = document.createElement("div");
+    testDiv3.id = "focus3";
+    testDiv3.className = "coolButton";
+    document.body.appendChild(testDiv2);
+
     const keyEvent = document.createEvent('Event');
     keyEvent.initEvent("keydown", true, true);
     keyEvent.keyCode = keyCodes.space;
@@ -58,6 +63,38 @@ describe("TXMFocusManager", () => {
             expect(focus1.element.className).toBe("");
             expect(focus2.element.className).toBe("coolButton");
         });
+    });
+
+    describe("test focus mouse events", () => {
+        const fm = new TXMFocusManager();
+
+        const selectAction = jest.fn();
+        const inputAction = jest.fn();
+
+        let focus3 = new Focusable(testDiv3, selectAction, inputAction);
+        focus3.addMouseEventListeners(fm);
+
+        const mouseEnter = document.createEvent('Event');
+        mouseEnter.initEvent("mouseenter", true, true);
+
+        focus3.element.dispatchEvent(mouseEnter);
+        expect(fm.currentFocus).toBe(focus3);
+
+        const mouseClick = document.createEvent('Event');
+        mouseClick.initEvent("click", true, true);
+
+        focus3.element.dispatchEvent(mouseClick);
+        expect(selectAction).toHaveBeenCalled();
+        expect(inputAction).not.toHaveBeenCalled();
+
+        selectAction.mockClear();
+        inputAction.mockClear();
+
+        focus3.onSelectAction = undefined;
+
+        focus3.element.dispatchEvent(mouseClick);
+        expect(selectAction).not.toHaveBeenCalled();
+        expect(inputAction).toHaveBeenCalledWith(inputActions.select, mouseClick);
     });
 
     describe("focus manager optional onSelectAction callback", () => {
