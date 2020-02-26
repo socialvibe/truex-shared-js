@@ -23,9 +23,45 @@ export class Focusable {
      * Convenience constructor to allow for component view model JS instances to be associated with
      * @param elementRef an optional DOM element reference or query selector string used to refer to the associated DOM
      *   element associated with the component.
+     * @param selectAction if present, overrides the onSelectAction implementation.
+     * @param inputAction if present, overrides the onInputAction implementation.
      */
-    constructor(elementRef) {
+    constructor(elementRef, selectAction, inputAction) {
         this._elementRef = elementRef;
+        if (selectAction) {
+            this.onSelectAction = selectAction;
+        }
+        if (inputAction) {
+            this.onInputAction = inputAction;
+        }
+    }
+
+    /**
+     * If the associated element present, adds mouseEnter and click event listeners to
+     * set the focus (for mouseEnter event), or invoke the select action (for click event).
+     * @param focusManager the focus manager to use for setting the current focus in the mouseEnter listener.
+     */
+    addMouseEventListeners(focusManager) {
+        const elmt = this.element;
+        if (elmt && elmt.addEventListener) {
+            // Add mouse support if possible.
+            if (focusManager) {
+                elmt.addEventListener('mouseenter', () => {
+                    focusManager.setFocus(this);
+                });
+            }
+
+            elmt.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                if (this.onSelectAction) {
+                    this.onSelectAction();
+                } else if (this.onInputAction) {
+                    this.onInputAction(inputActions.select, event);
+                }
+            });
+        }
     }
 
     /**
