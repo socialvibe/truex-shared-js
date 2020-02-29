@@ -192,9 +192,7 @@ export class TXMPlatform {
         // } else if (/Nintendo/.test(userAgent)) {
         //     configureForNintendoSwitch();
 
-        } else if (window.Windows && Windows.System && Windows.System.Profile
-                    && Windows.System.Profile.AnalyticsInfo && Windows.System.Profile.AnalyticsInfo.versionInfo
-                    && Windows.System.Profile.AnalyticsInfo.versionInfo.deviceFamily == "Windows.Xbox") {
+        } else if (/Xbox/.test(userAgent)) {
             configureForXboxOne();
 
         } else if (/Android/.test(userAgent)) {
@@ -369,10 +367,28 @@ export class TXMPlatform {
             self.isXboxOne = true;
             self.name = "XboxOne";
 
-            var analyticsInfo = Windows.System.Profile.AnalyticsInfo;
-            var versionInfo = analyticsInfo.versionInfo;
-            self.model = versionInfo.deviceFamily;
-            self.version = versionInfo.deviceFamilyVersion;
+            self.model = "Windows.Xbox";
+            self.version = "Unknown";
+
+            // The Windows API is available only to UWP web apps, not regular web pages (or web views within a C# UWP app).
+            // We want to tolerate both ways of making web apps for the Xbox.
+            var winApi = window.Windows;
+            if (winApi) {
+                var system = Windows.System;
+                if (system) {
+                    var profile = system.Profile;
+                    if (profile) {
+                        var analytics = profile.AnalyticsInfo;
+                        if (analytics) {
+                            var versionInfo = analytics.versionInfo;
+                            if (versionInfo) {
+                                self.model = versionInfo.deviceFamily;
+                                self.version = versionInfo.deviceFamilyVersion;
+                            }
+                        }
+                    }
+                }
+            }
 
             // Change navigation mode from 'mouse' to 'keyboard' (which supports Xbox Controllers)
             window.navigator.gamepadInputEmulation = "keyboard";
