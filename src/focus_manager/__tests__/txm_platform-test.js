@@ -181,26 +181,44 @@ describe("TXMPlatform", () => {
     });
 
     describe("XboxOne Tests", () => {
-        // Mock Window API objects
-        window.Windows = {
-            System: {
-                Profile: {
-                    AnalyticsInfo: {
-                        versionInfo: {
-                            deviceFamily: "Windows.Xbox",
-                            deviceFamilyVersion: "1.2.3"
+        const xboxUserAgent = "need just 'Xbox' in the user agent";
+
+        test("recognize the XboxOne platform without Windows.* API", () => {
+            let platform = new TXMPlatform(xboxUserAgent);
+
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isXboxOne).toBe(true);
+            expect(platform.name).toBe("XboxOne");
+            expect(platform.model).toBe("Windows.Xbox");
+            expect(platform.version).toBe("Unknown");
+            expect(platform.isCTV).toBe(false);
+            expect(platform.isConsole).toBe(true);
+        });
+
+        test("recognize the XboxOne platform with the Windows.* API", () => {
+            // Mock Window API objects
+            window.Windows = {
+                System: {
+                    Profile: {
+                        AnalyticsInfo: {
+                            versionInfo: {
+                                deviceFamily: "Windows.Xbox",
+                                deviceFamilyVersion: "1.2.3"
+                            }
                         }
                     }
                 }
-            }
-        };
+            };
 
-        let platform = new TXMPlatform("need just 'Xbox' in the user agent");
+            let platform = new TXMPlatform(xboxUserAgent);
 
-        // Should no longer be needed.
-        delete window.Windows;
+            // Should no longer be needed.
+            delete window.Windows;
 
-        test("recognize the XboxOne platform", () => {
             expect(platform.isUnknown).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
@@ -215,6 +233,7 @@ describe("TXMPlatform", () => {
         });
 
         test("XboxOne key mapping", () => {
+            let platform = new TXMPlatform(xboxUserAgent);
             let keyCodes = platform.keyCodes;
             expect(platform.getInputAction(keyCodes.upArrow)).toBe(inputActions.moveUp);
             expect(platform.getInputAction(211)).toBe(inputActions.moveUp);

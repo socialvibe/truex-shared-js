@@ -367,7 +367,7 @@ export class TXMPlatform {
             self.isXboxOne = true;
             self.name = "XboxOne";
 
-            self.model = "Windowx.Xbox";
+            self.model = "Windows.Xbox";
             self.version = "Unknown";
 
             // The Windows API is available only to UWP web apps, not regular web pages (or web views within a C# UWP app).
