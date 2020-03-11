@@ -52,10 +52,17 @@ export class TXMFocusManager {
 
     /**
      * Call to prevent the back action on the remote from exiting the app.
+     *
+     * Note: some platforms like the FireTV do not allow the back action key event to be fielded at all,
+     * forcing history management approaches via the window's "popstate" event.
+     *
+     * @param mapHistoryBackToInputAction if true, every explicit or implicit history.back() also injects
+     *   an inputActions.back action into this focus manager's onInputAction method, allowing for a consistent
+     *   and portable approach to managing back actions.
      */
-    blockBackActions(fireBackInputAction) {
+    blockBackActions(mapHistoryBackToInputAction) {
         this.backActionOrigin = window.location.href;
-        this.fireBackInputActionOnPopstate = fireBackInputAction;
+        this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
     }
@@ -96,10 +103,10 @@ export class TXMFocusManager {
         event.stopPropagation();
         event.stopImmediatePropagation();
 
-        if (this.fireBackInputActionOnPopstate) {
+        if (this.mapHistoryBackToInputAction) {
             try {
-                // field the back action explicitly to allow for app processing.
-                //this.onInputAction(inputActions.back);
+                // Inject back input action explicitly to allow for app processing.
+                this.onInputAction(inputActions.back);
             } catch (err) {
                 let errMsg = this.platform.describeErrorWithStack(err);
                 console.error(`TXMFocusManager: error with back action:\n${errMsg}`);
