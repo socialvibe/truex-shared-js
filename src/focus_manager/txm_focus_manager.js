@@ -65,12 +65,15 @@ export class TXMFocusManager {
      * Note: some platforms like the FireTV do not allow the back action key event to be fielded at all,
      * forcing history management approaches via the window's "popstate" event.
      *
+     * @param rootUrl the url that marks the "top" of the context this focus manager is controlling.
+     *   Explicit or implicit history.back() actions will be blocked from returning further past this url.
+     *
      * @param mapHistoryBackToInputAction if true, every explicit or implicit history.back() also injects
      *   an inputActions.back action into this focus manager's onInputAction method, allowing for a consistent
      *   and portable approach to managing back actions.
      */
-    blockBackActions(mapHistoryBackToInputAction) {
-        this.backActionOrigin = window.location.href;
+    blockBackActions(rootUrl, mapHistoryBackToInputAction) {
+        this.backActionRoot = rootUrl || window.location.origin;
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
@@ -78,7 +81,7 @@ export class TXMFocusManager {
 
     restoreBackActions() {
         window.removeEventListener("popstate", this.onBackAction);
-        // Do't think this is needed
+        // Don't think this is needed.
         // if (this.isAtBackAction()) {
         //     // Remove the block action guard.
         //     history.back();
@@ -102,8 +105,8 @@ export class TXMFocusManager {
     }
 
     onBackAction(event) {
-        const isAtRootPage = window.location.href == this.backActionOrigin;
-        if (!isAtRootPage) {
+        const isAtRoot = window.location.href == this.backActionRoot;
+        if (!isAtRoot) {
             return true; // allow page change to proceed
         }
 
