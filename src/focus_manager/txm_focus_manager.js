@@ -97,7 +97,7 @@ export class TXMFocusManager {
         if (this.isAtBackAction()) {
             return; // already in place
         }
-        history.pushState({backAction: true, origin: window.location.origin}, "backAction");
+        history.pushState({backAction: true, origin: window.location.origin}, "backAction", this.backActionRoot);
     }
 
     isAtBackAction(item) {
