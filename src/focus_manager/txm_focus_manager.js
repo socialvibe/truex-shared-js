@@ -19,7 +19,7 @@ export class TXMFocusManager {
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
         this.onBackAction = this.onBackAction.bind(this);
-        this.isHistoryAtBackAction = this.isHistoryAtBackAction.bind(this);
+        this.isAtBackAction = this.isAtBackAction.bind(this);
         this.pushBackActionState = this.pushBackActionState.bind(this);
     }
 
@@ -53,17 +53,20 @@ export class TXMFocusManager {
     /**
      * Call to prevent the back action on the remote from exiting the app.
      */
-    blockBackActions() {
+    blockBackActions(fireBackInputAction) {
+        this.backActionOrigin = window.location.href;
+        this.fireBackInputActionOnPopstate = fireBackInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
     }
 
     restoreBackActions() {
         window.removeEventListener("popstate", this.onBackAction);
-        if (this.isHistoryAtBackAction()) {
-            // Remove the block action guard.
-            history.back();
-        }
+        // Do't think this is needed
+        // if (this.isAtBackAction()) {
+        //     // Remove the block action guard.
+        //     history.back();
+        // }
     }
 
     /**
@@ -71,20 +74,21 @@ export class TXMFocusManager {
      * This is needed for platforms that do not expose the back action as a key event, i.e. FireTV.
      */
     pushBackActionState() {
-        if (this.isHistoryAtBackAction()) return; // already in place
-        history.pushState({backAction: true}, "backAction", window.location.href);
+        if (this.isAtBackAction()) {
+            return; // already in place
+        }
+        history.pushState({backAction: true, origin: window.location.origin}, "backAction");
     }
 
-    isHistoryAtBackAction() {
-        return history.state && history.state.backAction;
+    isAtBackAction(item) {
+        if (!item) item = history;
+        return item.state && item.state.backAction;
     }
 
     onBackAction(event) {
-        if (!this.isHistoryAtBackAction()) {
-            console.log(`page back action proceeding: ${window.location.href}`);
-            // setTimeout(this.pushBackActionState, 0); // ensure it is blocked going forward.
-            //this.pushBackActionState(); // ensure it is blocked going forward.
-            return false; // allow page change to proceed
+        const isAtRootPage = window.location.href == this.backActionOrigin;
+        if (!isAtRootPage) {
+            return true; // allow page change to proceed
         }
 
         // Block the back action processing by the browser.
@@ -92,17 +96,19 @@ export class TXMFocusManager {
         event.stopPropagation();
         event.stopImmediatePropagation();
 
-        console.log(`page back action blocked`);
-
-        try {
-            // field the back action explicitly to allow for app processing.
-            this.onInputAction(inputActions.back);
-        } catch (err) {
-            let errMsg = this.platform.describeErrorWithStack(err);
-            console.error(`TXMFocusManager: error with back action:\n${errMsg}`);
+        if (this.fireBackInputActionOnPopstate) {
+            try {
+                // field the back action explicitly to allow for app processing.
+                //this.onInputAction(inputActions.back);
+            } catch (err) {
+                let errMsg = this.platform.describeErrorWithStack(err);
+                console.error(`TXMFocusManager: error with back action:\n${errMsg}`);
+            }
         }
 
-        return true; // stop browser processing.
+        this.pushBackActionState(); // ensure it is blocked going forward.
+
+        return false; // stop browser processing.
     }
 
     onKeyDown(event) {
