@@ -67,13 +67,14 @@ export class TXMFocusManager {
      *
      * @param rootUrl the url that marks the "top" of the context this focus manager is controlling.
      *   Explicit or implicit history.back() actions will be blocked from returning further past this url.
+     *   Defaults to the current window location.
      *
      * @param mapHistoryBackToInputAction if true, every explicit or implicit history.back() also injects
      *   an inputActions.back action into this focus manager's onInputAction method, allowing for a consistent
      *   and portable approach to managing back actions.
      */
     blockBackActions(rootUrl, mapHistoryBackToInputAction) {
-        this.backActionRoot = rootUrl || window.location.origin;
+        this.backActionRoot = rootUrl || window.location.href;
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
