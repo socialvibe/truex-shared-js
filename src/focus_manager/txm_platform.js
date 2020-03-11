@@ -43,9 +43,9 @@ export const keyCodes = {
 export class TXMPlatform {
 
     /**
-    * Allow user agent overrides for testing. Defaults to standard one if not provided.
-    * @param userAgentOverride
-    */
+     * Allow user agent overrides for testing. Defaults to standard one if not provided.
+     * @param userAgentOverride
+     */
     constructor(userAgentOverride) {
         this.name = "Unknown";
         this.model = "Unknown";
@@ -105,7 +105,7 @@ export class TXMPlatform {
         return !this.useWindowScroll && !this.useScrollTop
             // Tizen had auto-scroll bars showing that we want to avoid.
             // TODO: verify if this is still the case
-             || this.isTizen;
+            || this.isTizen;
     }
 
     get screenSize() {
@@ -123,7 +123,10 @@ export class TXMPlatform {
      * Maps a key event's keycode into a platform independent input action.
      */
     getInputAction(keyCode) {
-        return this._inputKeyMap[keyCode];
+        const action = this._inputKeyMap[keyCode];
+        // for exploring new keystrokes
+        //console.log(`getInputAction: key code: ${keyCode} action: ${action}`);
+        return action;
     }
 
     /**
@@ -189,8 +192,8 @@ export class TXMPlatform {
         } else if (/PlayStation 4/.test(userAgent)) {
             configureForPS4();
 
-        // } else if (/Nintendo/.test(userAgent)) {
-        //     configureForNintendoSwitch();
+            // } else if (/Nintendo/.test(userAgent)) {
+            //     configureForNintendoSwitch();
 
         } else if (/Xbox/.test(userAgent)) {
             configureForXboxOne();
@@ -209,7 +212,7 @@ export class TXMPlatform {
 
         // Establish the direct key code to input action mapping.
         self._inputKeyMap = {};
-        for(let action in actionKeyCodes) {
+        for (let action in actionKeyCodes) {
             let actionCodes = actionKeyCodes[action];
             if (Array.isArray(actionCodes)) {
                 actionCodes.forEach(keyCode => {
@@ -419,21 +422,74 @@ export class TXMPlatform {
         }
 
         function configureForFireTV() {
+            configureForAndroidBase();
             self.isFireTV = true;
             self.name = "FireTV";
-            self.useWindowScroll = false;
-            // Both AndroidTV and FireTV do not allow http: image GETs when running under https:
-            self.supportsHttpImagesWithHttps = false;
-            addAndroidTVKeyCodes();
+
+            // From: https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
+            const modelMatch = userAgent.match(/\bAFT[A-Z]+\b/);
+            const modelId = modelMatch && modelMatch[0];
+            var model = "Fire TV";
+            if (modelId == "AFTN") {
+                model = "Fire TV (Gen 3)";
+            } else if (modelId == "AFTS") {
+                model = "Fire TV (Gen 2)";
+            } else if (modelId == "AFTB") {
+                model = "Fire TV (Gen 1)";
+            } else if (modelId == "AFTT") {
+                model = "Fire TV Stick (Gen 2)";
+            } else if (modelId == "AFTM") {
+                model = "Fire TV Stick (Gen 1)";
+            } else if (modelId == "AFTMM") {
+                model = "Fire TV Stick 4K";
+            } else if (modelId == "AFTRS") {
+                model = "Fire TV Edition";
+            } else if (modelId == "AFTA") {
+                model = "Fire TV Cube (Gen 1)";
+            } else if (modelId == "AFTR") {
+                model = "Fire TV Cube (Gen 2)";
+            }
+            self.model = model;
+            self.modelId = modelId;
+
+            actionKeyCodes[inputActions.menu] = 18;
         }
 
         function configureForAndroidTV() {
+            configureForAndroidBase();
             self.isAndroidTV = true;
             self.name = "AndroidTV";
+
+            actionKeyCodes[appActions.back] = 4;
+            actionKeyCodes[appActions.menu] = 82;
+        }
+
+        function configureForAndroidBase() {
             self.useWindowScroll = false;
-            // Both AndroidTV and FireTV do not allow http: image GETs when running under https:
+
+            // Both AndroidTV and FireTV do not allow http: image GETs when
+            // running under https:
             self.supportsHttpImagesWithHttps = false;
-            addAndroidTVKeyCodes();
+
+            const androidApp = window.androidApp || window.fireTVApp;
+            if (androidApp) {
+                var detailString = androidApp.getAndroidDetails();
+                var details = detailString.split(',');
+                self.model = details[1];
+                self.version = details[2];
+            } else {
+                var detailSubstring = userAgent.substring(userAgent.indexOf("(") + 1, userAgent.indexOf(")"));
+                var detailSplit = detailSubstring.split(";");
+                self.model = detailSplit[2].split(" ").find(part => {return part});
+                const versionParts = detailSplit[1].split(" ");
+                self.version = versionParts[versionParts.length - 1];
+            }
+
+            addDefaultKeyMap();
+            actionKeyCodes[inputActions.playPause] = 179;
+            actionKeyCodes[inputActions.fastForward] = 228;
+            actionKeyCodes[inputActions.rewind] = 227;
+            actionKeyCodes[inputActions.extra] = 82;
         }
 
         function configureForUnknownPlatform() {
@@ -480,16 +536,6 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.prevTrack] = keyCodes.W;
             actionKeyCodes[inputActions.nextTrack] = keyCodes.O;
         }
-
-        function addAndroidTVKeyCodes() {
-            addDefaultKeyMap();
-
-            actionKeyCodes[inputActions.playPause] = 179;
-            actionKeyCodes[inputActions.fastForward] = 228;
-            actionKeyCodes[inputActions.rewind] = 227;
-            actionKeyCodes[inputActions.extra] = 82;
-        }
     }
-
 }
 
