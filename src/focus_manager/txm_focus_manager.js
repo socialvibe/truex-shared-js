@@ -41,12 +41,21 @@ export class TXMFocusManager {
     }
 
     addKeyEventListener(toElement) {
+        this.removeKeyEventListener();
         if (!toElement) toElement = document.body;
+        this.parentElement = toElement;
         toElement.addEventListener("keydown", this.onKeyDown);
     }
 
+    removeKeyEventListener() {
+        if (this.parentElement) {
+            this.parentElement.removeEventListener("keydown", this.onKeyDown);
+            this.parentElement = null;
+        }
+    }
+
     cleanup() {
-        window.removeEventListener("popstate", this.onBackAction);
+        this.removeKeyEventListener();
         this.restoreBackActions();
     }
 
