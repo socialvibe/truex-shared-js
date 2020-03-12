@@ -1,6 +1,6 @@
-import { inputActions }         from './txm_input_actions';
-import {keyCodes, TXMPlatform } from './txm_platform';
-import { Focusable }            from './txm_focusable';
+import { inputActions }          from './txm_input_actions';
+import { keyCodes, TXMPlatform } from './txm_platform';
+import { Focusable }             from './txm_focusable';
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
@@ -18,6 +18,9 @@ export class TXMFocusManager {
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
+        this.onBackAction = this.onBackAction.bind(this);
+        this.isAtBackAction = this.isAtBackAction.bind(this);
+        this.pushBackActionState = this.pushBackActionState.bind(this);
     }
 
     get currentFocus() {
@@ -38,8 +41,89 @@ export class TXMFocusManager {
     }
 
     addKeyEventListener(toElement) {
+        this.removeKeyEventListener();
         if (!toElement) toElement = document.body;
+        this.keyFocusElement = toElement;
         toElement.addEventListener("keydown", this.onKeyDown);
+    }
+
+    removeKeyEventListener() {
+        if (this.keyFocusElement) {
+            this.keyFocusElement.removeEventListener("keydown", this.onKeyDown);
+            this.keyFocusElement = null;
+        }
+    }
+
+    cleanup() {
+        this.removeKeyEventListener();
+        this.restoreBackActions();
+    }
+
+    /**
+     * Call to prevent the back action on the remote from exiting the app.
+     *
+     * Note: some platforms like the FireTV do not allow the back action key event to be fielded at all,
+     * forcing history management approaches via the window's "popstate" event.
+     *
+     * @param rootUrl the url that marks the "top" of the context this focus manager is controlling.
+     *   Explicit or implicit history.back() actions will be blocked from returning further past this url.
+     *   Defaults to the current window location.
+     *
+     * @param mapHistoryBackToInputAction if true, every explicit or implicit history.back() also injects
+     *   an inputActions.back action into this focus manager's onInputAction method, allowing for a consistent
+     *   and portable approach to managing back actions.
+     */
+    blockBackActions(rootUrl, mapHistoryBackToInputAction) {
+        this.backActionRoot = rootUrl || window.location.href;
+        this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
+        this.pushBackActionState();
+        window.addEventListener("popstate", this.onBackAction);
+    }
+
+    restoreBackActions() {
+        window.removeEventListener("popstate", this.onBackAction);
+    }
+
+    /**
+     * Intercept browser back actions, interpret them as our own back action.
+     * This is needed for platforms that do not expose the back action as a key event, i.e. FireTV.
+     */
+    pushBackActionState() {
+        if (this.isAtBackAction()) {
+            return; // already in place
+        }
+        history.pushState({backAction: true, origin: window.location.origin}, "backAction", this.backActionRoot);
+    }
+
+    isAtBackAction(item) {
+        if (!item) item = history;
+        return item.state && item.state.backAction;
+    }
+
+    onBackAction(event) {
+        const isAtRoot = window.location.href == this.backActionRoot;
+        if (!isAtRoot) {
+            return true; // allow page change to proceed
+        }
+
+        // Block the back action processing by the browser.
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+        if (this.mapHistoryBackToInputAction) {
+            try {
+                // Inject back input action explicitly to allow for app processing.
+                this.onInputAction(inputActions.back);
+            } catch (err) {
+                let errMsg = this.platform.describeErrorWithStack(err);
+                console.error(`TXMFocusManager: error with back action:\n${errMsg}`);
+            }
+        }
+
+        this.pushBackActionState(); // ensure it is blocked going forward.
+
+        return false; // stop browser processing.
     }
 
     onKeyDown(event) {
@@ -257,11 +341,11 @@ export class TXMFocusManager {
 
     getFirstFocusIn(focusables) {
         if (!Array.isArray(focusables)) return;
-        for(let rowIndex in focusables) {
+        for (let rowIndex in focusables) {
             let row = focusables[rowIndex];
             if (!row) continue;
             if (!Array.isArray(row)) return row; // Treat as an element.
-            for(let colIndex in row) {
+            for (let colIndex in row) {
                 let component = row[colIndex];
                 if (!component) continue;
                 if (Array.isArray(component)) continue; // shouldn't happen
@@ -279,11 +363,11 @@ export class TXMFocusManager {
 
     getLastFocusIn(focusables) {
         if (!Array.isArray(focusables)) return;
-        for(let rowIndex = focusables.length-1; rowIndex >= 0; rowIndex--) {
+        for (let rowIndex = focusables.length - 1; rowIndex >= 0; rowIndex--) {
             let row = focusables[rowIndex];
             if (!row) continue;
             if (!Array.isArray(row)) return row; // Treat as an element.
-            for(let colIndex = row.length-1; colIndex >= 0; colIndex--) {
+            for (let colIndex = row.length - 1; colIndex >= 0; colIndex--) {
                 let component = row[colIndex];
                 if (!component) continue;
                 if (Array.isArray(component)) continue; // shouldn't happen
@@ -293,10 +377,10 @@ export class TXMFocusManager {
     }
 
     findFocusPosition(focus, inFocusables) {
-        for(let rowIndex in inFocusables) {
+        for (let rowIndex in inFocusables) {
             let row = inFocusables[rowIndex];
             if (!row || !Array.isArray(row)) continue; // shouldn't happen in practice
-            for(let colIndex in row) {
+            for (let colIndex in row) {
                 let component = row[colIndex];
                 if (!component) continue; // skip over holes
                 if (component === focus) return {row: parseInt(rowIndex), col: parseInt(colIndex)};
@@ -311,8 +395,8 @@ export class TXMFocusManager {
             let rowStep = forAction == inputActions.moveUp ? -1 : 1;
 
             // Skip over "holes" in the implied column
-            for(let rowIndex = atPosition.row + rowStep;
-                    0 <= rowIndex && rowIndex < inFocusables.length; rowIndex += rowStep) {
+            for (let rowIndex = atPosition.row + rowStep;
+                 0 <= rowIndex && rowIndex < inFocusables.length; rowIndex += rowStep) {
                 let row = inFocusables[rowIndex];
                 if (!row) continue;
                 if (!Array.isArray(row)) continue; // shouldn't happen as per ensure2DArray
@@ -327,7 +411,7 @@ export class TXMFocusManager {
             // Skip over "holes" in the implied row.
             let row = inFocusables[atPosition.row];
             if (!row) return; // shouldn't happen as per findFocusPosition()
-            for(let colIndex = atPosition.col + colStep; 0 <= colIndex && colIndex < row.length; colIndex += colStep) {
+            for (let colIndex = atPosition.col + colStep; 0 <= colIndex && colIndex < row.length; colIndex += colStep) {
                 let component = row[colIndex];
                 if (!component) continue; // skip over empty holes
                 return component;
@@ -344,16 +428,17 @@ export class TXMFocusManager {
             // - ensure single top-level elements become rows
             // - ensure shorter rows are extend their last element to the max row length.
             let maxRowLen = array.reduce((maxLen, e) => {
-                return Math.max(maxLen, Array.isArray(e) ? e.length : 1) }, 0);
+                return Math.max(maxLen, Array.isArray(e) ? e.length : 1)
+            }, 0);
             let result = [];
-            for(let rowIndex in array) {
+            for (let rowIndex in array) {
                 let row = array[rowIndex];
                 if (!Array.isArray(row)) row = [row];
                 else row = row.concat(); // avoid anti-aliasing
                 if (row.length < maxRowLen) {
                     // Extend shorter rows out.
-                    let lastElmnt = row[rowIndex.length-1];
-                    for(let i = row.length; i < maxRowLen; i++) {
+                    let lastElmnt = row[rowIndex.length - 1];
+                    for (let i = row.length; i < maxRowLen; i++) {
                         row.push(lastElmnt);
                     }
                 }
