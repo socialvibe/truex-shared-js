@@ -43,14 +43,14 @@ export class TXMFocusManager {
     addKeyEventListener(toElement) {
         this.removeKeyEventListener();
         if (!toElement) toElement = document.body;
-        this.parentElement = toElement;
+        this.keyFocusElement = toElement;
         toElement.addEventListener("keydown", this.onKeyDown);
     }
 
     removeKeyEventListener() {
-        if (this.parentElement) {
-            this.parentElement.removeEventListener("keydown", this.onKeyDown);
-            this.parentElement = null;
+        if (this.keyFocusElement) {
+            this.keyFocusElement.removeEventListener("keydown", this.onKeyDown);
+            this.keyFocusElement = null;
         }
     }
 
@@ -82,11 +82,6 @@ export class TXMFocusManager {
 
     restoreBackActions() {
         window.removeEventListener("popstate", this.onBackAction);
-        // Don't think this is needed.
-        // if (this.isAtBackAction()) {
-        //     // Remove the block action guard.
-        //     history.back();
-        // }
     }
 
     /**
