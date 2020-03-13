@@ -67,14 +67,14 @@ export class TXMFocusManager {
      *
      * @param rootUrl the url that marks the "top" of the context this focus manager is controlling.
      *   Explicit or implicit history.back() actions will be blocked from returning further past this url.
-     *   Defaults to the current window location.
+     *   If not provided, then all history back actions are blocked.
      *
      * @param mapHistoryBackToInputAction if true, every explicit or implicit history.back() also injects
      *   an inputActions.back action into this focus manager's onInputAction method, allowing for a consistent
      *   and portable approach to managing back actions.
      */
     blockBackActions(rootUrl, mapHistoryBackToInputAction) {
-        this.backActionRoot = rootUrl || window.location.href;
+        this.backActionRoot = rootUrl;
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
@@ -92,7 +92,7 @@ export class TXMFocusManager {
         if (this.isAtBackAction()) {
             return; // already in place
         }
-        history.pushState({backAction: true, origin: window.location.origin}, "backAction", this.backActionRoot);
+        history.pushState({backAction: true, origin: window.location.href}, "backAction", this.backActionRoot);
     }
 
     isAtBackAction(item) {
@@ -101,7 +101,7 @@ export class TXMFocusManager {
     }
 
     onBackAction(event) {
-        const isAtRoot = window.location.href == this.backActionRoot;
+        const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
         if (!isAtRoot) {
             return true; // allow page change to proceed
         }
