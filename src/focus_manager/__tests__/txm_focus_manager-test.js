@@ -18,7 +18,12 @@ describe("TXMFocusManager", () => {
     let testDiv3 = document.createElement("div");
     testDiv3.id = "focus3";
     testDiv3.className = "coolButton";
-    document.body.appendChild(testDiv2);
+    document.body.appendChild(testDiv3);
+
+    let testDiv4 = document.createElement("div");
+    testDiv4.id = "focus4";
+    testDiv4.className = "coolButton";
+    document.body.appendChild(testDiv4);
 
     const keyEvent = document.createEvent('Event');
     keyEvent.initEvent("keydown", true, true);
@@ -95,6 +100,16 @@ describe("TXMFocusManager", () => {
         focus3.element.dispatchEvent(mouseClick);
         expect(selectAction).not.toHaveBeenCalled();
         expect(inputAction).toHaveBeenCalledWith(inputActions.select, mouseClick);
+
+        // Test via constructor.
+        let focus4 = new Focusable(testDiv4, selectAction, inputAction, fm);
+
+        selectAction.mockClear();
+        inputAction.mockClear();
+
+        focus4.element.dispatchEvent(mouseClick);
+        expect(selectAction).toHaveBeenCalled();
+        expect(inputAction).not.toHaveBeenCalled();
     });
 
     describe("focus manager optional onSelectAction callback", () => {

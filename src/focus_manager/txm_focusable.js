@@ -25,14 +25,18 @@ export class Focusable {
      *   element associated with the component.
      * @param selectAction if present, overrides the onSelectAction implementation.
      * @param inputAction if present, overrides the onInputAction implementation.
+     * @param focusManager if present, use to register mouse events for setting focus on hover, and invoking input actions
      */
-    constructor(elementRef, selectAction, inputAction) {
+    constructor(elementRef, selectAction, inputAction, focusManager) {
         this._elementRef = elementRef;
         if (selectAction) {
             this.onSelectAction = selectAction;
         }
         if (inputAction) {
             this.onInputAction = inputAction;
+        }
+        if (focusManager) {
+            this.addMouseEventListeners(focusManager);
         }
     }
 
