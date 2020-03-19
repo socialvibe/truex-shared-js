@@ -328,8 +328,15 @@ export class TXMFocusManager {
      *   If not specified, the first focusable is used.
      */
     setContentFocusables(focusables, initialFocus) {
+        // Reset the current focus unless it is in the top or bottom chrome.
+        const current = this.currentFocus;
+        const resetFocus = !current || this.findFocusPosition(current, this._contentFocusables);
+
         this._contentFocusables = this.ensure2DArray(focusables);
-        if (!this.currentFocus) this.setFocus(initialFocus || this.getFirstFocus());
+
+        if (resetFocus) {
+            this.setFocus(initialFocus || this.getFirstFocus());
+        }
     }
 
     getFirstFocus() {
