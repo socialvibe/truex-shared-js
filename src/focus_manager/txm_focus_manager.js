@@ -330,7 +330,9 @@ export class TXMFocusManager {
     setContentFocusables(focusables, initialFocus) {
         // Reset the current focus unless it is in the top or bottom chrome.
         const current = this.currentFocus;
-        const resetFocus = !current || this.findFocusPosition(current, this._contentFocusables);
+        const isInTopChrome = this.findFocusPosition(current, this._topChromeFocusables);
+        const isInBottomChrome = this.findFocusPosition(current, this._bottomChromeFocusables);
+        const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
         this._contentFocusables = this.ensure2DArray(focusables);
 
@@ -384,6 +386,7 @@ export class TXMFocusManager {
     }
 
     findFocusPosition(focus, inFocusables) {
+        if (!focus) return;
         for (let rowIndex in inFocusables) {
             let row = inFocusables[rowIndex];
             if (!row || !Array.isArray(row)) continue; // shouldn't happen in practice

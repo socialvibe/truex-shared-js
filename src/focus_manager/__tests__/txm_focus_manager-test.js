@@ -219,6 +219,36 @@ describe("TXMFocusManager", () => {
             });
         });
 
+        test("test content focusables vs current focus", () => {
+            const fm = new TXMFocusManager();
+
+            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
+            expect(fm.currentFocus).toBe(focuses[1]);
+
+            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[3]);
+            expect(fm.currentFocus).toBe(focuses[3]);
+
+            fm.setContentFocusables([focuses[2], focuses[1]]);
+            expect(fm.currentFocus).toBe(focuses[2]);
+
+            fm.setTopChromeFocusables([focuses[1], focuses[2]]);
+            fm.setFocus(focuses[1]);
+            fm.setContentFocusables([focuses[3], focuses[4]]);
+            expect(fm.currentFocus).toBe(focuses[1]); // chrome focus unchanged
+
+            fm.setBottomChromeFocusables([focuses[5], focuses[6]]);
+            fm.setFocus(focuses[5]);
+            fm.setContentFocusables([focuses[3], focuses[4]]);
+            expect(fm.currentFocus).toBe(focuses[5]); // chrome focus unchanged
+
+            fm.setFocus(null);
+            fm.setContentFocusables([focuses[3], focuses[4]]);
+            expect(fm.currentFocus).toBe(focuses[3]); // now it can take effect
+
+            fm.setContentFocusables([focuses[3], focuses[4]], focuses[4]);
+            expect(fm.currentFocus).toBe(focuses[4]);
+        });
+
         describe("simple left/right focus navigation", () => {
             const fm = new TXMFocusManager();
 
