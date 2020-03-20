@@ -23,12 +23,14 @@ export class Focusable {
      * Convenience constructor to allow for component view model JS instances to be associated with
      * @param elementRef an optional DOM element reference or query selector string used to refer to the associated DOM
      *   element associated with the component.
+     *   If the element is a <video> and no select or input actions are supplied the onVideoAction is used.
      * @param selectAction if present, overrides the onSelectAction implementation.
      * @param inputAction if present, overrides the onInputAction implementation.
      * @param focusManager if present, use to register mouse events for setting focus on hover, and invoking input actions
      */
     constructor(elementRef, selectAction, inputAction, focusManager) {
         this._elementRef = elementRef;
+
         if (selectAction) {
             this.onSelectAction = selectAction;
         }
@@ -103,13 +105,35 @@ export class Focusable {
      * If not handled, the focus manager's default action handling is invoked instead, notably
      * for the moveUp/Down/Left/Right input actions.
      *
-     * @param action name input action
+     * @param action input action name
      * @param event associated key event, can be missing for non-key events,
      *   e.g. voice (Alexa), test driver input injections, etc.
      *
      * @return true if the action was handled, otherwise false or undefined.
      */
-    onInputAction(action, event) {}
+    onInputAction(action, event) {
+        const element = this.element;
+        if (element && element.localName == 'video') {
+            // For videos, play/pause toggling is a good default action.
+            return this.onVideoAction(action, event);
+        }
+    }
+
+    /**
+     * Specifies the default action handler for <video> elements.
+     * The default implementation is to simply toggle play vs pause for the 'select' and 'playPause' input actions.
+     *
+     * @param action
+     */
+    onVideoAction(action, event) {
+        const video = this.element;
+        if (video && (action == inputActions.playPause || action == inputActions.select)) {
+            // Toggle playback.
+            if (video.paused) video.play();
+            else video.pause();
+            return true; // handled
+        }
+    }
 }
 
 export default Focusable;
