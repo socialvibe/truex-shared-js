@@ -180,6 +180,36 @@ describe("TXMFocusManager", () => {
         expect(focus2.onInputAction).toHaveBeenCalledWith(inputActions.select, keyEvent);
     });
 
+    test("focus manager onVideoAction callback", () => {
+        const fm = new TXMFocusManager();
+
+        // Use a <video> stub.
+        let video = {
+            localName: 'video',
+            classList: {add: function() {}, remove: function() {}},
+            paused: true,
+            play: jest.fn(),
+            pause: jest.fn()
+        };
+
+        let videoFocus = new Focusable(video);
+        fm.setFocus(videoFocus);
+
+        fm.onKeyDown(keyEvent);
+
+        expect(video.play).toHaveBeenCalled();
+        expect(video.pause).not.toHaveBeenCalled();
+
+        video.paused = false;
+        video.play.mockClear();
+        video.pause.mockClear();
+
+        fm.onInputAction(inputActions.playPause);
+
+        expect(video.play).not.toHaveBeenCalled();
+        expect(video.pause).toHaveBeenCalled();
+    });
+
     describe("focus manager navigation", () => {
         let focuses = [];
         for (let i = 0; i <= 10; i++) {
