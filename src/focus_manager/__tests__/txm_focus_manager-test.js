@@ -18,7 +18,12 @@ describe("TXMFocusManager", () => {
     let testDiv3 = document.createElement("div");
     testDiv3.id = "focus3";
     testDiv3.className = "coolButton";
-    document.body.appendChild(testDiv2);
+    document.body.appendChild(testDiv3);
+
+    let testDiv4 = document.createElement("div");
+    testDiv4.id = "focus4";
+    testDiv4.className = "coolButton";
+    document.body.appendChild(testDiv4);
 
     const keyEvent = document.createEvent('Event');
     keyEvent.initEvent("keydown", true, true);
@@ -95,6 +100,16 @@ describe("TXMFocusManager", () => {
         focus3.element.dispatchEvent(mouseClick);
         expect(selectAction).not.toHaveBeenCalled();
         expect(inputAction).toHaveBeenCalledWith(inputActions.select, mouseClick);
+
+        // Test via constructor.
+        let focus4 = new Focusable(testDiv4, selectAction, inputAction, fm);
+
+        selectAction.mockClear();
+        inputAction.mockClear();
+
+        focus4.element.dispatchEvent(mouseClick);
+        expect(selectAction).toHaveBeenCalled();
+        expect(inputAction).not.toHaveBeenCalled();
     });
 
     describe("focus manager optional onSelectAction callback", () => {
@@ -165,6 +180,36 @@ describe("TXMFocusManager", () => {
         expect(focus2.onInputAction).toHaveBeenCalledWith(inputActions.select, keyEvent);
     });
 
+    test("focus manager onVideoAction callback", () => {
+        const fm = new TXMFocusManager();
+
+        // Use a <video> stub.
+        let video = {
+            localName: 'video',
+            classList: {add: function() {}, remove: function() {}},
+            paused: true,
+            play: jest.fn(),
+            pause: jest.fn()
+        };
+
+        let videoFocus = new Focusable(video);
+        fm.setFocus(videoFocus);
+
+        fm.onKeyDown(keyEvent);
+
+        expect(video.play).toHaveBeenCalled();
+        expect(video.pause).not.toHaveBeenCalled();
+
+        video.paused = false;
+        video.play.mockClear();
+        video.pause.mockClear();
+
+        fm.onInputAction(inputActions.playPause);
+
+        expect(video.play).not.toHaveBeenCalled();
+        expect(video.pause).toHaveBeenCalled();
+    });
+
     describe("focus manager navigation", () => {
         let focuses = [];
         for (let i = 0; i <= 10; i++) {
@@ -202,6 +247,36 @@ describe("TXMFocusManager", () => {
                 fm.onInputAction(inputActions.moveRight);
                 expect(fm.currentFocus).toBe(focuses[1]);
             });
+        });
+
+        test("test content focusables vs current focus", () => {
+            const fm = new TXMFocusManager();
+
+            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
+            expect(fm.currentFocus).toBe(focuses[1]);
+
+            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[3]);
+            expect(fm.currentFocus).toBe(focuses[3]);
+
+            fm.setContentFocusables([focuses[2], focuses[1]]);
+            expect(fm.currentFocus).toBe(focuses[2]);
+
+            fm.setTopChromeFocusables([focuses[1], focuses[2]]);
+            fm.setFocus(focuses[1]);
+            fm.setContentFocusables([focuses[3], focuses[4]]);
+            expect(fm.currentFocus).toBe(focuses[1]); // chrome focus unchanged
+
+            fm.setBottomChromeFocusables([focuses[5], focuses[6]]);
+            fm.setFocus(focuses[5]);
+            fm.setContentFocusables([focuses[3], focuses[4]]);
+            expect(fm.currentFocus).toBe(focuses[5]); // chrome focus unchanged
+
+            fm.setFocus(null);
+            fm.setContentFocusables([focuses[3], focuses[4]]);
+            expect(fm.currentFocus).toBe(focuses[3]); // now it can take effect
+
+            fm.setContentFocusables([focuses[3], focuses[4]], focuses[4]);
+            expect(fm.currentFocus).toBe(focuses[4]);
         });
 
         describe("simple left/right focus navigation", () => {
