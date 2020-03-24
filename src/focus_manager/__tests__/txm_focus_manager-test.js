@@ -224,6 +224,16 @@ describe("TXMFocusManager", () => {
             });
     });
 
+    test("focus manager currentFocusPath", () => {
+        // We only need to verify the connection to getElementPath
+        const fm = new TXMFocusManager();
+
+        expect(fm.currentFocusPath).toBe(undefined);
+
+        fm.setFocus(focus1);
+        expect(fm.currentFocusPath).toBe('#focus1');
+    });
+
     test("focus manager onVideoAction callback", () => {
         const fm = new TXMFocusManager();
 

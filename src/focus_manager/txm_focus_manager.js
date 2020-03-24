@@ -1,6 +1,7 @@
 import { inputActions }          from './txm_input_actions';
 import { keyCodes, TXMPlatform } from './txm_platform';
 import { Focusable }             from './txm_focusable';
+import { getElementPath }        from '../utils/get_element_path';
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
@@ -38,6 +39,16 @@ export class TXMFocusManager {
             this._focus = newFocus;
             if (newFocus.onFocusSet) newFocus.onFocusSet(true);
         }
+    }
+
+    /**
+     * Gives a textual description of the current focus, similar to the CSS selector.
+     * Useful for test scripts to verify expected focus changes.
+     */
+    get currentFocusPath() {
+        const focus = this.currentFocus;
+        if (!focus) return; // no focus, no path
+        return getElementPath(focus.element);
     }
 
     addKeyEventListener(toElement) {
