@@ -304,6 +304,32 @@ export class TXMFocusManager {
     }
 
     /**
+     * Injects an input action or array of input actions via the {#onInputAction} method, separated by a delay.
+     * This is to support the simulation of user inputs via test scripts.
+     *
+     * @param actions a single action name, or an array of action names
+     * @param delay the # of milliseconds to wait between injecting the next action.
+     *
+     * @return {Promise} a promise that completes when all of the inputs have been injected.
+     */
+    async inject(actions, delay = 500) {
+        if (!actions) return;
+        if (!Array.isArray(actions)) actions = [actions];
+
+        let injectAction = action => {
+            this.onInputAction(action);
+            return new Promise(resolve => {
+                    setTimeout(() => resolve(action), delay);
+                });
+          };
+
+        // An injection is the action input plus a delay.
+        for(let doInjection of actions.map(action => () => injectAction(action))) {
+            await doInjection();
+        }
+    }
+
+    /**
      * Used by the true[X] framework to specify the focusable control buttons along the top of the current page.
      * @param focusables array of focusable components, typically extending the {Focusable} class
      */
