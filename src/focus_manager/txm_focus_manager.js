@@ -45,7 +45,7 @@ export class TXMFocusManager {
      * Gives a textual description of the current focus, similar to the CSS selector.
      * Useful for test scripts to verify expected focus changes.
      */
-    get currentFocusPath() {
+    getCurrentFocusPath() {
         const focus = this.currentFocus;
         if (!focus) return; // no focus, no path
         return getElementPath(focus.element);
