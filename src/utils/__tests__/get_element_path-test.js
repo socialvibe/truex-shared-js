@@ -20,10 +20,21 @@ test('test getElementPath', () => {
     let testDiv5 = document.createElement("div");
     document.body.appendChild(testDiv5);
 
-    expect(getElementPath(testDiv1)).toBe('#focus1');
-    expect(getElementPath(testDiv2)).toBe('.actionButton[0].hasFocus');
-    expect(getElementPath(testDiv4)).toBe('.actionButton[2]');
-    expect(getElementPath(testDiv5)).toBe('body div[4]');
+    let videoContainer = document.createElement("div");
+    videoContainer.id = 'videoContainer';
+    document.body.appendChild(videoContainer);
+
+    let testVideo = document.createElement("video");
+    testVideo.className = 'hasFocus';
+    videoContainer.appendChild(testVideo);
+
     expect(getElementPath(document.body)).toBe('body');
     expect(getElementPath(document.body.parentNode)).toBe('html');
+
+    expect(getElementPath(testDiv1)).toBe('#focus1');
+    expect(getElementPath(testDiv2)).toBe('body div[1].actionButton.hasFocus');
+    expect(getElementPath(testDiv4)).toBe('body div[3].actionButton');
+    expect(getElementPath(testDiv5)).toBe('body div[4]');
+
+    expect(getElementPath(testVideo)).toBe('#videoContainer video.hasFocus');
 });

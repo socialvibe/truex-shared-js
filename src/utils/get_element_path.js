@@ -15,18 +15,19 @@ function getElementPath(element) {
         // Use the id to describe
         return getQueryPath('#' + element.id);
 
-    } else if (classList && classList.length > 0) {
-        // Use the class names to describe. Assume the first one is the main one, append the others style hints.
-        var classNames = [...element.classList];
-        var path = getQueryPath('.' + classNames[0]);
-        if (classNames.length > 1) {
-            path = path + '.' + classNames.slice(1).join('.');
+    } else {
+        let path = getTreePath();
+
+        if (classList && classList.length > 0) {
+            // Use the class names to make more readable, but still use the context of the parent path.
+            // While some class names can be used for global identification, many others only indicate visual effects,
+            // e.g. like .hasFocus.
+            var classNames = [...element.classList];
+            if (classNames.length > 0) {
+                path = path + '.' + classNames.join('.');
+            }
         }
         return path;
-
-    } else {
-        // Use the tags and positions
-        return getTreePath();
     }
 
     function getQueryPath(path) {
