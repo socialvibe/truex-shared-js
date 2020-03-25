@@ -185,8 +185,8 @@ describe("TXMFocusManager", () => {
 
         const fm = new TXMFocusManager();
 
-        var injectedActions = [];
-        var injectionDelays = [];
+        const injectedActions = [];
+        const injectionDelays = [];
 
         var lastTime = Date.now();
 
