@@ -5,7 +5,7 @@
 function getElementPath(element) {
     if (!element) return ''; // no DOM element, no path
 
-    var classList = element.classList;
+    const classList = element.classList;
 
     if (element == document.body) {
         // Special case
@@ -22,7 +22,7 @@ function getElementPath(element) {
             // Use the class names to make more readable, but still use the context of the parent path.
             // While some class names can be used for global identification, many others only indicate visual effects,
             // e.g. like .hasFocus.
-            var classNames = [...element.classList];
+            const classNames = [...element.classList];
             if (classNames.length > 0) {
                 path = path + '.' + classNames.join('.');
             }
@@ -35,14 +35,13 @@ function getElementPath(element) {
     }
 
     function getTreePath() {
-        var path = element.localName;
-        if (!path) path = '';
+        const path = element.localName || '';
 
-        var parent = element.parentNode
+        const parent = element.parentNode;
         if (parent) {
-            var parentPath = getElementPath(parent);
+            const parentPath = getElementPath(parent);
             if (parentPath) {
-                var childNodes = path ? parent.querySelectorAll(path) : parent.children;
+                 const childNodes = path ? parent.querySelectorAll(path) : parent.children;
                 return finalPath(childNodes, parentPath + ' ' + path);
             }
         }
@@ -50,9 +49,9 @@ function getElementPath(element) {
     }
 
     function finalPath(nodeList, path) {
-        var nodesArray = [...nodeList];
+        const nodesArray = [...nodeList];
         if (nodesArray.length > 1) {
-            var index = nodesArray.indexOf(element);
+            const index = nodesArray.indexOf(element);
             return path + '[' + index + ']';
         }
         return path;
