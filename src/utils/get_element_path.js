@@ -42,7 +42,8 @@ function getElementPath(element) {
         if (parent) {
             var parentPath = getElementPath(parent);
             if (parentPath) {
-                return finalPath(parent.children, parentPath + ' ' + path);
+                var childNodes = path ? parent.querySelectorAll(path) : parent.children;
+                return finalPath(childNodes, parentPath + ' ' + path);
             }
         }
         return path;

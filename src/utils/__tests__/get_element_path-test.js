@@ -24,6 +24,9 @@ test('test getElementPath', () => {
     videoContainer.id = 'videoContainer';
     document.body.appendChild(videoContainer);
 
+    let testImg = document.createElement("img");
+    videoContainer.appendChild(testImg);
+
     let testVideo = document.createElement("video");
     testVideo.className = 'hasFocus';
     videoContainer.appendChild(testVideo);
@@ -36,5 +39,6 @@ test('test getElementPath', () => {
     expect(getElementPath(testDiv4)).toBe('body div[3].actionButton');
     expect(getElementPath(testDiv5)).toBe('body div[4]');
 
+    expect(getElementPath(testImg)).toBe('#videoContainer img');
     expect(getElementPath(testVideo)).toBe('#videoContainer video.hasFocus');
 });
