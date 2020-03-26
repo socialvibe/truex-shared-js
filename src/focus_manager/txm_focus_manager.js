@@ -315,24 +315,32 @@ export class TXMFocusManager {
     }
 
     /**
-     * Injects an input action or array of input actions via the {#onInputAction} method, separated by a delay.
+     * Injects an input action or array of input actions via the {#onInputAction} method, preceded by a delay.
      * This is to support the simulation of user inputs via test scripts.
      *
      * @param actions a single action name, or an array of action names
-     * @param delay the # of milliseconds to wait between injecting the next action.
+     * @param delay the # of milliseconds to wait before injecting an action.
+     *   If < 0, then no waiting is done.
      *
      * @return {Promise} a promise that completes when all of the inputs have been injected.
      */
-    async inject(actions, delay = 500) {
+    async inject(actions, delay = 0) {
         if (!actions) return;
         if (!Array.isArray(actions)) actions = [actions];
 
         let injectAction = action => {
-            this.onInputAction(action);
             return new Promise(resolve => {
-                    setTimeout(() => resolve(action), delay);
-                });
-          };
+                let injectNow = () => {
+                    this.onInputAction(action);
+                    resolve(action);
+                };
+                if (delay < 0) {
+                    injectNow();
+                } else {
+                    setTimeout(injectNow, delay);
+                }
+            });
+        };
 
         // An injection is the action input plus a delay.
         for(let doInjection of actions.map(action => () => injectAction(action))) {

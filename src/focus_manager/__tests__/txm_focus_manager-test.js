@@ -209,17 +209,19 @@ describe("TXMFocusManager", () => {
 
         return fm.inject(inputActions.select, 1000)
             .then(() => fm.inject([inputActions.moveRight, inputActions.moveLeft]))
-            .then(() => fm.inject(inputActions.back))
+            .then(() => fm.inject(inputActions.moveDown, -1))
+            .then(() => fm.inject(inputActions.back, 500))
             .then(() => {
-                // Inject a fake action to log the final delay.
-                fm.onInputAction('injection complete');
-                expect(injectedActions).toEqual([inputActions.select,
-                    inputActions.moveRight, inputActions.moveLeft, inputActions.back, 'injection complete']);
+                expect(injectedActions).toEqual([
+                    inputActions.select,
+                    inputActions.moveRight, inputActions.moveLeft,
+                    inputActions.moveDown,
+                    inputActions.back]);
 
-                verifyDelay(injectionDelays[0], 0);
-                verifyDelay(injectionDelays[1], 1000);
-                verifyDelay(injectionDelays[2], 500);
-                verifyDelay(injectionDelays[3], 500);
+                verifyDelay(injectionDelays[0], 1000);
+                verifyDelay(injectionDelays[1], 0);
+                verifyDelay(injectionDelays[2], 0);
+                verifyDelay(injectionDelays[3], 0);
                 verifyDelay(injectionDelays[4], 500);
             });
     });
