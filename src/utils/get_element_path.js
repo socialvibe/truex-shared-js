@@ -17,15 +17,12 @@ function getElementPath(element) {
 
     } else {
         let path = getTreePath();
-
         if (classList && classList.length > 0) {
-            // Use the class names to make more readable, but still use the context of the parent path.
+            // Use the class names to make the path more readable, but still use the context of the parent path.
             // While some class names can be used for global identification, many others only indicate visual effects,
             // e.g. like .hasFocus.
             const classNames = [...element.classList];
-            if (classNames.length > 0) {
-                path = path + '.' + classNames.join('.');
-            }
+            path = path + '.' + classNames.join('.');
         }
         return path;
     }
@@ -36,7 +33,6 @@ function getElementPath(element) {
 
     function getTreePath() {
         const path = element.localName || '';
-
         const parent = element.parentNode;
         if (parent) {
             const parentPath = getElementPath(parent);
