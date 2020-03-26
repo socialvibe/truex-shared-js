@@ -180,6 +180,62 @@ describe("TXMFocusManager", () => {
         expect(focus2.onInputAction).toHaveBeenCalledWith(inputActions.select, keyEvent);
     });
 
+    test("focus manager action injection", () => {
+        jest.setTimeout(10 * 1000);
+
+        const fm = new TXMFocusManager();
+
+        const injectedActions = [];
+        const injectionDelays = [];
+
+        var lastTime = Date.now();
+
+        // We just need to verify that actions are dispatched at reasonable times.
+        fm.onInputAction = action => {
+            injectedActions.push(action);
+            const now = new Date();
+            const delay = now - lastTime;
+            injectionDelays.push(delay);
+            lastTime = now;
+            const hhmmss = now.toISOString().split('T')[1].split('.')[0];
+            console.log(`${hhmmss}: injected ${action} after delay ${delay}`);
+        };
+
+        let verifyDelay = (actual, expected) => {
+            const tolerance = 40;
+            expect(actual).toBeGreaterThan(expected - tolerance);
+            expect(actual).toBeLessThan(expected + tolerance);
+        };
+
+        return fm.inject(inputActions.select, 1000)
+            .then(() => fm.inject([inputActions.moveRight, inputActions.moveLeft]))
+            .then(() => fm.inject(inputActions.moveDown, -1))
+            .then(() => fm.inject(inputActions.back, 500))
+            .then(() => {
+                expect(injectedActions).toEqual([
+                    inputActions.select,
+                    inputActions.moveRight, inputActions.moveLeft,
+                    inputActions.moveDown,
+                    inputActions.back]);
+
+                verifyDelay(injectionDelays[0], 1000);
+                verifyDelay(injectionDelays[1], 0);
+                verifyDelay(injectionDelays[2], 0);
+                verifyDelay(injectionDelays[3], 0);
+                verifyDelay(injectionDelays[4], 500);
+            });
+    });
+
+    test("focus manager getCurrentFocusPath", () => {
+        // We only need to verify the connection to getElementPath
+        const fm = new TXMFocusManager();
+
+        expect(fm.getCurrentFocusPath()).toBe(undefined);
+
+        fm.setFocus(focus1);
+        expect(fm.getCurrentFocusPath()).toBe('#focus1');
+    });
+
     test("focus manager onVideoAction callback", () => {
         const fm = new TXMFocusManager();
 

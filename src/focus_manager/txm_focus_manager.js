@@ -1,6 +1,7 @@
 import { inputActions }          from './txm_input_actions';
 import { keyCodes, TXMPlatform } from './txm_platform';
 import { Focusable }             from './txm_focusable';
+import { getElementPath }        from '../utils/get_element_path';
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
@@ -38,6 +39,16 @@ export class TXMFocusManager {
             this._focus = newFocus;
             if (newFocus.onFocusSet) newFocus.onFocusSet(true);
         }
+    }
+
+    /**
+     * Gives a textual description of the current focus, similar to the CSS selector.
+     * Useful for test scripts to verify expected focus changes.
+     */
+    getCurrentFocusPath() {
+        const focus = this.currentFocus;
+        if (!focus) return; // no focus, no path
+        return getElementPath(focus.element);
     }
 
     addKeyEventListener(toElement) {
@@ -300,6 +311,40 @@ export class TXMFocusManager {
 
         if (newFocus) {
             this.setFocus(newFocus);
+        }
+    }
+
+    /**
+     * Injects an input action or array of input actions via the {#onInputAction} method, preceded by a delay.
+     * This is to support the simulation of user inputs via test scripts.
+     *
+     * @param actions a single action name, or an array of action names
+     * @param delay the # of milliseconds to wait before injecting an action.
+     *   If < 0, then no waiting is done.
+     *
+     * @return {Promise} a promise that completes when all of the inputs have been injected.
+     */
+    async inject(actions, delay = 0) {
+        if (!actions) return;
+        if (!Array.isArray(actions)) actions = [actions];
+
+        let injectAction = action => {
+            return new Promise(resolve => {
+                let injectNow = () => {
+                    this.onInputAction(action);
+                    resolve(action);
+                };
+                if (delay < 0) {
+                    injectNow();
+                } else {
+                    setTimeout(injectNow, delay);
+                }
+            });
+        };
+
+        // An injection is the action input plus a delay.
+        for(let doInjection of actions.map(action => () => injectAction(action))) {
+            await doInjection();
         }
     }
 
