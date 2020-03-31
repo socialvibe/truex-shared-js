@@ -315,11 +315,12 @@ export class TXMFocusManager {
     }
 
     /**
-     * Injects an input action or array of input actions via the {#onInputAction} method, preceded by a delay.
+     * Processes a set of input actions and delay values, i.e. strings are passed to {#onInputAction}
+     * as an input action, numbers are passed to {#wait} for the specified delay.
+     *
      * This is to support the simulation of user inputs via test scripts.
      *
-     * @param actionsAndDelays set of items to process. If a string, it is passed to {#onInputAction} as an input action.
-     *   If a number, invokes {#wait} for the specified delay.
+     * @param actionsAndDelays set of items to process.
      *
      * @return {Promise} a promise that completes when all of the inputs have been injected, all waits completed.
      *   The current focus path is used as the promise result, via {#getCurrentFocusPath}.
