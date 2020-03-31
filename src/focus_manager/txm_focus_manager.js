@@ -315,38 +315,55 @@ export class TXMFocusManager {
     }
 
     /**
-     * Injects an input action or array of input actions via the {#onInputAction} method, preceded by a delay.
+     * Processes a set of input actions and delay values, i.e. strings are passed to {#onInputAction}
+     * as an input action, numbers are passed to {#wait} for the specified delay.
+     *
      * This is to support the simulation of user inputs via test scripts.
      *
-     * @param actions a single action name, or an array of action names
-     * @param delay the # of milliseconds to wait before injecting an action.
-     *   If < 0, then no waiting is done.
+     * @param actionsAndDelays set of items to process.
      *
-     * @return {Promise} a promise that completes when all of the inputs have been injected.
+     * @return {Promise} a promise that completes when all of the inputs have been injected, all waits completed.
+     *   The current focus path is used as the promise result, via {#getCurrentFocusPath}.
      */
-    async inject(actions, delay = 0) {
-        if (!actions) return;
-        if (!Array.isArray(actions)) actions = [actions];
+    async inject(...actionsAndDelays) {
+        if (actionsAndDelays.length > 0 && Array.isArray(actionsAndDelays[0])) {
+            // Allow passing in explicit arrays of items.
+            actionsAndDelays = actionsAndDelays[0];
+        }
 
-        let injectAction = action => {
-            return new Promise(resolve => {
-                let injectNow = () => {
-                    this.onInputAction(action);
-                    resolve(action);
-                };
-                if (delay < 0) {
-                    injectNow();
-                } else {
-                    setTimeout(injectNow, delay);
-                }
-            });
+        let injectItem = actionOrDelay => {
+            if (typeof actionOrDelay === 'number') {
+                // Return on the delay promise.
+                return this.wait(actionOrDelay);
+            } else if (typeof actionOrDelay === 'string' || actionOrDelay instanceof String) {
+                // Inject the input action, nothing explicit to return.
+                this.onInputAction(actionOrDelay);
+            }
         };
 
         // An injection is the action input plus a delay.
-        for(let doInjection of actions.map(action => () => injectAction(action))) {
-            await doInjection();
+        for(let doItem of actionsAndDelays.map(action => () => injectItem(action))) {
+            await doItem();
         }
+
+        return this.getCurrentFocusPath();
     }
+
+    /**
+     * Convenience promise-based delay helper for test scripts.
+     *
+     * @param {Number} # of milliseconds to delay, where < 0 Means no delay.
+     */
+    wait(delay) {
+        return new Promise(resolve => {
+            if (delay >= 0) {
+                setTimeout(() => { resolve() }, delay);
+            } else {
+                resolve();
+            }
+        });
+    }
+
 
     /**
      * Used by the true[X] framework to specify the focusable control buttons along the top of the current page.

@@ -184,6 +184,7 @@ describe("TXMFocusManager", () => {
         jest.setTimeout(10 * 1000);
 
         const fm = new TXMFocusManager();
+        fm.setFocus(focus1);
 
         const injectedActions = [];
         const injectionDelays = [];
@@ -207,14 +208,27 @@ describe("TXMFocusManager", () => {
             expect(actual).toBeLessThan(expected + tolerance);
         };
 
-        return fm.inject(inputActions.select, 1000)
-            .then(() => fm.inject([inputActions.moveRight, inputActions.moveLeft]))
-            .then(() => fm.inject(inputActions.moveDown, -1))
-            .then(() => fm.inject(inputActions.back, 500))
+        return fm.inject(1000, inputActions.select)
+            .then(focusPath => {
+                expect(focusPath).toBe('#focus1');
+
+                return fm.inject(0, inputActions.moveRight, 0, inputActions.moveLeft)
+            })
+            // verify we can also inject an explicit array
+            .then(() => fm.inject([inputActions.moveLeft, 500, inputActions.moveRight]))
+            .then(() => {
+                fm.setFocus(focus2);
+                return fm.inject(inputActions.moveDown)
+            })
+            .then(focusPath => {
+                expect(focusPath).toBe('#focus2');
+                return fm.inject(500, inputActions.back)
+            })
             .then(() => {
                 expect(injectedActions).toEqual([
                     inputActions.select,
                     inputActions.moveRight, inputActions.moveLeft,
+                    inputActions.moveLeft, inputActions.moveRight,
                     inputActions.moveDown,
                     inputActions.back]);
 
@@ -223,6 +237,8 @@ describe("TXMFocusManager", () => {
                 verifyDelay(injectionDelays[2], 0);
                 verifyDelay(injectionDelays[3], 0);
                 verifyDelay(injectionDelays[4], 500);
+                verifyDelay(injectionDelays[5], 0);
+                verifyDelay(injectionDelays[6], 500);
             });
     });
 
