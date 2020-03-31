@@ -331,9 +331,11 @@ export class TXMFocusManager {
         }
 
         let injectItem = actionOrDelay => {
-            if (typeof actionOrDelay == 'number') {
+            if (typeof actionOrDelay === 'number') {
+                // Return on the delay promise.
                 return this.wait(actionOrDelay);
-            } else if (typeof actionOrDelay == 'string' || actionOrDelay instanceof String) {
+            } else if (typeof actionOrDelay === 'string' || actionOrDelay instanceof String) {
+                // Inject the input action, nothing explicit to return.
                 this.onInputAction(actionOrDelay);
             }
         };
