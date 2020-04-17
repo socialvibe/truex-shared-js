@@ -22,6 +22,8 @@ export class TXMFocusManager {
         this.onBackAction = this.onBackAction.bind(this);
         this.isAtBackAction = this.isAtBackAction.bind(this);
         this.pushBackActionState = this.pushBackActionState.bind(this);
+
+        this.id = null;
     }
 
     get currentFocus() {
@@ -89,6 +91,8 @@ export class TXMFocusManager {
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
+        console.log('*** ' + this.id + ' blockBackActions: rootUrl: ' + rootUrl + ' mapBackAction: ' + mapHistoryBackToInputAction
+            + ' href: ' + window.location.href);
     }
 
     restoreBackActions() {
@@ -101,9 +105,11 @@ export class TXMFocusManager {
      */
     pushBackActionState() {
         if (this.isAtBackAction()) {
+            console.log('*** ' + this.id + ' pushBackActionState: ignored');
             return; // already in place
         }
         history.pushState({backAction: true, origin: window.location.href}, "backAction", this.backActionRoot);
+        console.log('*** ' + this.id + ' pushBackActionState: pushed');
     }
 
     isAtBackAction(item) {
@@ -114,8 +120,14 @@ export class TXMFocusManager {
     onBackAction(event) {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
         if (!isAtRoot) {
+            console.log('*** ' + this.id + ' onBackAction: allowed atRoot: ' + isAtRoot
+                + ' state: ' + JSON.stringify(event.state)
+                + ' href: ' + window.location.href);
             return true; // allow page change to proceed
         }
+        console.log('*** ' + this.id + ' onBackAction: blocked atRoot: ' + isAtRoot
+            + ' state: ' + JSON.stringify(event.state)
+            + ' href: ' + window.location.href);
 
         // Block the back action processing by the browser.
         event.preventDefault();
