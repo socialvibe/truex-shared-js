@@ -23,7 +23,7 @@ export class TXMFocusManager {
         this.isAtBackAction = this.isAtBackAction.bind(this);
         this.pushBackActionState = this.pushBackActionState.bind(this);
 
-        this.id = null;
+        this.debugId = null; // in case we need to debug focus manager processing
     }
 
     get currentFocus() {
@@ -91,8 +91,9 @@ export class TXMFocusManager {
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
-        console.log('*** ' + this.id + ' blockBackActions: rootUrl: ' + rootUrl + ' mapBackAction: ' + mapHistoryBackToInputAction
-            + ' href: ' + window.location.href);
+        if (this.debugId) {
+            console.log(`*** ${this.debugId} blockBackActions: ${rootUrl}: mapBackAction: ${mapHistoryBackToInputAction} href: ${window.location.href}`);
+        }
     }
 
     restoreBackActions() {
@@ -105,11 +106,15 @@ export class TXMFocusManager {
      */
     pushBackActionState() {
         if (this.isAtBackAction()) {
-            console.log('*** ' + this.id + ' pushBackActionState: ignored');
+            if (this.debugId) {
+                console.log(`*** ${this.debugId} pushBackActionState: ignored`);
+            }
             return; // already in place
         }
         history.pushState({backAction: true, origin: window.location.href}, "backAction", this.backActionRoot);
-        console.log('*** ' + this.id + ' pushBackActionState: pushed');
+        if (this.debugId) {
+            console.log(`*** ${this.debugId} pushBackActionState: allowed`);
+        }
     }
 
     isAtBackAction(item) {
@@ -120,14 +125,14 @@ export class TXMFocusManager {
     onBackAction(event) {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
         if (!isAtRoot) {
-            console.log('*** ' + this.id + ' onBackAction: allowed atRoot: ' + isAtRoot
-                + ' state: ' + JSON.stringify(event.state)
-                + ' href: ' + window.location.href);
+            if (this.debugId) {
+                console.log(`*** ${this.debugId} onBackAction: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+            }
             return true; // allow page change to proceed
         }
-        console.log('*** ' + this.id + ' onBackAction: blocked atRoot: ' + isAtRoot
-            + ' state: ' + JSON.stringify(event.state)
-            + ' href: ' + window.location.href);
+        if (this.debugId) {
+            console.log(`*** ${this.debugId} onBackAction: blocking state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+        }
 
         // Block the back action processing by the browser.
         event.preventDefault();
@@ -229,6 +234,10 @@ export class TXMFocusManager {
             return true;
         }
         if (!focus) return false;
+
+        if (this.debugId) {
+            console.log(`*** fm ${this.debugId}: onInputAction(${action})`);
+        }
 
         let capitalizedAction = action[0].toUpperCase() + action.slice(1);
         let actionMethodName = `on${capitalizedAction}Action`;
