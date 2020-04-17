@@ -23,7 +23,8 @@ export class TXMFocusManager {
         this.isAtBackAction = this.isAtBackAction.bind(this);
         this.pushBackActionState = this.pushBackActionState.bind(this);
 
-        this.debugId = null; // in case we need to debug focus manager processing
+        this.id = null;
+        this.debug = false; // in case we need to debug focus manager processing
     }
 
     get currentFocus() {
@@ -87,17 +88,22 @@ export class TXMFocusManager {
      *   and portable approach to managing back actions.
      */
     blockBackActions(rootUrl, mapHistoryBackToInputAction) {
+        if (this.debug) {
+            console.log(`*** ${this.id} focusManager.blockBackActions: ${rootUrl}: mapBackAction: ${mapHistoryBackToInputAction} href: ${window.location.href}`);
+        }
         this.backActionRoot = rootUrl;
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
-        if (this.debugId) {
-            console.log(`*** ${this.debugId} focusManager.blockBackActions: ${rootUrl}: mapBackAction: ${mapHistoryBackToInputAction} href: ${window.location.href}`);
-        }
     }
 
     restoreBackActions() {
         window.removeEventListener("popstate", this.onBackAction);
+
+        // Ensure any lingering back action blocks pushed by this manager are removed.
+        while (this.isAtBackAction()) {
+            history.back();
+        }
     }
 
     /**
@@ -106,32 +112,32 @@ export class TXMFocusManager {
      */
     pushBackActionState() {
         if (this.isAtBackAction()) {
-            if (this.debugId) {
-                console.log(`*** ${this.debugId} focusManager.pushBackActionState: ignored`);
+            if (this.debug) {
+                console.log(`*** ${this.id} focusManager.pushBackActionState: ignored`);
             }
             return; // already in place
         }
-        history.pushState({backAction: true, origin: window.location.href}, "backAction", this.backActionRoot);
-        if (this.debugId) {
-            console.log(`*** ${this.debugId} focusManager.pushBackActionState: pushed`);
+        history.pushState({backAction: true, origin: window.location.href, id: this.id}, "backAction", this.backActionRoot);
+        if (this.debug) {
+            console.log(`*** ${this.id} focusManager.pushBackActionState: pushed`);
         }
     }
 
     isAtBackAction(item) {
         if (!item) item = history;
-        return item.state && item.state.backAction;
+        return item.state && item.state.backAction && item.state.id === this.id;
     }
 
     onBackAction(event) {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
         if (!isAtRoot) {
-            if (this.debugId) {
-                console.log(`*** ${this.debugId} focusManager.onBackAction: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+            if (this.debug) {
+                console.log(`*** ${this.id} focusManager.onBackAction: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
             }
             return true; // allow page change to proceed
         }
-        if (this.debugId) {
-            console.log(`*** ${this.debugId} focusManager.onBackAction: blocking state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+        if (this.debug) {
+            console.log(`*** ${this.id} focusManager.onBackAction: blocking state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
         }
 
         // Block the back action processing by the browser.
@@ -142,8 +148,8 @@ export class TXMFocusManager {
         if (this.mapHistoryBackToInputAction) {
             try {
                 // Inject back input action explicitly to allow for app processing.
-                if (this.debugId) {
-                    console.log(`*** ${this.debugId} focusManager.onBackAction: injecting back action`);
+                if (this.debug) {
+                    console.log(`*** ${this.id} focusManager.onBackAction: injecting back action`);
                 }
                 this.onInputAction(inputActions.back);
             } catch (err) {
@@ -169,6 +175,9 @@ export class TXMFocusManager {
         } else if (inputAction) {
             // Map the key event to in input action, process it.
             try {
+                if (this.debug) {
+                    console.log(`*** ${this.id} focusManager.onKeyDown: action: ${inputAction} key: ${keyCode}`);
+                }
                 handled = this.onInputAction(inputAction, event);
             } catch (err) {
                 handled = true;
