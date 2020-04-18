@@ -2,6 +2,7 @@ import { inputActions }          from './txm_input_actions';
 import { keyCodes, TXMPlatform } from './txm_platform';
 import { Focusable }             from './txm_focusable';
 import { getElementPath }        from '../utils/get_element_path';
+import { uuid }                  from 'uuidv4';
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
@@ -25,7 +26,7 @@ export class TXMFocusManager {
         this.isAtBackAction = this.isAtBackAction.bind(this);
         this.pushBackActionState = this.pushBackActionState.bind(this);
 
-        this.id = null;
+        this.id = uuid(); // ensure a unique id for proper guards in back action blocking
         this.debug = false; // in case we need to debug focus manager processing
     }
 
@@ -104,10 +105,15 @@ export class TXMFocusManager {
         if (!this.isBlockingBackActions) return;
         this.isBlockingBackActions = false;
 
-        if (this.debug) {
-            console.log(`*** ${this.id} focusManager.restoreBackActions`);
-        }
+        if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions`);
+
         window.removeEventListener("popstate", this.onBackAction);
+
+        // Ensure no back action blocks are present from this focus manager.
+        for(var i = 0; i < 10; i++) {
+            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: history.back()`);
+            history.back();
+        }
     }
 
     /**
@@ -134,7 +140,7 @@ export class TXMFocusManager {
 
     onBackAction(event) {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
-        if (!isAtRoot) {
+        if (!isAtRoot || !this.isBlockingBackActions) {
             if (this.debug) {
                 console.log(`*** ${this.id} focusManager.onBackAction: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
             }
