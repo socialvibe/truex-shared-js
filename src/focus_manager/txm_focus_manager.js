@@ -98,10 +98,16 @@ export class TXMFocusManager {
     }
 
     restoreBackActions() {
+        if (this.debug) {
+            console.log(`*** ${this.id} focusManager.restoreBackActions: cleanup`);
+        }
         window.removeEventListener("popstate", this.onBackAction);
 
         // Ensure any lingering back action blocks pushed by this manager are removed.
         while (this.isAtBackAction()) {
+            if (this.debug) {
+                console.log(`*** ${this.id} focusManager.restoreBackActions: popping history item`);
+            }
             history.back();
         }
     }
