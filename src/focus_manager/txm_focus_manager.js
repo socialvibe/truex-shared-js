@@ -16,6 +16,8 @@ export class TXMFocusManager {
         this._contentFocusables = [];
         this._bottomChromeFocusables = [];
 
+        this.isBlockingBackActions = false;
+
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
@@ -93,11 +95,15 @@ export class TXMFocusManager {
         }
         this.backActionRoot = rootUrl;
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
+        this.isBlockingBackActions = true;
         this.pushBackActionState();
         window.addEventListener("popstate", this.onBackAction);
     }
 
     restoreBackActions() {
+        if (!this.isBlockingBackActions) return;
+        this.isBlockingBackActions = false;
+
         if (this.debug) {
             console.log(`*** ${this.id} focusManager.restoreBackActions: cleanup`);
         }
@@ -117,7 +123,7 @@ export class TXMFocusManager {
      * This is needed for platforms that do not expose the back action as a key event, i.e. FireTV.
      */
     pushBackActionState() {
-        if (this.isAtBackAction()) {
+        if (this.isAtBackAction() || !this.isBlockingBackActions) {
             if (this.debug) {
                 console.log(`*** ${this.id} focusManager.pushBackActionState: ignored`);
             }
