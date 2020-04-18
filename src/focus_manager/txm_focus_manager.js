@@ -111,6 +111,7 @@ export class TXMFocusManager {
 
         // Ensure no back action blocks are present from this focus manager.
         for(var i = 0; i < 10; i++) {
+            if (!this.isAtBackAction()) break;
             if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: history.back()`);
             history.back();
         }
