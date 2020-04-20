@@ -154,16 +154,19 @@ export class TXMFocusManager {
         //event.preventDefault();
 
         if (this.mapHistoryBackToInputAction) {
-            try {
-                // Inject back input action explicitly to allow for app processing.
-                if (this.debug) {
-                    console.log(`*** ${this.id} focusManager.onPopState: injecting back action`);
-                }
-                this.onInputAction(inputActions.back);
-            } catch (err) {
-                let errMsg = this.platform.describeErrorWithStack(err);
-                console.error(`TXMFocusManager: error with back action:\n${errMsg}`);
-            }
+                // Inject back input action explicitly to allow for app processing,
+                // but outside of the popstate event thread.
+                setTimeout(() => {
+                    try {
+                        if (this.debug) {
+                            console.log(`*** ${this.id} focusManager.onPopState: injecting back action`);
+                        }
+                        this.onInputAction(inputActions.back);
+                    } catch (err) {
+                        let errMsg = this.platform.describeErrorWithStack(err);
+                        console.error(`${this.id} focusManager.onPopState: error injecting back action:\n${errMsg}`);
+                    }
+                }, 0);
         }
 
         this.pushBackActionBlock(); // ensure the back action is blocked going forward.
