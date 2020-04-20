@@ -143,7 +143,7 @@ export class TXMFocusManager {
     onPopState(event) {
         // We only need to do anything if the user navigated back from the back action stub.
         const state = history.state;
-        const isAtBackActionBlock = state && state.focusManager === this.id && state.isAtBackActionBlock;
+        const isAtBackActionBlock = state && state.focusManager === this.id && state.backActionBlock;
         if (!isAtBackActionBlock) {
             if (this.debug) {
                 console.log(`*** ${this.id} focusManager.onPopState: ignored
