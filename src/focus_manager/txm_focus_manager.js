@@ -142,12 +142,20 @@ export class TXMFocusManager {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
         if (!isAtRoot || !this.isBlockingBackActions || !this.isAtBackActionBlock(event)) {
             if (this.debug) {
-                console.log(`*** ${this.id} focusManager.onPopState: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+                console.log(`*** ${this.id} focusManager.onPopState: allowed
+  event: ${JSON.stringify(event.state)}
+  history: ${JSON.stringify(history.state)}
+  href: ${window.location.href}
+  doc href: ${document.location.href}`);
             }
             return true; // allow page change to proceed
         }
         if (this.debug) {
-            console.log(`*** ${this.id} focusManager.onPopState: blocking state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+            console.log(`*** ${this.id} focusManager.onPopState: blocking
+  event: ${JSON.stringify(event.state)}
+  history: ${JSON.stringify(history.state)}
+  href: ${window.location.href}
+  doc href: ${document.location.href}`);
         }
 
         // Note: back action events can't have their processing stopped.
