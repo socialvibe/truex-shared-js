@@ -23,8 +23,6 @@ export class TXMFocusManager {
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
         this.onPopState = this.onPopState.bind(this);
-        this.isAtBackActionBlock = this.isAtBackActionBlock.bind(this);
-        this.pushBackActionBlock = this.pushBackActionBlock.bind(this);
 
         this.id = uuid(); // ensure a unique id for proper guards in back action blocking
         this.debug = false; // in case we need to debug focus manager processing
