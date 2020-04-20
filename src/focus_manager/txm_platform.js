@@ -83,6 +83,8 @@ export class TXMPlatform {
         // AndroidTV/FireTV does not however.
         this.supportsHttpImagesWithHttps = true;
 
+        this.allowsBackKeyOverride = true;
+
         this._inputKeyMap = {};
 
         let userAgent = userAgentOverride || window.navigator.userAgent;
@@ -453,6 +455,12 @@ export class TXMPlatform {
             self.modelId = modelId;
 
             actionKeyCodes[inputActions.menu] = 18;
+
+            // In contradiction to the Amazon FireTV Web FAQ, the back key event can actually be fielded by the app.
+            // https://developer.amazon.com/docs/fire-tv/web-app-faq.html
+            // see: https://forums.developer.amazon.com/questions/11752/particulars-of-html5-history-popstate-event-on-ama.html
+            // Also verified experimentally outselves.
+            self.allowsBackKeyOverride = true;
         }
 
         function configureForAndroidTV() {
