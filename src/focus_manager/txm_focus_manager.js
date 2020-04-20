@@ -106,12 +106,13 @@ export class TXMFocusManager {
         this.isBlockingBackActions = false;
 
         if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions`);
-
         window.removeEventListener("popstate", this.onPopState);
 
         // Ensure no back action blocks are present from this focus manager.
-        if (this.isAtBackActionBlock()) {
-            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: history.back()`);
+        for(var i = 0; i < 2; i++) {
+            const state = history.state;
+            if (state && state.focusManager !== this.id) break;
+            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop ${JSON.stringify(state)}`);
             history.back();
         }
     }
@@ -121,41 +122,43 @@ export class TXMFocusManager {
      * This is needed for platforms that do not expose the back action as a key event, i.e. FireTV.
      */
     pushBackActionBlock() {
-        if (this.isAtBackActionBlock() || !this.isBlockingBackActions) {
-            if (this.debug) {
-                console.log(`*** ${this.id} focusManager.pushBackActionBlock: ignored`);
-            }
-            return; // already in place or not applicable
-        }
-        history.pushState({backActionBlock: true, origin: window.location.href, focusManager: this.id}, "backActionBlock", this.backActionRoot);
+        const state = {backActionBlock: true, focusManager: this.id};
+        history.pushState(state, "", this.backActionRoot);
         if (this.debug) {
-            console.log(`*** ${this.id} focusManager.pushBackActionBlock: pushed`);
+            console.log(`*** ${this.id} focusManager.pushBackActionBlock: ${JSON.stringify(state)}`);
         }
+
+        // Push the back action stub that allows a back action to be consumed.
+        this.pushBackActionStub();
     }
 
-    isAtBackActionBlock(item) {
-        if (!item) item = history;
-        return item.state && item.state.backActionBlock && item.state.focusManager === this.id;
+    pushBackActionStub() {
+        if (!this.isBlockingBackActions) return; // blocking is no longer in effect
+
+        const state = {backActionStub: true, focusManager: this.id};
+        history.pushState(state, "", this.backActionRoot);
+        if (this.debug) {
+            console.log(`*** ${this.id} focusManager.pushBackActionStub: ${JSON.stringify(state)}`);
+        }
     }
 
     onPopState(event) {
-        const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
-        if (!isAtRoot || !this.isBlockingBackActions || !this.isAtBackActionBlock(event)) {
+        // We only need to do anything if the user navigated back from the back action stub.
+        const state = history.state;
+        const isAtBackActionBlock = state && state.focusManager === this.id && state.isAtBackActionBlock;
+        if (!isAtBackActionBlock) {
             if (this.debug) {
-                console.log(`*** ${this.id} focusManager.onPopState: allowed
+                console.log(`*** ${this.id} focusManager.onPopState: ignored
   event: ${JSON.stringify(event.state)}
-  history: ${JSON.stringify(history.state)}
-  href: ${window.location.href}
-  doc href: ${document.location.href}`);
+  href: ${window.location.href}`);
             }
-            return true; // allow page change to proceed
+            return;
         }
+
         if (this.debug) {
             console.log(`*** ${this.id} focusManager.onPopState: blocking
   event: ${JSON.stringify(event.state)}
-  history: ${JSON.stringify(history.state)}
-  href: ${window.location.href}
-  doc href: ${document.location.href}`);
+  href: ${window.location.href}`);
         }
 
         // Note: back action events can't have their processing stopped.
@@ -177,7 +180,7 @@ export class TXMFocusManager {
                 }, 0);
         }
 
-        this.pushBackActionBlock(); // ensure the back action is blocked going forward.
+        this.pushBackActionStub(); // ensure the back action is blocked going forward.
     }
 
     onKeyDown(event) {
@@ -199,7 +202,7 @@ export class TXMFocusManager {
             } catch (err) {
                 handled = true;
                 let errMsg = this.platform.describeErrorWithStack(err);
-                console.error(`TXMFocusManager: error handling action ${inputAction} for key code ${keyCode}:\n${errMsg}`);
+                console.error(`${this.id} focusManager.onKeyDown: error handling action ${inputAction} for key code ${keyCode}:\n${errMsg}`);
             }
         }
 
