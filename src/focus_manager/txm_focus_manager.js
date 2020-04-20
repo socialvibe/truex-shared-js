@@ -135,12 +135,13 @@ export class TXMFocusManager {
 
     isAtBackActionBlock(item) {
         if (!item) item = history;
-        return item.state && item.state.backActionBlock && item.state.focusManager === this.id;
+        return item.state && item.state.backActionBlock && item.state.focusManager === this.id
+            && this.isBlockingBackActions;
     }
 
     onPopState(event) {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
-        if (!isAtRoot || !this.isBlockingBackActions) {
+        if (!isAtRoot || !this.isAtBackActionBlock(event)) {
             if (this.debug) {
                 console.log(`*** ${this.id} focusManager.onPopState: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
             }
