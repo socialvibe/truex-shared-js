@@ -107,16 +107,18 @@ export class TXMFocusManager {
         if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions ${JSON.stringify(state)}`);
         window.removeEventListener("popstate", this.onPopState);
 
-        // Ensure no back action blocks are present from this focus manager.
-        if (state && state.focusManager == this.id && state.backActionStub) {
-            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop stub and block`);
-            history.go(-2); // remove stub and block
-        } else if (state && state.focusManager == this.id && state.backActionBlock) {
-            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop block only`);
-            history.back(); // remove block
-        } else {
-            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: no history cleanup needed`);
-        }
+        setTimeout(() => {
+            // Ensure no back action blocks are present from this focus manager.
+            if (state && state.focusManager == this.id && state.backActionStub) {
+                if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop stub and block`);
+                history.go(-2); // remove stub and block
+            } else if (state && state.focusManager == this.id && state.backActionBlock) {
+                if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop block only`);
+                history.back(); // remove block
+            } else {
+                if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: no history cleanup needed`);
+            }
+        }, 0);
     }
 
     /**
@@ -125,7 +127,7 @@ export class TXMFocusManager {
      */
     pushBackActionBlock() {
         const state = {backActionBlock: true, focusManager: this.id};
-        history.pushState(state, "", this.backActionRoot);
+        history.pushState(state, "", `#${this.id}/backActionBlock`);
         if (this.debug) {
             console.log(`*** ${this.id} focusManager.pushBackActionBlock: ${JSON.stringify(state)}`);
         }
@@ -138,7 +140,7 @@ export class TXMFocusManager {
         if (!this.isBlockingBackActions) return; // blocking is no longer in effect
 
         const state = {backActionStub: true, focusManager: this.id};
-        history.pushState(state, "", this.backActionRoot);
+        history.pushState(state, "", `#${this.id}/backActionStub`);
         if (this.debug) {
             console.log(`*** ${this.id} focusManager.pushBackActionStub: ${JSON.stringify(state)}`);
         }
