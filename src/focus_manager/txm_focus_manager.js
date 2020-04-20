@@ -188,6 +188,11 @@ export class TXMFocusManager {
             // Swallow TAB presses, they cause blue outlines to show on many browsers.
             handled = true;
 
+        } else if (inputAction == inputActions.back && this.platform.useHistoryBackActions) {
+            // Back action key events cannot be reliably overridden on the current platform.
+            // We use history.back/popstate processing instead.
+            return true; // let the browser continue its processing.
+
         } else if (inputAction) {
             // Map the key event to in input action, process it.
             try {

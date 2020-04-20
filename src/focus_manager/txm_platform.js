@@ -83,7 +83,11 @@ export class TXMPlatform {
         // AndroidTV/FireTV does not however.
         this.supportsHttpImagesWithHttps = true;
 
-        this.allowsBackKeyOverride = true;
+        // If true, use history.back() and popstate processing to process back actions,
+        // as fielding the back key events directly can cause problems.
+        // E.g. on FireTV the history back action still happens even if the 27 key code is fielded and propagation
+        // halted, thereby causing double back action processing.
+        this.useHistoryBackActions = false;
 
         this._inputKeyMap = {};
 
@@ -460,7 +464,10 @@ export class TXMPlatform {
             // https://developer.amazon.com/docs/fire-tv/web-app-faq.html
             // see: https://forums.developer.amazon.com/questions/11752/particulars-of-html5-history-popstate-event-on-ama.html
             // Also verified experimentally outselves.
-            self.allowsBackKeyOverride = true;
+            //
+            // However, fielding that keystroke is still not reliable as the history back and popstate event processing
+            // still occurs regardless.
+            self.useHistoryBackActions = true;
         }
 
         function configureForAndroidTV() {
