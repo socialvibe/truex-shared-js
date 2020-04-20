@@ -106,13 +106,15 @@ export class TXMFocusManager {
         if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions`);
         window.removeEventListener("popstate", this.onPopState);
 
-        // Ensure no back action blocks are present from this focus manager.
-        for(var i = 0; i < 2; i++) {
-            var state = history.state;
-            if (state && state.focusManager !== this.id) break;
-            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop ${JSON.stringify(state)}`);
-            history.back();
-        }
+        setTimeout(() => {
+            // Ensure no back action blocks are present from this focus manager.
+            for (var i = 0; i < 2; i++) {
+                var state = history.state;
+                if (state && state.focusManager !== this.id) break;
+                if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop ${JSON.stringify(state)}`);
+                history.back();
+            }
+        }, 0);
     }
 
     /**
