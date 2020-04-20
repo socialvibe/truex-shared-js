@@ -125,7 +125,7 @@ export class TXMFocusManager {
             if (this.debug) {
                 console.log(`*** ${this.id} focusManager.pushBackActionBlock: ignored`);
             }
-            return; // already in place
+            return; // already in place or not applicable
         }
         history.pushState({backActionBlock: true, origin: window.location.href, focusManager: this.id}, "backActionBlock", this.backActionRoot);
         if (this.debug) {
@@ -135,13 +135,12 @@ export class TXMFocusManager {
 
     isAtBackActionBlock(item) {
         if (!item) item = history;
-        return item.state && item.state.backActionBlock && item.state.focusManager === this.id
-            && this.isBlockingBackActions;
+        return item.state && item.state.backActionBlock && item.state.focusManager === this.id;
     }
 
     onPopState(event) {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
-        if (!isAtRoot || !this.isAtBackActionBlock(event)) {
+        if (!isAtRoot || !this.isBlockingBackActions || !this.isAtBackActionBlock(event)) {
             if (this.debug) {
                 console.log(`*** ${this.id} focusManager.onPopState: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
             }
