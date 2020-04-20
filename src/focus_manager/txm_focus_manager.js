@@ -22,9 +22,9 @@ export class TXMFocusManager {
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
-        this.onBackAction = this.onBackAction.bind(this);
-        this.isAtBackAction = this.isAtBackAction.bind(this);
-        this.pushBackActionState = this.pushBackActionState.bind(this);
+        this.onPopState = this.onPopState.bind(this);
+        this.isAtBackActionBlock = this.isAtBackActionBlock.bind(this);
+        this.pushBackActionBlock = this.pushBackActionBlock.bind(this);
 
         this.id = uuid(); // ensure a unique id for proper guards in back action blocking
         this.debug = false; // in case we need to debug focus manager processing
@@ -97,8 +97,8 @@ export class TXMFocusManager {
         this.backActionRoot = rootUrl;
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.isBlockingBackActions = true;
-        this.pushBackActionState();
-        window.addEventListener("popstate", this.onBackAction);
+        this.pushBackActionBlock();
+        window.addEventListener("popstate", this.onPopState);
     }
 
     restoreBackActions() {
@@ -107,11 +107,10 @@ export class TXMFocusManager {
 
         if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions`);
 
-        window.removeEventListener("popstate", this.onBackAction);
+        window.removeEventListener("popstate", this.onPopState);
 
         // Ensure no back action blocks are present from this focus manager.
-        for(var i = 0; i < 10; i++) {
-            if (!this.isAtBackAction()) break;
+        if (this.isAtBackActionBlock()) {
             if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: history.back()`);
             history.back();
         }
@@ -121,46 +120,44 @@ export class TXMFocusManager {
      * Intercept browser back actions, interpret them as our own back action.
      * This is needed for platforms that do not expose the back action as a key event, i.e. FireTV.
      */
-    pushBackActionState() {
-        if (this.isAtBackAction() || !this.isBlockingBackActions) {
+    pushBackActionBlock() {
+        if (this.isAtBackActionBlock() || !this.isBlockingBackActions) {
             if (this.debug) {
-                console.log(`*** ${this.id} focusManager.pushBackActionState: ignored`);
+                console.log(`*** ${this.id} focusManager.pushBackActionBlock: ignored`);
             }
             return; // already in place
         }
-        history.pushState({backAction: true, origin: window.location.href, id: this.id}, "backAction", this.backActionRoot);
+        history.pushState({backActionBlock: true, origin: window.location.href, focusManager: this.id}, "backActionBlock", this.backActionRoot);
         if (this.debug) {
-            console.log(`*** ${this.id} focusManager.pushBackActionState: pushed`);
+            console.log(`*** ${this.id} focusManager.pushBackActionBlock: pushed`);
         }
     }
 
-    isAtBackAction(item) {
+    isAtBackActionBlock(item) {
         if (!item) item = history;
-        return item.state && item.state.backAction && item.state.id === this.id;
+        return item.state && item.state.backActionBlock && item.state.focusManager === this.id;
     }
 
-    onBackAction(event) {
+    onPopState(event) {
         const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
         if (!isAtRoot || !this.isBlockingBackActions) {
             if (this.debug) {
-                console.log(`*** ${this.id} focusManager.onBackAction: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+                console.log(`*** ${this.id} focusManager.onPopState: allowed state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
             }
             return true; // allow page change to proceed
         }
         if (this.debug) {
-            console.log(`*** ${this.id} focusManager.onBackAction: blocking state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
+            console.log(`*** ${this.id} focusManager.onPopState: blocking state: ${JSON.stringify(event.state)} href: ${window.location.href}`);
         }
 
-        // Block the back action processing by the browser.
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
+        // Note: back action events can't have their processing stopped.
+        //event.preventDefault();
 
         if (this.mapHistoryBackToInputAction) {
             try {
                 // Inject back input action explicitly to allow for app processing.
                 if (this.debug) {
-                    console.log(`*** ${this.id} focusManager.onBackAction: injecting back action`);
+                    console.log(`*** ${this.id} focusManager.onPopState: injecting back action`);
                 }
                 this.onInputAction(inputActions.back);
             } catch (err) {
@@ -169,9 +166,7 @@ export class TXMFocusManager {
             }
         }
 
-        this.pushBackActionState(); // ensure it is blocked going forward.
-
-        return false; // stop browser processing.
+        this.pushBackActionBlock(); // ensure the back action is blocked going forward.
     }
 
     onKeyDown(event) {
