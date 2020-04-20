@@ -106,15 +106,13 @@ export class TXMFocusManager {
         if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions`);
         window.removeEventListener("popstate", this.onPopState);
 
-        setTimeout(() => {
-            // Ensure no back action blocks are present from this focus manager.
-            for (var i = 0; i < 2; i++) {
-                var state = history.state;
-                if (state && state.focusManager !== this.id) break;
-                if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop ${JSON.stringify(state)}`);
-                history.back();
-            }
-        }, 0);
+        // Ensure no back action blocks are present from this focus manager.
+        var state = history.state;
+        if (state && state.focusManager == this.id && state.backActionStub) {
+            history.go(-2); // remove stub and block
+        } else if (state && state.focusManager == this.id && state.backActionBlock) {
+            history.back(); // remove block
+        }
     }
 
     /**
@@ -145,21 +143,10 @@ export class TXMFocusManager {
     onPopState(event) {
         // We only need to do anything if the user navigated back from the back action stub.
         const state = history.state;
-        const isAtBackActionBlock = state && state.focusManager === this.id && state.backActionBlock;
-        if (!isAtBackActionBlock) {
-            if (this.debug) {
-                console.log(`*** ${this.id} focusManager.onPopState: ignored
-  event: ${JSON.stringify(event.state)}
-  href: ${window.location.href}`);
-            }
-            return;
-        }
+        const isAtBackActionBlock = state && state.focusManager == this.id && state.backActionBlock;
+        if (!isAtBackActionBlock) return;
 
-        if (this.debug) {
-            console.log(`*** ${this.id} focusManager.onPopState: blocking
-  event: ${JSON.stringify(event.state)}
-  href: ${window.location.href}`);
-        }
+        if (this.debug) console.log(`*** ${this.id} focusManager.onPopState: blocking`);
 
         // Note: back action events can't have their processing stopped.
         //event.preventDefault();
@@ -180,7 +167,7 @@ export class TXMFocusManager {
                 }, 0);
         }
 
-        this.pushBackActionStub(); // ensure the back action is blocked going forward.
+        this.pushBackActionStub(); // ensure the back action is blocked again
     }
 
     onKeyDown(event) {
