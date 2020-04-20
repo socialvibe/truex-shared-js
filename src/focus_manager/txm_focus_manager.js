@@ -109,8 +109,10 @@ export class TXMFocusManager {
         // Ensure no back action blocks are present from this focus manager.
         var state = history.state;
         if (state && state.focusManager == this.id && state.backActionStub) {
+            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop stub and block`);
             history.go(-2); // remove stub and block
         } else if (state && state.focusManager == this.id && state.backActionBlock) {
+            if (this.debug) console.log(`*** ${this.id} focusManager.restoreBackActions: pop block only`);
             history.back(); // remove block
         }
     }
@@ -144,7 +146,10 @@ export class TXMFocusManager {
         // We only need to do anything if the user navigated back from the back action stub.
         const state = history.state;
         const isAtBackActionBlock = state && state.focusManager == this.id && state.backActionBlock;
-        if (!isAtBackActionBlock) return;
+        if (!isAtBackActionBlock) {
+            if (this.debug) console.log(`*** ${this.id} focusManager.onPopState: ignored ${JSON.stringify(state)} href ${window.location.href}`);
+            return;
+        }
 
         if (this.debug) console.log(`*** ${this.id} focusManager.onPopState: blocking`);
 
