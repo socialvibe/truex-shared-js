@@ -127,7 +127,7 @@ export class TXMFocusManager {
      */
     pushBackActionBlock() {
         const state = {backActionBlock: true, focusManager: this.id};
-        history.pushState(state, "", `#${this.id}/backActionBlock`);
+        history.pushState(state, "", null);
         if (this.debug) {
             console.log(`*** ${this.id} focusManager.pushBackActionBlock: ${JSON.stringify(state)}`);
         }
@@ -140,7 +140,7 @@ export class TXMFocusManager {
         if (!this.isBlockingBackActions) return; // blocking is no longer in effect
 
         const state = {backActionStub: true, focusManager: this.id};
-        history.pushState(state, "", `#${this.id}/backActionStub`);
+        history.pushState(state, "", null);
         if (this.debug) {
             console.log(`*** ${this.id} focusManager.pushBackActionStub: ${JSON.stringify(state)}`);
         }
