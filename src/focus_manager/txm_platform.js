@@ -460,13 +460,14 @@ export class TXMPlatform {
 
             actionKeyCodes[inputActions.menu] = 18;
 
-            // In contradiction to the Amazon FireTV Web FAQ, the back key event can actually be fielded by the app.
-            // https://developer.amazon.com/docs/fire-tv/web-app-faq.html
-            // see: https://forums.developer.amazon.com/questions/11752/particulars-of-html5-history-popstate-event-on-ama.html
-            // Also verified experimentally outselves.
-            //
-            // However, fielding that keystroke is still not reliable as the history back and popstate event processing
-            // still occurs regardless.
+            /*
+            In contradiction to the Amazon FireTV Web FAQ, the back key event can actually be fielded by the app.
+            see: https://developer.amazon.com/docs/fire-tv/web-app-faq.html
+            see: https://forums.developer.amazon.com/questions/11752/particulars-of-html5-history-popstate-event-on-ama.html
+            Also verified experimentally ourselves.
+
+            However, fielding that keystroke is still not reliable as the history back and popstate event processing
+            still occurs regardless. */
             self.useHistoryBackActions = true;
         }
 
