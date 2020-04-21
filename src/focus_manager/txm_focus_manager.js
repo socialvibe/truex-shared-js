@@ -2,6 +2,7 @@ import { inputActions }          from './txm_input_actions';
 import { keyCodes, TXMPlatform } from './txm_platform';
 import { Focusable }             from './txm_focusable';
 import { getElementPath }        from '../utils/get_element_path';
+import { uuid }                  from 'uuidv4';
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
@@ -16,12 +17,15 @@ export class TXMFocusManager {
         this._contentFocusables = [];
         this._bottomChromeFocusables = [];
 
+        this.isBlockingBackActions = false;
+
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
-        this.onBackAction = this.onBackAction.bind(this);
-        this.isAtBackAction = this.isAtBackAction.bind(this);
-        this.pushBackActionState = this.pushBackActionState.bind(this);
+        this.onPopState = this.onPopState.bind(this);
+
+        this.id = uuid(); // ensure a unique id for proper guards in back action blocking
+        this.debug = false; // in case we need to debug focus manager processing
     }
 
     get currentFocus() {
@@ -87,54 +91,72 @@ export class TXMFocusManager {
     blockBackActions(rootUrl, mapHistoryBackToInputAction) {
         this.backActionRoot = rootUrl;
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
-        this.pushBackActionState();
-        window.addEventListener("popstate", this.onBackAction);
+        this.isBlockingBackActions = true;
+        this.pushBackActionBlock();
+        window.addEventListener("popstate", this.onPopState);
     }
 
     restoreBackActions() {
-        window.removeEventListener("popstate", this.onBackAction);
+        if (!this.isBlockingBackActions) return;
+        this.isBlockingBackActions = false;
+
+        var state = history.state;
+        window.removeEventListener("popstate", this.onPopState);
+
+        setTimeout(() => {
+            // Ensure no back action blocks are present from this focus manager.
+            if (state && state.focusManager == this.id && state.backActionStub) {
+                history.go(-2); // remove stub and block
+            } else if (state && state.focusManager == this.id && state.backActionBlock) {
+                history.back(); // remove block
+            }
+        }, 0);
     }
 
     /**
      * Intercept browser back actions, interpret them as our own back action.
      * This is needed for platforms that do not expose the back action as a key event, i.e. FireTV.
      */
-    pushBackActionState() {
-        if (this.isAtBackAction()) {
-            return; // already in place
-        }
-        history.pushState({backAction: true, origin: window.location.href}, "backAction", this.backActionRoot);
+    pushBackActionBlock() {
+        const state = {backActionBlock: true, focusManager: this.id};
+        history.pushState(state, "", null);
+
+        // Push the back action stub that allows a back action to be consumed.
+        this.pushBackActionStub();
     }
 
-    isAtBackAction(item) {
-        if (!item) item = history;
-        return item.state && item.state.backAction;
+    pushBackActionStub() {
+        if (!this.isBlockingBackActions) return; // blocking is no longer in effect
+
+        const state = {backActionStub: true, focusManager: this.id};
+        history.pushState(state, "", null);
     }
 
-    onBackAction(event) {
-        const isAtRoot = !this.backActionRoot || window.location.href == this.backActionRoot;
-        if (!isAtRoot) {
-            return true; // allow page change to proceed
+    onPopState(event) {
+        // We only need to do anything if the user navigated back from the back action stub.
+        const state = history.state;
+        const isAtBackActionBlock = state && state.focusManager == this.id && state.backActionBlock;
+        if (!isAtBackActionBlock) {
+            return;
         }
 
-        // Block the back action processing by the browser.
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
+        // Note: back action events can't have their processing stopped.
+        //event.preventDefault();
 
         if (this.mapHistoryBackToInputAction) {
-            try {
-                // Inject back input action explicitly to allow for app processing.
-                this.onInputAction(inputActions.back);
-            } catch (err) {
-                let errMsg = this.platform.describeErrorWithStack(err);
-                console.error(`TXMFocusManager: error with back action:\n${errMsg}`);
-            }
+                // Inject back input action explicitly to allow for app processing,
+                // but outside of the popstate event thread.
+                setTimeout(() => {
+                    try {
+                        this.onInputAction(inputActions.back);
+                    } catch (err) {
+                        let errMsg = this.platform.describeErrorWithStack(err);
+                        console.error(`${this.id} focusManager.onPopState: error injecting back action:\n${errMsg}`);
+                    }
+                }, 0);
         }
 
-        this.pushBackActionState(); // ensure it is blocked going forward.
-
-        return false; // stop browser processing.
+        this.pushBackActionStub(); // ensure the back action is blocked again
     }
 
     onKeyDown(event) {
@@ -146,14 +168,22 @@ export class TXMFocusManager {
             // Swallow TAB presses, they cause blue outlines to show on many browsers.
             handled = true;
 
+        } else if (inputAction == inputActions.back && this.platform.useHistoryBackActions) {
+            // Back action key events cannot be reliably overridden on the current platform.
+            // We use history.back/popstate processing instead.
+            return true; // let the browser continue its processing.
+
         } else if (inputAction) {
             // Map the key event to in input action, process it.
             try {
+                if (this.debug) {
+                    console.log(`*** ${this.id} focusManager.onKeyDown: action: ${inputAction} key: ${keyCode}`);
+                }
                 handled = this.onInputAction(inputAction, event);
             } catch (err) {
                 handled = true;
                 let errMsg = this.platform.describeErrorWithStack(err);
-                console.error(`TXMFocusManager: error handling action ${inputAction} for key code ${keyCode}:\n${errMsg}`);
+                console.error(`${this.id} focusManager.onKeyDown: error handling action ${inputAction} for key code ${keyCode}:\n${errMsg}`);
             }
         }
 
