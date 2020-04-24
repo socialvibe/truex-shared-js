@@ -2,6 +2,8 @@ import { inputActions }          from './txm_input_actions';
 import { keyCodes, TXMPlatform } from './txm_platform';
 import { Focusable }             from './txm_focusable';
 import { getElementPath }        from '../utils/get_element_path';
+
+import '../utils/uuid-polyfill';
 import { uuid }                  from 'uuidv4';
 
 /**
