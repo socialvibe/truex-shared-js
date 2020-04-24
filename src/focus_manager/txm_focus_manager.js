@@ -4,7 +4,7 @@ import { Focusable }             from './txm_focusable';
 import { getElementPath }        from '../utils/get_element_path';
 
 import '../utils/uuid-polyfill';
-import { uuid }                  from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
