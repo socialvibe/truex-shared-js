@@ -1,6 +1,6 @@
 {
   "name": "truex-shared",
-  "version": "1.0.56",
+  "version": "1.0.59",
   "description": "Common JS code shared across true[X] repos",
   "private": true,
   "files": ["src"],
@@ -19,8 +19,7 @@
     "jest": "^24.0.0"
   },
   "dependencies": {
-    "uuidv4": "^6.0.7",
-    "uuid": "^7.0.3"
+    "uuid": "^3.4.0"
   },
   "browserify": {"transform": ["babelify"]}
 }
