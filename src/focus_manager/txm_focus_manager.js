@@ -82,16 +82,11 @@ export class TXMFocusManager {
      * Note: some platforms like the FireTV do not allow the back action key event to be fielded at all,
      * forcing history management approaches via the window's "popstate" event.
      *
-     * @param rootUrl the url that marks the "top" of the context this focus manager is controlling.
-     *   Explicit or implicit history.back() actions will be blocked from returning further past this url.
-     *   If not provided, then all history back actions are blocked.
-     *
      * @param mapHistoryBackToInputAction if true, every explicit or implicit history.back() also injects
      *   an inputActions.back action into this focus manager's onInputAction method, allowing for a consistent
      *   and portable approach to managing back actions.
      */
-    blockBackActions(rootUrl, mapHistoryBackToInputAction) {
-        this.backActionRoot = rootUrl;
+    blockBackActions(mapHistoryBackToInputAction) {
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
         this.isBlockingBackActions = true;
         this.pushBackActionBlock();
@@ -107,9 +102,9 @@ export class TXMFocusManager {
 
         setTimeout(() => {
             // Ensure no back action blocks are present from this focus manager.
-            if (state && state.focusManager == this.id && state.backActionStub) {
+            if (state && state.forTruex && state.focusManager == this.id && state.backActionStub) {
                 history.go(-2); // remove stub and block
-            } else if (state && state.focusManager == this.id && state.backActionBlock) {
+            } else if (state && state.forTruex && state.focusManager == this.id && state.backActionBlock) {
                 history.back(); // remove block
             }
         }, 0);
@@ -120,8 +115,7 @@ export class TXMFocusManager {
      * This is needed for platforms that do not expose the back action as a key event, i.e. FireTV.
      */
     pushBackActionBlock() {
-        const state = {backActionBlock: true, focusManager: this.id};
-        history.pushState(state, "", null);
+        history.pushState({backActionBlock: true, forTruex: true, focusManager: this.id}, "", null);
 
         // Push the back action stub that allows a back action to be consumed.
         this.pushBackActionStub();
@@ -130,14 +124,13 @@ export class TXMFocusManager {
     pushBackActionStub() {
         if (!this.isBlockingBackActions) return; // blocking is no longer in effect
 
-        const state = {backActionStub: true, focusManager: this.id};
-        history.pushState(state, "", null);
+        history.pushState({backActionStub: true, forTruex: true, focusManager: this.id}, "", null);
     }
 
     onPopState(event) {
         // We only need to do anything if the user navigated back from the back action stub.
         const state = history.state;
-        const isAtBackActionBlock = state && state.focusManager == this.id && state.backActionBlock;
+        const isAtBackActionBlock = state && state.forTruex && state.focusManager == this.id && state.backActionBlock;
         if (!isAtBackActionBlock) {
             return;
         }
