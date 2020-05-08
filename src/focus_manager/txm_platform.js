@@ -344,7 +344,7 @@ export class TXMPlatform {
             self.name = "PS4";
             self.model = self.name;
 
-            let versionMatch = userAgent.match(/WebMAF\/([0-9]+\.?)+/);
+            let versionMatch = userAgent.match(/WebMAF\/(([0-9]+\.)+[0-9]+)/);
             if (!versionMatch) {
                 // Not found, fallback to older user agent pattern.
                 versionMatch = userAgent.match(/PlayStation 4 ([^\s)]+)\)/);
