@@ -165,7 +165,7 @@ describe("TXMPlatform", () => {
         });
 
         let platform = new TXMPlatform(
-            "Mozilla/5.0 (PlayStation 4 WebMAF) AppleWebKit/601.2 (KHTML, like Gecko) WebMAF/1.2.30.4-gd34FFEE something extra"
+            "Mozilla/5.0 (PlayStation 4 WebMAF) AppleWebKit/601.2 (KHTML, like Gecko) WebMAF/v1.2.30.4-gd34FFEE something extra"
         );
 
         test("recognize the PS4 platform, new version", () => {
@@ -177,7 +177,7 @@ describe("TXMPlatform", () => {
             expect(platform.isXboxOne).toBe(false);
             expect(platform.name).toBe("PS4");
             expect(platform.model).toBe("PS4");
-            expect(platform.version).toBe("1.2.30.4");
+            expect(platform.version).toBe("WebMAF/v1.2.30.4");
             expect(platform.isCTV).toBe(false);
             expect(platform.isConsole).toBe(true);
         });
