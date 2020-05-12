@@ -147,11 +147,10 @@ describe("TXMPlatform", () => {
     });
 
     describe("PS4 Tests", () => {
-        let platform = new TXMPlatform(
-            "Mozilla/5.0 (PlayStation 4 5.05) AppleWebKit/601.2 (KHTML, like Gecko)"
-        );
-
-        test("recognize the PS4 platform", () => {
+        test("recognize the PS4 platform, old version", () => {
+            let platform = new TXMPlatform(
+                "Mozilla/5.0 (PlayStation 4 5.05) AppleWebKit/601.2 (KHTML, like Gecko)"
+            );
             expect(platform.isUnknown).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
@@ -161,6 +160,24 @@ describe("TXMPlatform", () => {
             expect(platform.name).toBe("PS4");
             expect(platform.model).toBe("PS4");
             expect(platform.version).toBe("5.05");
+            expect(platform.isCTV).toBe(false);
+            expect(platform.isConsole).toBe(true);
+        });
+
+        let platform = new TXMPlatform(
+            "Mozilla/5.0 (PlayStation 4 WebMAF) AppleWebKit/601.2 (KHTML, like Gecko) WebMAF/v1.2.30.4-gd34FFEE something extra"
+        );
+
+        test("recognize the PS4 platform, new version", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(true);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.name).toBe("PS4");
+            expect(platform.model).toBe("PS4");
+            expect(platform.version).toBe("WebMAF/v1.2.30.4");
             expect(platform.isCTV).toBe(false);
             expect(platform.isConsole).toBe(true);
         });

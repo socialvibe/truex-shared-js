@@ -78,6 +78,9 @@ export class TXMPlatform {
 
         this.supportsGyro = false; // on all platforms except perhaps for the Switch?
 
+        // Indicates if the platform player can start playback directly at a specified time position.
+        // If false then one needs to start playback first before seeking works.
+        this.supportsInitialVideoSeek = true;
 
         // Most platforms allow http: image GETs when running under https:, even the latest Chrome.
         // AndroidTV/FireTV does not however.
@@ -340,10 +343,17 @@ export class TXMPlatform {
             self.isPS4 = true;
             self.name = "PS4";
             self.model = self.name;
-            let versionMatch = userAgent.match(/PlayStation 4 ([^\s)]+)\)/);
+
+            let versionMatch = userAgent.match(/(WebMAF\/v([0-9]+\.)+[0-9]+)/);
+            if (!versionMatch) {
+                // Not found, fallback to older user agent pattern.
+                versionMatch = userAgent.match(/PlayStation 4 ([^\s)]+)\)/);
+            }
             if (versionMatch) self.version = versionMatch[1];
 
             self.useWindowScroll = false;
+
+            self.supportsInitialVideoSeek = false;
 
             addDefaultKeyMap();
             actionKeyCodes[inputActions.buttonSquare] = 32;
