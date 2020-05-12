@@ -78,7 +78,7 @@ export class TXMPlatform {
 
         this.supportsGyro = false; // on all platforms except perhaps for the Switch?
 
-        // Indicates if the platform player start playback directly at a specified time position.
+        // Indicates if the platform player can start playback directly at a specified time position.
         // If false then one needs to start playback first before seeking works.
         this.supportsInitialVideoSeek = true;
 
