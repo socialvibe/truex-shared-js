@@ -486,8 +486,8 @@ export class TXMPlatform {
             self.isAndroidTV = true;
             self.name = "AndroidTV";
 
-            actionKeyCodes[appActions.back] = 4;
-            actionKeyCodes[appActions.menu] = 82;
+            actionKeyCodes[inputActions.back] = 4;
+            actionKeyCodes[inputActions.menu] = 82;
         }
 
         function configureForAndroidBase() {
