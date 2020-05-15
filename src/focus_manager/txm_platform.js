@@ -468,6 +468,11 @@ export class TXMPlatform {
             self.model = model;
             self.modelId = modelId;
 
+            const versionMatch = userAgent.match(/-fireos\/([^\s)]+)/);
+            if (versionMatch) {
+                self.version = versionMatch[1];
+            }
+
             actionKeyCodes[inputActions.menu] = 18;
 
             /*
@@ -485,9 +490,10 @@ export class TXMPlatform {
             configureForAndroidBase();
             self.isAndroidTV = true;
             self.name = "AndroidTV";
+            self.model = self.name;
 
-            actionKeyCodes[appActions.back] = 4;
-            actionKeyCodes[appActions.menu] = 82;
+            actionKeyCodes[inputActions.back] = 4;
+            actionKeyCodes[inputActions.menu] = 82;
         }
 
         function configureForAndroidBase() {
@@ -504,11 +510,16 @@ export class TXMPlatform {
                 self.model = details[1];
                 self.version = details[2];
             } else {
-                var detailSubstring = userAgent.substring(userAgent.indexOf("(") + 1, userAgent.indexOf(")"));
-                var detailSplit = detailSubstring.split(";");
-                self.model = detailSplit[2].split(" ").find(part => {return part});
-                const versionParts = detailSplit[1].split(" ");
-                self.version = versionParts[versionParts.length - 1];
+                var groupStart = userAgent.indexOf("(");
+                if (groupStart >= 0) {
+                    var groupEnd = userAgent.indexOf(")", groupStart);
+                    if (groupEnd < 0) groupEnd = userAgent.length;
+                    var detailSubstring = userAgent.substring(groupStart+1, groupEnd);
+                    var detailSplit = detailSubstring.split(";");
+                    self.model = detailSplit[1].trim();
+                    const versionParts = detailSplit[1].split(" ");
+                    self.version = versionParts[versionParts.length - 1];
+                }
             }
 
             addDefaultKeyMap();
