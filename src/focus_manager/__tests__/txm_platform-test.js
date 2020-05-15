@@ -8,6 +8,8 @@ describe("TXMPlatform", () => {
 
         test("recognize the Unknown platform", () => {
             expect(platform.isUnknown).toBe(true);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
@@ -32,6 +34,67 @@ describe("TXMPlatform", () => {
         });
     });
 
+    describe("FireTV Tests", () => {
+        let platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 5.1.1) AFTT Build/LVY48F; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0");
+
+        test("recognize the FireTV platform", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(true);
+            expect(platform.isAndroidTV).toBe(false);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.name).toBe("FireTV");
+            expect(platform.model).toBe("Fire TV Stick (Gen 2)");
+            expect(platform.modelId).toBe("AFTT");
+            expect(platform.version).toBe("3.4.0");
+            expect(platform.isCTV).toBe(true);
+            expect(platform.isConsole).toBe(false);
+        });
+
+        test("FireTV key mapping", () => {
+            let keyCodes = platform.keyCodes;
+            expect(platform.getInputAction(18)).toBe(inputActions.menu);
+            expect(platform.getInputAction(keyCodes.downArrow)).toBe(inputActions.moveDown);
+            expect(platform.getInputAction(keyCodes.leftArrow)).toBe(inputActions.moveLeft);
+            expect(platform.getInputAction(keyCodes.rightArrow)).toBe(inputActions.moveRight);
+            expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
+            expect(platform.getInputAction(keyCodes.esc)).toBe(inputActions.back);
+        });
+    });
+
+    describe("Android TV Tests", () => {
+        let platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 5.1.1) Build/LVY48F; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0");
+
+        test("recognize the AndroidTV platform", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(true);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.name).toBe("AndroidTV");
+            expect(platform.model).toBe(platform.name);
+            expect(platform.version).toBe("5.1.1");
+            expect(platform.isCTV).toBe(true);
+            expect(platform.isConsole).toBe(false);
+        });
+
+        test("AndroidTV key mapping", () => {
+            let keyCodes = platform.keyCodes;
+            expect(platform.getInputAction(82)).toBe(inputActions.menu);
+            expect(platform.getInputAction(keyCodes.downArrow)).toBe(inputActions.moveDown);
+            expect(platform.getInputAction(keyCodes.leftArrow)).toBe(inputActions.moveLeft);
+            expect(platform.getInputAction(keyCodes.rightArrow)).toBe(inputActions.moveRight);
+            expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
+            expect(platform.getInputAction(4)).toBe(inputActions.back);
+        });
+    });
+
     describe("Vizio Tests", () => {
         let platform = new TXMPlatform(
             "Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36 CrKey/1.0.999999 VIZIO SmartCast(Conjure/SX7A-2.0.9.0 FW/9.0.5.2 Model/E50x-E1)"
@@ -39,6 +102,8 @@ describe("TXMPlatform", () => {
 
         test("recognize the Vizio platform", () => {
             expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(true);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
@@ -84,6 +149,8 @@ describe("TXMPlatform", () => {
 
         test("recognize the LG platform", () => {
             expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(true);
             expect(platform.isTizen).toBe(false);
@@ -119,6 +186,8 @@ describe("TXMPlatform", () => {
 
         test("recognize the Tizen platform", () => {
             expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(true);
@@ -152,6 +221,8 @@ describe("TXMPlatform", () => {
                 "Mozilla/5.0 (PlayStation 4 5.05) AppleWebKit/601.2 (KHTML, like Gecko)"
             );
             expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
@@ -170,6 +241,8 @@ describe("TXMPlatform", () => {
 
         test("recognize the PS4 platform, new version", () => {
             expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
@@ -204,6 +277,8 @@ describe("TXMPlatform", () => {
             let platform = new TXMPlatform(xboxUserAgent);
 
             expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
@@ -237,6 +312,8 @@ describe("TXMPlatform", () => {
             delete window.Windows;
 
             expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
