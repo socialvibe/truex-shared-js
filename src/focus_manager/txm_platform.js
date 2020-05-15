@@ -468,11 +468,6 @@ export class TXMPlatform {
             self.model = model;
             self.modelId = modelId;
 
-            const versionMatch = userAgent.match(/-fireos\/([^\s)]+)/);
-            if (versionMatch) {
-                self.version = versionMatch[1];
-            }
-
             actionKeyCodes[inputActions.menu] = 18;
         }
 
