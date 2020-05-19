@@ -49,7 +49,7 @@ describe("TXMPlatform", () => {
             expect(platform.name).toBe("FireTV");
             expect(platform.model).toBe("Fire TV Stick (Gen 2)");
             expect(platform.modelId).toBe("AFTT");
-            expect(platform.version).toBe("3.4.0");
+            expect(platform.version).toBe("5.1.1");
             expect(platform.isCTV).toBe(true);
             expect(platform.isConsole).toBe(false);
         });

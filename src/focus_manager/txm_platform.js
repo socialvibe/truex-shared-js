@@ -468,22 +468,7 @@ export class TXMPlatform {
             self.model = model;
             self.modelId = modelId;
 
-            const versionMatch = userAgent.match(/-fireos\/([^\s)]+)/);
-            if (versionMatch) {
-                self.version = versionMatch[1];
-            }
-
             actionKeyCodes[inputActions.menu] = 18;
-
-            /*
-            In contradiction to the Amazon FireTV Web FAQ, the back key event can actually be fielded by the app.
-            see: https://developer.amazon.com/docs/fire-tv/web-app-faq.html
-            see: https://forums.developer.amazon.com/questions/11752/particulars-of-html5-history-popstate-event-on-ama.html
-            Also verified experimentally ourselves.
-
-            However, fielding that keystroke is still not reliable as the history back and popstate event processing
-            still occurs regardless. */
-            self.useHistoryBackActions = true;
         }
 
         function configureForAndroidTV() {
@@ -502,6 +487,17 @@ export class TXMPlatform {
             // Both AndroidTV and FireTV do not allow http: image GETs when
             // running under https:
             self.supportsHttpImagesWithHttps = false;
+
+            // Both Android TV and Fire TV use history back actions instead of the explicit back key event.
+            //
+            // In contradiction to the Amazon FireTV Web FAQ, the back key event can actually be fielded by the app.
+            // see: https://developer.amazon.com/docs/fire-tv/web-app-faq.html
+            // see: https://forums.developer.amazon.com/questions/11752/particulars-of-html5-history-popstate-event-on-ama.html
+            // Also verified experimentally ourselves.
+            //
+            // However, fielding that keystroke is still not reliable as the history back and popstate event processing
+            // still occurs regardless.
+            self.useHistoryBackActions = true;
 
             const androidApp = window.androidApp || window.fireTVApp;
             if (androidApp) {
