@@ -548,4 +548,60 @@ export class TXMFocusManager {
             return [array];
         }
     }
+
+    /**
+     * Returns the 2D navigation array from the elements visual positions. E.g. move left/right among
+     * elements along the same vertical band, move up/down for elements above and below.
+     */
+    derive2DNavigationArray(focusables) {
+        if (!focusables || focusables.length <= 0) return [];
+
+        const focusablesAndBounds = focusables.map(f => {
+            const e = f.element;
+            const bounds = e && e.getBoundingClientRect() || {left: 0, right: 0, top: 0, bottom: 0};
+            return {focusable: f, bounds};
+        });
+
+        // Sort first by x-position.
+        focusablesAndBounds.sort((item1, item2) => {
+            return item1.bounds.left - item2.bounds.left;
+        });
+
+        const resultBounds = deriveFromBounds(focusablesAndBounds);
+
+        // Now give the 2D array of just focusables.
+        return resultBounds.map(row => row.map(item => item.focusable));
+
+        function deriveFromBounds(bounds) {
+            const boundsAbove = [];
+            const boundsBelow = [];
+            const boundsInRow = [];
+
+            let lastItem;
+            bounds.forEach(item => {
+                if (lastItem && item.bottom <= lastItem.top) {
+                    boundsAbove.push(item);
+                } else if (lastItem && item.top <= lastItem.bottom) {
+                    boundsBelow.push(item);
+                } else {
+                    lastItem = item;
+                    boundsInRow.push(item);
+                }
+            });
+
+            const resultsAbove = deriveFromBounds(boundsAbove);
+            let results = resultsAbove.length > 0 ? resultsAbove : [];
+
+            if (boundsInRow.length > 0) {
+                results.push(boundsInRow);
+            }
+
+            const resultsBelow = deriveFromBounds(boundsBelow);
+            if (resultsBelow.length > 0) {
+                results = results.concat(resultsBelow);
+            }
+
+            return results;
+        }
+    }
 }
