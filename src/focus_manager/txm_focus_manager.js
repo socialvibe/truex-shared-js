@@ -573,6 +573,8 @@ export class TXMFocusManager {
         return resultBounds.map(row => row.map(item => item.focusable));
 
         function deriveFromBounds(bounds) {
+            if (!bounds || bounds.length <= 0) return [];
+
             const boundsAbove = [];
             const boundsBelow = [];
             const boundsInRow = [];
