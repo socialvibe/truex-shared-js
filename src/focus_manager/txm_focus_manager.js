@@ -567,38 +567,39 @@ export class TXMFocusManager {
             return item1.bounds.left - item2.bounds.left;
         });
 
-        const resultBounds = deriveFromBounds(focusablesAndBounds);
+        const result = deriveRows(focusablesAndBounds);
 
-        // Now give the 2D array of just focusables.
-        return resultBounds.map(row => row.map(item => item.focusable));
+        // Now give the 2D array of just the focusables.
+        return result.map(row => row.map(item => item.focusable));
 
-        function deriveFromBounds(bounds) {
-            if (!bounds || bounds.length <= 0) return [];
+        function deriveRows(items) {
+            if (!items || items.length <= 0) return [];
 
-            const boundsAbove = [];
-            const boundsBelow = [];
-            const boundsInRow = [];
+            const itemsAbove = [];
+            const itemsBelow = [];
+            const itemsInRow = [];
 
-            let lastItem;
-            bounds.forEach(item => {
-                if (lastItem && item.bottom <= lastItem.top) {
-                    boundsAbove.push(item);
-                } else if (lastItem && item.top <= lastItem.bottom) {
-                    boundsBelow.push(item);
+            let lastBounds;
+            items.forEach(item => {
+                const bounds = item.bounds;
+                if (lastBounds && bounds.bottom <= lastBounds.top) {
+                    itemsAbove.push(item);
+                } else if (lastBounds && bounds.top >= lastBounds.bottom) {
+                    itemsBelow.push(item);
                 } else {
-                    lastItem = item;
-                    boundsInRow.push(item);
+                    lastBounds = bounds;
+                    itemsInRow.push(item);
                 }
             });
 
-            const resultsAbove = deriveFromBounds(boundsAbove);
-            let results = resultsAbove.length > 0 ? resultsAbove : [];
+            const resultsAbove = deriveRows(itemsAbove);
 
-            if (boundsInRow.length > 0) {
-                results.push(boundsInRow);
+            let results = resultsAbove;
+            if (itemsInRow.length > 0) {
+                results.push(itemsInRow);
             }
 
-            const resultsBelow = deriveFromBounds(boundsBelow);
+            const resultsBelow = deriveRows(itemsBelow);
             if (resultsBelow.length > 0) {
                 results = results.concat(resultsBelow);
             }
