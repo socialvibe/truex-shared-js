@@ -552,5 +552,39 @@ describe("TXMFocusManager", () => {
                 expect(fm.currentFocus).toBe(focuses[1]);
             });
         });
+
+        describe("derived 2D focus navigation", () => {
+            const fm = new TXMFocusManager();
+
+            function newStub({id, top, left, bottom, right}) {
+                const element = {id, top, left, bottom, right, width: right - left, height: bottom - top};
+                element.getBoundingClientRect = () => element;
+                element.classList = {
+                    add: () => {},
+                    remove: () => {}
+                };
+                return new Focusable(element);
+            }
+
+            const f_0_0 = newStub({id: "f_0_0", top: 10, left: 10, bottom: 50, right: 50});
+            const f_0_1 = newStub({id: "f_0_1", top: 20, left: 60, bottom: 60, right: 100}); // overlaps, still in same row
+            const f_1_0 = newStub({id: "f_1_0", top: 80, left: 20, bottom: 120, right: 60});
+            const f_1_1 = newStub({id: "f_1_1", top: 80, left: 80, bottom: 120, right: 120});
+            const f_1_2 = newStub({id: "f_1_2", top: 70, left: 140, bottom: 110, right: 180});  // overlaps, still in same row
+            const f_2_0 = newStub({id: "f_2_0", top: 400, left: 200, bottom: 440, right: 240});
+
+            const focusablesInOrder = fm.derive2DNavigationArray([f_2_0, f_0_0, f_1_2, f_1_1, f_0_1, f_1_0]);
+            expect(focusablesInOrder.length).toBe(3);
+            expect(focusablesInOrder[0]).toEqual([f_0_0, f_0_1]);
+            expect(focusablesInOrder[1]).toEqual([f_1_0, f_1_1, f_1_2]);
+            expect(focusablesInOrder[2]).toEqual([f_2_0]);
+
+            fm.setContentFocusables(focusablesInOrder);
+            expect(fm.currentFocus).toBe(focusablesInOrder[0][0]);
+            fm.onInputAction(inputActions.moveDown);
+            expect(fm.currentFocus).toBe(focusablesInOrder[1][0]);
+            fm.onInputAction(inputActions.moveDown);
+            expect(fm.currentFocus).toBe(focusablesInOrder[2][0]);
+        });
     });
 });

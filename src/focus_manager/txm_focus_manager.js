@@ -548,4 +548,63 @@ export class TXMFocusManager {
             return [array];
         }
     }
+
+    /**
+     * Returns the 2D navigation array from the elements visual positions. E.g. move left/right among
+     * elements along the same vertical band, move up/down for elements above and below.
+     */
+    derive2DNavigationArray(focusables) {
+        if (!focusables || focusables.length <= 0) return [];
+
+        const focusablesAndBounds = focusables.map(f => {
+            const e = f.element;
+            const bounds = e && e.getBoundingClientRect() || {left: 0, right: 0, top: 0, bottom: 0};
+            return {focusable: f, bounds};
+        });
+
+        // Sort first by x-position.
+        focusablesAndBounds.sort((item1, item2) => {
+            return item1.bounds.left - item2.bounds.left;
+        });
+
+        const result = deriveRows(focusablesAndBounds);
+
+        // Now give the 2D array of just the focusables.
+        return result.map(row => row.map(item => item.focusable));
+
+        function deriveRows(items) {
+            if (!items || items.length <= 0) return [];
+
+            const itemsAbove = [];
+            const itemsBelow = [];
+            const itemsInRow = [];
+
+            let lastBounds;
+            items.forEach(item => {
+                const bounds = item.bounds;
+                if (lastBounds && bounds.bottom <= lastBounds.top) {
+                    itemsAbove.push(item);
+                } else if (lastBounds && bounds.top >= lastBounds.bottom) {
+                    itemsBelow.push(item);
+                } else {
+                    lastBounds = bounds;
+                    itemsInRow.push(item);
+                }
+            });
+
+            const resultsAbove = deriveRows(itemsAbove);
+
+            let results = resultsAbove;
+            if (itemsInRow.length > 0) {
+                results.push(itemsInRow);
+            }
+
+            const resultsBelow = deriveRows(itemsBelow);
+            if (resultsBelow.length > 0) {
+                results = results.concat(resultsBelow);
+            }
+
+            return results;
+        }
+    }
 }
