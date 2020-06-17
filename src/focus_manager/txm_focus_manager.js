@@ -45,13 +45,15 @@ export class TXMFocusManager {
         if (oldFocus === newFocus) return;
         if (oldFocus) {
             this._focus = undefined;
-            this._saveLastFocus(undefined, oldFocus);
             if (oldFocus.onFocusSet) oldFocus.onFocusSet(false);
         }
         if (newFocus) {
             this._focus = newFocus;
             this._saveLastFocus(newFocus, newFocus);
             if (newFocus.onFocusSet) newFocus.onFocusSet(true);
+        } else {
+            // We are clearing the focus completely.
+            this._saveLastFocus(undefined, oldFocus);
         }
     }
 
@@ -423,6 +425,7 @@ export class TXMFocusManager {
      * @param focusables array of focusable components, typically extending the {Focusable} class
      */
     setTopChromeFocusables(focusables) {
+        this._lastTopFocus = undefined;
         this._topChromeFocusables = this.ensure2DArray(focusables);
     }
 
@@ -431,6 +434,7 @@ export class TXMFocusManager {
      * @param focusables array of focusable components, typically extending the {Focusable} class
      */
     setBottomChromeFocusables(focusables) {
+        this._lastBottomFocus = undefined;
         this._bottomChromeFocusables = this.ensure2DArray(focusables);
     }
 
@@ -449,6 +453,7 @@ export class TXMFocusManager {
         const isInBottomChrome = this.findFocusPosition(current, this._bottomChromeFocusables);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
+        this._lastContentFocus = undefined;
         this._contentFocusables = this.ensure2DArray(focusables);
 
         if (resetFocus) {

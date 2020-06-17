@@ -505,6 +505,10 @@ describe("TXMFocusManager", () => {
             });
 
             test("moving down from top chrome goes to first content focus", () => {
+                // establish last saved top focus for later
+                fm.navigateToNewFocus(inputActions.moveLeft);
+                expect(fm.currentFocus).toBe(topChrome[2]);
+
                 fm.navigateToNewFocus(inputActions.moveDown);
                 expect(fm.currentFocus).toBe(focuses[1]);
             });
@@ -535,21 +539,29 @@ describe("TXMFocusManager", () => {
                 expect(fm.currentFocus).toBe(bottomChrome[2]);
             });
 
-            test("moving up from bottom chrome moves to last content focus", () => {
+            test("moving up from bottom chrome moves to last saved content focus", () => {
                 fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
+                fm.setFocus(focuses[2]);
+                fm.setFocus(bottomChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[3]);
-            });
+                expect(fm.currentFocus).toBe(focuses[2]);
 
-            test("moving up from chrome moves to last top chrome focus", () => {
-                fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(topChrome[3]);
-            });
-
-            test("moving back down from top chrome moves to first content focus again", () => {
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                expect(fm.currentFocus).toBe(bottomChrome[2]);
+
+                fm.navigateToNewFocus(inputActions.moveUp);
+                expect(fm.currentFocus).toBe(focuses[2]);
+            });
+
+            test("moving up from chrome moves to last saved top chrome focus", () => {
+                fm.navigateToNewFocus(inputActions.moveUp);
+                expect(fm.currentFocus).toBe(topChrome[2]);
+            });
+
+            test("moving back down from top chrome moves to last saved content focus again", () => {
+                fm.navigateToNewFocus(inputActions.moveDown);
+                expect(fm.currentFocus).toBe(focuses[2]);
             });
         });
 
