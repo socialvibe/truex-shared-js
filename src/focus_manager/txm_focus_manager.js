@@ -14,10 +14,16 @@ export class TXMFocusManager {
 
     constructor(platformOverride) {
         this.platform = platformOverride || new TXMPlatform();
+
         this._focus = undefined;
+
         this._topChromeFocusables = [];
         this._contentFocusables = [];
         this._bottomChromeFocusables = [];
+
+        this._lastTopFocus = undefined;
+        this._lastContentFocus = undefined;
+        this._lastBottomFocus = undefined;
 
         this.isBlockingBackActions = false;
 
@@ -39,11 +45,23 @@ export class TXMFocusManager {
         if (oldFocus === newFocus) return;
         if (oldFocus) {
             this._focus = undefined;
+            this._saveLastFocus(undefined, oldFocus);
             if (oldFocus.onFocusSet) oldFocus.onFocusSet(false);
         }
         if (newFocus) {
             this._focus = newFocus;
+            this._saveLastFocus(newFocus, newFocus);
             if (newFocus.onFocusSet) newFocus.onFocusSet(true);
+        }
+    }
+
+    _saveLastFocus(focusValue, forFocus) {
+        if (this.findFocusPosition(forFocus, this._topChromeFocusables)) {
+            this._lastTopFocus = focusValue;
+        } else if (this.findFocusPosition(forFocus, this._contentFocusables)) {
+            this._lastContentFocus = focusValue;
+        } else if (this.findFocusPosition(forFocus, this._bottomChromeFocusables)) {
+            this._lastBottomFocus = focusValue;
         }
     }
 
@@ -305,8 +323,10 @@ export class TXMFocusManager {
             // Focus is in the top chrome.
             newFocus = this.getNewFocus(pos, action, this._topChromeFocusables);
             if (!newFocus && action == inputActions.moveDown) {
-                newFocus = this.getFirstFocusIn(this._contentFocusables);
-                if (!newFocus) newFocus = this.getFirstFocusIn(this._bottomChromeFocusables);
+                newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
+                if (!newFocus) {
+                    newFocus = this._lastBottomFocus || this.getFirstFocusIn(this._bottomChromeFocusables);
+                }
             }
 
         } else if (pos = this.findFocusPosition(focus, this._contentFocusables)) {
@@ -314,9 +334,9 @@ export class TXMFocusManager {
             newFocus = this.getNewFocus(pos, action, this._contentFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
-                    newFocus = this.getLastFocusIn(this._topChromeFocusables);
+                    newFocus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
                 } else if (action == inputActions.moveDown) {
-                    newFocus = this.getFirstFocusIn(this._bottomChromeFocusables);
+                    newFocus = this._lastBottomFocus || this.getFirstFocusIn(this._bottomChromeFocusables);
                 }
             }
 
@@ -325,8 +345,10 @@ export class TXMFocusManager {
             newFocus = this.getNewFocus(pos, action, this._bottomChromeFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
-                    newFocus = this.getLastFocusIn(this._contentFocusables);
-                    if (!newFocus) newFocus = this.getLastFocusIn(this._topChromeFocusables)
+                    newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
+                    if (!newFocus) {
+                        newFocus = this._lastTopFocus || this.getLastFocusIn(this._topChromeFocusables)
+                    }
                 }
             }
         } else {
