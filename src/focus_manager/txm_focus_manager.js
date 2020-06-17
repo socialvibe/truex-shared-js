@@ -92,6 +92,12 @@ export class TXMFocusManager {
     cleanup() {
         this.removeKeyEventListener();
         this.restoreBackActions();
+
+        // Release memory references
+        this._lastTopFocus = this._lastContentFocus = this._lastBottomFocus = undefined;
+        this._topChromeFocusables = [];
+        this._contentFocusables = [];
+        this._bottomChromeFocusables = [];
     }
 
     /**
