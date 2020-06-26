@@ -1,4 +1,5 @@
 import { inputActions } from './txm_input_actions';
+import { ScriptLoader } from "../utils/loaders";
 
 /**
  * Standard ASCII key codes
@@ -569,6 +570,51 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.prevTrack] = keyCodes.W;
             actionKeyCodes[inputActions.nextTrack] = keyCodes.O;
         }
+    }
+
+    /**
+     * Returns a promise that resolves to the user's advertising id for the platform. Resolves to
+     * undefined if the advertising id is either not available or else the user has opted out of
+     * being tracked for advertising on their device.
+     *
+     * @return {Promise<String>}
+     */
+    async getUserAdvertisingId() {
+        if (this.isFireTV) {
+            return this.getFireTVAdvertisingId();
+        }
+
+        return undefined; // fallback
+    }
+
+    async getFireTVAdvertisingId() {
+        let AmazonAdvertising = window.AmazonAdvertising;
+        if (!AmazonAdvertising) {
+            const apiLoader = new ScriptLoader("http://resources.amazonwebapps.com/v1/latest/Amazon-Web-App-API.min.js");
+            await apiLoader.promise;
+            AmazonAdvertising = window.AmazonAdvertising;
+            if (!AmazonAdvertising) {
+                throw new Error("AmazonAdvertising API not available");
+            }
+        }
+        const adIdPromise = new Promise((resolve, reject) => {
+            AmazonAdvertising.getAdvertisingId(resolve, errMsg => {
+                console.error(`getAdvertisingId: ${errMsg}`);
+                resolve(undefined);
+            })
+        });
+        const adTrackingPromise = new Promise((resolve, reject) => {
+            AmazonAdvertising.getLimitAdTrackingPreference(resolve, errMsg => {
+                console.error(`getLimitAdTrackingPreference: ${errMsg}`);
+                resolve(false);
+            })
+        });
+        return Promise.all([adIdPromise, adTrackingPromise])
+        .then(results => {
+            const adId = results[0];
+            const trackingPreference = results[1];
+            return adId && trackingPreference ? adId : undefined;
+        });
     }
 }
 
