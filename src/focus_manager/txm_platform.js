@@ -592,7 +592,14 @@ export class TXMPlatform {
         if (!AmazonAdvertising) {
             const apiLoader = new ScriptLoader("http://resources.amazonwebapps.com/v1/latest/Amazon-Web-App-API.min.js");
             await apiLoader.promise;
-            AmazonAdvertising = window.AmazonAdvertising;
+            AmazonAdvertising = await new Promise(resolve => {
+                document.addEventListener('amazonPlatformReady', onApiReady);
+
+                function onApiReady() {
+                    document.removeEventListener('amazonPlatformReady', onApiReady);
+                    resolve(window.AmazonAdvertising);
+                }
+            });
             if (!AmazonAdvertising) {
                 throw new Error("AmazonAdvertising API not available");
             }
