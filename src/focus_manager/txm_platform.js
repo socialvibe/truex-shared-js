@@ -634,8 +634,8 @@ export class TXMPlatform {
         return Promise.all([adIdPromise, adTrackingPromise])
         .then(results => {
             const adId = results[0];
-            const trackingPreference = results[1];
-            return adId && trackingPreference ? adId : undefined;
+            const limitTracking = results[1];
+            return adId && !limitTracking ? adId : undefined;
         });
     }
 }
