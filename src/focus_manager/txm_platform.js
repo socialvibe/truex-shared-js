@@ -604,7 +604,8 @@ export class TXMPlatform {
     async getFireTVAdvertisingId() {
         let AmazonAdvertising = window.AmazonAdvertising;
         if (!AmazonAdvertising) {
-            const apiLoader = new ScriptLoader("http://resources.amazonwebapps.com/v1/latest/Amazon-Web-App-API.min.js");
+            const apiLoader = new ScriptLoader("https://resources.amazonwebapps.com/v1/latest/Amazon-Web-App-API.min.js");
+            apiLoader.load();
             await apiLoader.promise;
             AmazonAdvertising = await new Promise(resolve => {
                 document.addEventListener('amazonPlatformReady', onApiReady);
