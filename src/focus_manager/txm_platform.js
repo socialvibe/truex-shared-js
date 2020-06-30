@@ -98,6 +98,8 @@ export class TXMPlatform {
         let userAgent = userAgentOverride || window.navigator.userAgent;
         this.userAgent = userAgent;
 
+        this.supportsUserAdvertisingId = false;
+
         this._configure(userAgent);
     }
 
@@ -470,6 +472,14 @@ export class TXMPlatform {
             self.modelId = modelId;
 
             actionKeyCodes[inputActions.menu] = 18;
+
+            const webPlatformMatch = userAgent.match(/AmazonWebAppPlatform\/([0-9]+)/);
+            if (webPlatformMatch) {
+                // Advertising id query is only supported for web apps using the cordova framework, or else
+                // run with the Amazon Web App Tester.
+                const platformVersion = parseInt(webPlatformMatch[1]) || 0;
+                self.supportsUserAdvertisingId = platformVersion >= 3;
+            }
         }
 
         function configureForAndroidTV() {
@@ -580,6 +590,10 @@ export class TXMPlatform {
      * @return {Promise<String>}
      */
     async getUserAdvertisingId() {
+        if (!this.supportsUserAdvertisingId) {
+            return undefined;
+        }
+
         if (this.isFireTV) {
             return this.getFireTVAdvertisingId();
         }
