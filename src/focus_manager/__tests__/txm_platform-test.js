@@ -32,6 +32,13 @@ describe("TXMPlatform", () => {
             expect(platform.getInputAction(keyCodes.D)).toBe(inputActions.playPause);
             expect(platform.getInputAction(keyCodes.Q)).toBe(inputActions.leftShoulder1);
         });
+
+        test("default ad id support", () => {
+            expect(platform.supportsUserAdvertisingId).toBe(false);
+            return platform.getUserAdvertisingId().then(adId => {
+                expect(adId).toBe(undefined);
+            });
+        })
     });
 
     describe("FireTV Tests", () => {
@@ -62,6 +69,11 @@ describe("TXMPlatform", () => {
             expect(platform.getInputAction(keyCodes.rightArrow)).toBe(inputActions.moveRight);
             expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
             expect(platform.getInputAction(keyCodes.esc)).toBe(inputActions.back);
+        });
+
+        test("ad id is supported", () => {
+            // We can't actually query the ad id from Jest, but we can ensure that it is assumed to be supported.
+            expect(platform.supportsUserAdvertisingId).toBe(true);
         });
     });
 

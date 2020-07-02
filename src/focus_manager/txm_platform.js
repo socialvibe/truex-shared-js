@@ -1,4 +1,5 @@
 import { inputActions } from './txm_input_actions';
+import { ScriptLoader } from "../utils/loaders";
 
 /**
  * Standard ASCII key codes
@@ -96,6 +97,8 @@ export class TXMPlatform {
 
         let userAgent = userAgentOverride || window.navigator.userAgent;
         this.userAgent = userAgent;
+
+        this.supportsUserAdvertisingId = false;
 
         this._configure(userAgent);
     }
@@ -469,6 +472,14 @@ export class TXMPlatform {
             self.modelId = modelId;
 
             actionKeyCodes[inputActions.menu] = 18;
+
+            const webPlatformMatch = userAgent.match(/AmazonWebAppPlatform\/([0-9]+)/);
+            if (webPlatformMatch) {
+                // Advertising id query is only supported for web apps using the cordova framework, or else
+                // run with the Amazon Web App Tester.
+                const platformVersion = parseInt(webPlatformMatch[1]) || 0;
+                self.supportsUserAdvertisingId = platformVersion >= 3;
+            }
         }
 
         function configureForAndroidTV() {
@@ -569,6 +580,63 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.prevTrack] = keyCodes.W;
             actionKeyCodes[inputActions.nextTrack] = keyCodes.O;
         }
+    }
+
+    /**
+     * Returns a promise that resolves to the user's advertising id for the platform. Resolves to
+     * undefined if the advertising id is either not available or else the user has opted out of
+     * being tracked for advertising on their device.
+     *
+     * @return {Promise<String>}
+     */
+    async getUserAdvertisingId() {
+        if (!this.supportsUserAdvertisingId) {
+            return undefined;
+        }
+
+        if (this.isFireTV) {
+            return this.getFireTVAdvertisingId();
+        }
+
+        return undefined; // fallback
+    }
+
+    async getFireTVAdvertisingId() {
+        let AmazonAdvertising = window.AmazonAdvertising;
+        if (!AmazonAdvertising) {
+            const apiLoader = new ScriptLoader("https://resources.amazonwebapps.com/v1/latest/Amazon-Web-App-API.min.js");
+            apiLoader.load();
+            await apiLoader.promise;
+            AmazonAdvertising = await new Promise(resolve => {
+                document.addEventListener('amazonPlatformReady', onApiReady);
+
+                function onApiReady() {
+                    document.removeEventListener('amazonPlatformReady', onApiReady);
+                    resolve(window.AmazonAdvertising);
+                }
+            });
+            if (!AmazonAdvertising) {
+                throw new Error("AmazonAdvertising API not available");
+            }
+        }
+        const adIdPromise = new Promise((resolve, reject) => {
+            AmazonAdvertising.getAdvertisingId(resolve, errMsg => {
+                console.error(`getAdvertisingId: ${errMsg}`);
+                resolve(undefined);
+            })
+        });
+        const adTrackingPromise = new Promise((resolve, reject) => {
+            AmazonAdvertising.getLimitAdTrackingPreference(resolve, errMsg => {
+                console.error(`getLimitAdTrackingPreference: ${errMsg}`);
+                resolve(false);
+            })
+        });
+        return Promise.all([adIdPromise, adTrackingPromise])
+        .then(results => {
+            const adId = results[0];
+            const limitTracking = results[1];
+            return adId && !limitTracking ? adId : undefined;
+        });
     }
 }
 
