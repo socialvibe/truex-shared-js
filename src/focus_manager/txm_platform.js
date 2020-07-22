@@ -449,6 +449,8 @@ export class TXMPlatform {
             const modelMatch = userAgent.match(/\bAFT[A-Z0-9]+\b/);
             const modelId = modelMatch && modelMatch[0];
 
+            // Derived from https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
+            // NOTE: watch out for duplicates!
             const knownModels = {
                 AFTA: "Fire TV Cube (Gen 1)",
                 AFTB: "Fire TV (Gen 1)",
