@@ -446,32 +446,29 @@ export class TXMPlatform {
             self.name = "FireTV";
 
             // From: https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
-            const modelMatch = userAgent.match(/\bAFT[A-Z]+\b/);
+            const modelMatch = userAgent.match(/\bAFT[A-Z0-9]+\b/);
             const modelId = modelMatch && modelMatch[0];
 
             const knownModels = {
-                AFTDCT31: "Fire TV Edition - Toshiba 4K UHD (2020)",
-                AFTDCT31: "Fire TV Edition - Insignia 4K UHD (2020)",
-                AFTLE: "Fire TV Edition - Onida HD (2019)",
-                AFTR: "Fire TV Cube (Gen 2)",
-                AFTEUFF014: "Fire TV Edition - Grundig OLED 4K (2019)",
-                AFTEU014: "Fire TV Edition - Grundig Vision 7 4K (2019)",
-                AFTSO001: "Fire TV Edition - JVC 4K (2019)",
-                AFTMM: "Fire TV Edition - Nebula Soundbar (2019)",
-                AFTEU011: "Fire TV Edition - Grundig Vision 6 HD (2019)",
-                AFTKMST12: "Fire TV Edition - Toshiba 4K (2018/2019)",
-                AFTJMST12: "Fire TV Edition - Insignia 4K (2018)",
-                AFTBAMR311: "Fire TV Edition - Toshiba HD (2018-2020)",
-                AFTEAMR311: "Fire TV Edition - Insignia HD (2018-2020)",
                 AFTA: "Fire TV Cube (Gen 1)",
-                AFTN: "Fire TV (Gen 3)",
+                AFTB: "Fire TV (Gen 1)",
+                AFTBAMR311: "Fire TV Edition - Toshiba HD (2018-2020)",
+                AFTDCT31: "Fire TV Edition - 4K UHD (2020)",
+                AFTEAMR311: "Fire TV Edition - Insignia HD (2018-2020)",
+                AFTEU011: "Fire TV Edition - Grundig Vision 6 HD (2019)",
+                AFTEU014: "Fire TV Edition - Grundig Vision 7 4K (2019)",
+                AFTEUFF014: "Fire TV Edition - Grundig OLED 4K (2019)",
+                AFTJMST12: "Fire TV Edition - Insignia 4K (2018)",
+                AFTKMST12: "Fire TV Edition - Toshiba 4K (2018/2019)",
+                AFTLE: "Fire TV Edition - Onida HD (2019)",
+                AFTM: "Fire TV Stick (Gen 1)",
                 AFTMM: "Fire TV Stick 4K",
+                AFTN: "Fire TV (Gen 3)",
+                AFTR: "Fire TV Cube (Gen 2)",
                 AFTRS: "Fire TV Edition - Element 4K (2017)",
                 AFTS: "Fire TV (Gen 2)",
-                AFTT: "Fire TV Stick (Gen 2)",
-                AFTM: "Fire TV Stick (Gen 1)",
-                AFTT: "Fire TV Stick (Basic Edition)",
-                AFTB: "Fire TV (Gen 1)"
+                AFTSO001: "Fire TV Edition - JVC 4K (2019)",
+                AFTT: "Fire TV Stick (Gen 2)"
             };
             self.model = knownModels[modelId] || "Fire TV";
             self.modelId = modelId;
