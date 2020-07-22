@@ -75,6 +75,15 @@ describe("TXMPlatform", () => {
             // We can't actually query the ad id from Jest, but we can ensure that it is assumed to be supported.
             expect(platform.supportsUserAdvertisingId).toBe(true);
         });
+
+        test("test firetv edition modle", () => {
+            const platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 7.1.2; AFTJMST12 Build/NS6271; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0");
+            expect(platform.isFireTV).toBe(true);
+            expect(platform.name).toBe("FireTV");
+            expect(platform.model).toBe("Fire TV Edition - Insignia 4K (2018)");
+            expect(platform.modelId).toBe("AFTJMST12");
+            expect(platform.version).toBe("7.1.2");
+        });
     });
 
     describe("Android TV Tests", () => {
