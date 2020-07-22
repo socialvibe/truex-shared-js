@@ -448,27 +448,32 @@ export class TXMPlatform {
             // From: https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
             const modelMatch = userAgent.match(/\bAFT[A-Z]+\b/);
             const modelId = modelMatch && modelMatch[0];
-            var model = "Fire TV";
-            if (modelId == "AFTN") {
-                model = "Fire TV (Gen 3)";
-            } else if (modelId == "AFTS") {
-                model = "Fire TV (Gen 2)";
-            } else if (modelId == "AFTB") {
-                model = "Fire TV (Gen 1)";
-            } else if (modelId == "AFTT") {
-                model = "Fire TV Stick (Gen 2)";
-            } else if (modelId == "AFTM") {
-                model = "Fire TV Stick (Gen 1)";
-            } else if (modelId == "AFTMM") {
-                model = "Fire TV Stick 4K";
-            } else if (modelId == "AFTRS") {
-                model = "Fire TV Edition";
-            } else if (modelId == "AFTA") {
-                model = "Fire TV Cube (Gen 1)";
-            } else if (modelId == "AFTR") {
-                model = "Fire TV Cube (Gen 2)";
-            }
-            self.model = model;
+
+            const knownModels = {
+                AFTDCT31: "Fire TV Edition - Toshiba 4K UHD (2020)",
+                AFTDCT31: "Fire TV Edition - Insignia 4K UHD (2020)",
+                AFTLE: "Fire TV Edition - Onida HD (2019)",
+                AFTR: "Fire TV Cube (Gen 2)",
+                AFTEUFF014: "Fire TV Edition - Grundig OLED 4K (2019)",
+                AFTEU014: "Fire TV Edition - Grundig Vision 7 4K (2019)",
+                AFTSO001: "Fire TV Edition - JVC 4K (2019)",
+                AFTMM: "Fire TV Edition - Nebula Soundbar (2019)",
+                AFTEU011: "Fire TV Edition - Grundig Vision 6 HD (2019)",
+                AFTKMST12: "Fire TV Edition - Toshiba 4K (2018/2019)",
+                AFTJMST12: "Fire TV Edition - Insignia 4K (2018)",
+                AFTBAMR311: "Fire TV Edition - Toshiba HD (2018-2020)",
+                AFTEAMR311: "Fire TV Edition - Insignia HD (2018-2020)",
+                AFTA: "Fire TV Cube (Gen 1)",
+                AFTN: "Fire TV (Gen 3)",
+                AFTMM: "Fire TV Stick 4K",
+                AFTRS: "Fire TV Edition - Element 4K (2017)",
+                AFTS: "Fire TV (Gen 2)",
+                AFTT: "Fire TV Stick (Gen 2)",
+                AFTM: "Fire TV Stick (Gen 1)",
+                AFTT: "Fire TV Stick (Basic Edition)",
+                AFTB: "Fire TV (Gen 1)"
+            };
+            self.model = knownModels[modelId] || "Fire TV";
             self.modelId = modelId;
 
             actionKeyCodes[inputActions.menu] = 18;
