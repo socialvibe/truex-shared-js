@@ -554,12 +554,29 @@ describe("TXMFocusManager", () => {
                 expect(fm.currentFocus).toBe(focuses[2]);
             });
 
+            test("moving up from bottom chrome moves to default content focus", () => {
+                // Start initially in the bottom chrome, simulate a replace step that resets the content.
+                fm.setFocus(bottomChrome[2]);
+                fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[3]);
+
+                fm.navigateToNewFocus(inputActions.moveUp);
+                expect(fm.currentFocus).toBe(focuses[3]);
+
+                fm.navigateToNewFocus(inputActions.moveDown);
+                expect(fm.currentFocus).toBe(bottomChrome[2]);
+
+                fm.navigateToNewFocus(inputActions.moveUp);
+                expect(fm.currentFocus).toBe(focuses[3]);
+            });
+
             test("moving up from chrome moves to last saved top chrome focus", () => {
                 fm.navigateToNewFocus(inputActions.moveUp);
                 expect(fm.currentFocus).toBe(topChrome[2]);
             });
 
             test("moving back down from top chrome moves to last saved content focus again", () => {
+                fm.setFocus(topChrome[1]);
+                fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[2]);
                 fm.navigateToNewFocus(inputActions.moveDown);
                 expect(fm.currentFocus).toBe(focuses[2]);
             });
