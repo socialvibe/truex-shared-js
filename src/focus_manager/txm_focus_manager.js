@@ -443,21 +443,24 @@ export class TXMFocusManager {
      * It is the developer's responsibility to call this during their page loading initialization.
      *
      * @param focusables array of focusable components, typically extending the {Focusable} class
-     * @param initialFocus specifies which focusable should be the initial current focus.
+     * @param defaultFocus specifies which focusable should be the initial current focus.
      *   If not specified, the first focusable is used.
      */
-    setContentFocusables(focusables, initialFocus) {
+    setContentFocusables(focusables, defaultFocus) {
         // Reset the current focus unless it is in the top or bottom chrome.
         const current = this.currentFocus;
         const isInTopChrome = this.findFocusPosition(current, this._topChromeFocusables);
         const isInBottomChrome = this.findFocusPosition(current, this._bottomChromeFocusables);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
-        this._lastContentFocus = undefined;
         this._contentFocusables = this.ensure2DArray(focusables);
 
+        // Mark the default content focus, but only if it is actually a valid content focusable.
+        this._lastContentFocus = this.findFocusPosition(defaultFocus, this._contentFocusables)
+            ? defaultFocus : undefined;
+
         if (resetFocus) {
-            this.setFocus(initialFocus || this.getFirstFocus());
+            this.setFocus(defaultFocus || this.getFirstFocus());
         }
     }
 
