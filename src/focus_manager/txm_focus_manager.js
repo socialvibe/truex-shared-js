@@ -58,11 +58,11 @@ export class TXMFocusManager {
     }
 
     _saveLastFocus(focusValue, forFocus) {
-        if (this.findFocusPosition(forFocus, this._topChromeFocusables)) {
+        if (this.isInTopChrome(forFocus)) {
             this._lastTopFocus = focusValue;
-        } else if (this.findFocusPosition(forFocus, this._contentFocusables)) {
+        } else if (this.isInContent(forFocus)) {
             this._lastContentFocus = focusValue;
-        } else if (this.findFocusPosition(forFocus, this._bottomChromeFocusables)) {
+        } else if (this.isInBottomChrome(forFocus)) {
             this._lastBottomFocus = focusValue;
         }
     }
@@ -449,15 +449,14 @@ export class TXMFocusManager {
     setContentFocusables(focusables, defaultFocus) {
         // Reset the current focus unless it is in the top or bottom chrome.
         const current = this.currentFocus;
-        const isInTopChrome = this.findFocusPosition(current, this._topChromeFocusables);
-        const isInBottomChrome = this.findFocusPosition(current, this._bottomChromeFocusables);
+        const isInTopChrome = this.isInTopChrome(current);
+        const isInBottomChrome = this.isInBottomChrome(current);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
         this._contentFocusables = this.ensure2DArray(focusables);
 
         // Mark the default content focus, but only if it is actually a valid content focusable.
-        this._lastContentFocus = this.findFocusPosition(defaultFocus, this._contentFocusables)
-            ? defaultFocus : undefined;
+        this._lastContentFocus = this.isInContent(defaultFocus) && defaultFocus;
 
         if (resetFocus) {
             this.setFocus(defaultFocus || this.getFirstFocus());
@@ -506,6 +505,18 @@ export class TXMFocusManager {
                 return component;
             }
         }
+    }
+
+    isInTopChrome(focusable) {
+        return !!this.findFocusPosition(focusable, this._topChromeFocusables);
+    }
+
+    isInContent(focusable) {
+        return !!this.findFocusPosition(focusable, this._contentFocusables);
+    }
+
+    isInBottomChrome(focusable) {
+        return !!this.findFocusPosition(focusable, this._bottomChromeFocusables);
     }
 
     findFocusPosition(focus, inFocusables) {
