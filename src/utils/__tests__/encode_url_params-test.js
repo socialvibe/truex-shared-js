@@ -1,4 +1,4 @@
-import { encodeUrlParams } from '../url_encode_params';
+import { encodeUrlParams } from '../encode_url_params';
 
 describe('encodeUrlParams', () => {
     it('should return a query string of key=value', () => {
@@ -7,7 +7,7 @@ describe('encodeUrlParams', () => {
     });
 
     it('should urlencode special characters', () => {
-        const params = { a: 'foo&', b: 'bar' };
-        expect(encodeUrlParams(params)).toBe('a=foo%26&b=bar');
+        const params = { a: 'foo&', 'b@': 'bar' };
+        expect(encodeUrlParams(params)).toBe('a=foo%26&b%40=bar');
     });
 });
