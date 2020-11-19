@@ -459,7 +459,12 @@ export class TXMFocusManager {
         this._lastContentFocus = this.isInContent(defaultFocus) && defaultFocus;
 
         if (resetFocus) {
-            this.setFocus(defaultFocus || this.getFirstFocus());
+            if (!defaultFocus) {
+                // Fallback to the first possible content focus.
+                // (We do not default to a top/bottom chrome focus.)
+                defaultFocus = this.getFirstFocusIn(this._contentFocusables);
+            }
+            this.setFocus(defaultFocus);
         }
     }
 
