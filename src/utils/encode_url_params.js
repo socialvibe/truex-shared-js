@@ -4,7 +4,6 @@
  * @returns {string} - urlencoded query string
  */
 const encodeUrlParams = (params, prefix) => {
-    console.log("encoding params!!!");
     const encodedParams = Object.keys(params).map(name => {
         const value = params[name];
         if (value === undefined) {
