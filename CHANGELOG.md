@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.81
+
+* [CTV-2184](https://truextech.atlassian.net/browse/CTV-2184): Added decodeUrlParams for parsing engagement urls.
+
+## v1.0.80
+
+* [CTV-2184](https://truextech.atlassian.net/browse/CTV-2184): Creating a shared encodeUrlParams for tracking events.
+
 ## v1.0.79
 
 * [CTV-2491](https://truextech.atlassian.net/browse/CTV-2491): Should not auto focus the footer button
