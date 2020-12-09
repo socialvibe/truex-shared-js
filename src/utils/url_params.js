@@ -10,7 +10,7 @@ export function parseQueryArgs(url, separatorString = "&", paramChar = "?", deco
     const hashAt = url.indexOf(paramChar);
     let queryArgs = hashAt >= 0 && url.substr(hashAt+1);
     if (decodeArgs) {
-        queryArgs = (decodeURIComponent(queryArgs));
+        queryArgs = decodeURIComponent(queryArgs);
     }
     return parseArgs(queryArgs, separatorString);
 };
