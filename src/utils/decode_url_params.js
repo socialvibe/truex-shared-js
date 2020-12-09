@@ -4,12 +4,14 @@
  * @returns {string} - urlencoded query string
  */
 const decodeUrlParams = (url, splitString = "&", paramChar = "?") => {
+    console.log("test1");
     const hashAt = url.indexOf(paramChar);
     const engagementQueryArgs = hashAt >= 0 && decodeURIComponent(url.substr(hashAt+1));
     return parseQueryArgs(engagementQueryArgs, splitString);
 };
 
 const parseQueryArgs = (queryArgs, splitString) => {
+    console.log("test2");
     const result = {};
     if (queryArgs) {
         queryArgs.split(splitString).forEach(nameAndValue => {
