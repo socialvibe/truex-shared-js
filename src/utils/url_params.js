@@ -3,7 +3,7 @@
  * @param {object} - object of key and its corresponding values
  * @returns {string} - urlencoded query string
  */
-const decodeUrlParams = (url, splitString = "&", paramChar = "?") => {
+export function decordUrlParams(url, splitString = "&", paramChar = "?") {
     console.log("decodeUrlParams");
     console.log(url);
     const hashAt = url.indexOf(paramChar);
@@ -37,7 +37,7 @@ const parseQueryArgs = (queryArgs, splitString) => {
  * @param {object} - object of key and its corresponding values
  * @returns {string} - urlencoded query string
  */
-const encodeUrlParams = (params, prefix) => {
+export function encodeUrlParams (params, prefix) {
     const encodedParams = Object.keys(params).map(name => {
         const value = params[name];
         if (value === undefined) {
@@ -49,5 +49,3 @@ const encodeUrlParams = (params, prefix) => {
     }).filter(field => field != undefined).join('&');
     return encodedParams;
 };
-
-export { decodeUrlParams, encodeUrlParams };
