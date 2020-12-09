@@ -3,17 +3,13 @@
  * @param {object} - object of key and its corresponding values
  * @returns {string} - urlencoded query string
  */
-export function decordUrlParams(url, splitString = "&", paramChar = "?") {
-    console.log("decodeUrlParams");
-    console.log(url);
+export function decodeUrlParams(url, splitString = "&", paramChar = "?") {
     const hashAt = url.indexOf(paramChar);
     const engagementQueryArgs = hashAt >= 0 && decodeURIComponent(url.substr(hashAt+1));
-    console.log(engagementQueryArgs);
     return parseQueryArgs(engagementQueryArgs, splitString);
 };
 
 const parseQueryArgs = (queryArgs, splitString) => {
-    console.log("parseQueryArgs");
     const result = {};
     if (queryArgs) {
         queryArgs.split(splitString).forEach(nameAndValue => {
