@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.81
+## v1.0.82
 
 * [CTV-2184](https://truextech.atlassian.net/browse/CTV-2184): Added decodeUrlParams for parsing engagement urls.
 

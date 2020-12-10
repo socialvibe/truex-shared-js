@@ -1,4 +1,4 @@
-import { decodeUrlParams, encodeUrlParams } from '../url_params';
+import { parseQueryArgs, encodeUrlParams } from '../url_params';
 
 describe('encodeUrlParams', () => {
     it('should return a query string of key=value', () => {
@@ -12,9 +12,9 @@ describe('encodeUrlParams', () => {
     });
 });
 
-describe('decodeUrlParams', () => {
+describe('parseQueryArgs', () => {
     it('should return the params of the url', () => {
         const url = "www.test.com?a=1&b=2";
-        expect(decodeUrlParams(url, '&', '?')).toEqual({ a: '1', b: '2' });
+        expect(parseQueryArgs(url, '&', '?')).toEqual({ a: '1', b: '2' });
     });
 });
