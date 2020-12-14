@@ -262,7 +262,7 @@ export class TXMFocusManager {
         }
 
         let focus = this.currentFocus;
-        if (!focus) {
+        if (!focus && inputActions.isMovementAction(action)) {
             focus = this.getFirstFocus();
             this.setFocus(focus);
             return true;
