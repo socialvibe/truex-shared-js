@@ -9,7 +9,7 @@
  * @return {Boolean}
  */
 export function hasTestVariants(vastConfig) {
-    return vastConfig.card_configurations && vastConfig.card_configurations.length > 1 || false;
+    return vastConfig && vastConfig.card_configurations && vastConfig.card_configurations.length > 1 || false;
 }
 
 /**

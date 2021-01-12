@@ -20,6 +20,11 @@ describe("A/B test variants", () => {
         expect(hasTestVariants(vastConfig)).toBe(false);
         expect(getTestCardConfiguration(vastConfig)).toBe(null);
         expect(getTestVariant(vastConfig)).toBe(null);
+
+        // Tolerate missing config
+        expect(hasTestVariants(undefined)).toBe(false);
+        expect(getTestCardConfiguration(undefined)).toBe(null);
+        expect(getTestVariant(undefined)).toBe(null);
     });
 
     test("test with with variants", () => {
