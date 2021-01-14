@@ -8,7 +8,7 @@
  * @param vastConfig
  * @return {Boolean}
  */
-export function hasTestVariants(vastConfig) {
+export function hasChoiceCardTestVariants(vastConfig) {
     return vastConfig && vastConfig.card_configurations && vastConfig.card_configurations.length > 1 || false;
 }
 
@@ -23,8 +23,8 @@ export function hasTestVariants(vastConfig) {
  * @return {Object} The choice card configuration chosen as the test variant, or null if multiple test
  *   variants are not present.
  */
-export function getTestCardConfiguration(vastConfig, userId) {
-    if (hasTestVariants(vastConfig)) {
+export function getChoiceCardTestConfiguration(vastConfig, userId) {
+    if (hasChoiceCardTestVariants(vastConfig)) {
         if (!userId) userId = vastConfig.user && vastConfig.user.id;
         if (userId) {
             // Hash the user id via the sum of its char codes.
@@ -37,24 +37,6 @@ export function getTestCardConfiguration(vastConfig, userId) {
             }
             return vastConfig.card_configurations[index];
         }
-    }
-    return null;
-}
-
-/**
- * If the VAST card has choice card A/B test variants, returns the name of the one chosen for the specified user.id
- *
- * @param {Object} vastConfig
- * @param {String} userId the user id to use for hashing to the choice card index. Defaults to the
- *   VAST config's user.id property if missing.
- * @return {String} The test variant name chosen for the user, which is the .name property of the
- *   chosen choice card configuration test variant ({@see getTestCardConfiguration}).
- *   Returns null if no variant is available.
- */
-export function getTestVariant(vastConfig, userId) {
-    const testConfig = getTestCardConfiguration(vastConfig, userId);
-    if (testConfig) {
-        return testConfig.name;
     }
     return null;
 }

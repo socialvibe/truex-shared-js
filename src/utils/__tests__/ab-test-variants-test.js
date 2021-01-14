@@ -1,7 +1,6 @@
 import {
-    hasTestVariants,
-    getTestCardConfiguration,
-    getTestVariant } from './../ab-testing';
+    hasChoiceCardTestVariants,
+    getChoiceCardTestConfiguration  } from './../ab-testing';
 
 describe("A/B test variants", () => {
     test("test with no variants", () => {
@@ -17,14 +16,12 @@ describe("A/B test variants", () => {
             ]
         }
 
-        expect(hasTestVariants(vastConfig)).toBe(false);
-        expect(getTestCardConfiguration(vastConfig)).toBe(null);
-        expect(getTestVariant(vastConfig)).toBe(null);
+        expect(hasChoiceCardTestVariants(vastConfig)).toBe(false);
+        expect(getChoiceCardTestConfiguration(vastConfig)).toBe(null);
 
         // Tolerate missing config
-        expect(hasTestVariants(undefined)).toBe(false);
-        expect(getTestCardConfiguration(undefined)).toBe(null);
-        expect(getTestVariant(undefined)).toBe(null);
+        expect(hasChoiceCardTestVariants(undefined)).toBe(false);
+        expect(getChoiceCardTestConfiguration(undefined)).toBe(null);
     });
 
     test("test with with variants", () => {
@@ -45,11 +42,8 @@ describe("A/B test variants", () => {
             ]
         };
 
-        expect(hasTestVariants(vastConfig)).toBe(true);
-        expect(getTestCardConfiguration(vastConfig)).toBe(vastConfig.card_configurations[0]);
-        expect(getTestVariant(vastConfig)).toBe(vastConfig.card_configurations[0].name);
-
-        expect(getTestCardConfiguration(vastConfig, user2)).toBe(vastConfig.card_configurations[1]);
-        expect(getTestVariant(vastConfig, user2)).toBe(vastConfig.card_configurations[1].name);
+        expect(hasChoiceCardTestVariants(vastConfig)).toBe(true);
+        expect(getChoiceCardTestConfiguration(vastConfig)).toBe(vastConfig.card_configurations[0]);
+        expect(getChoiceCardTestConfiguration(vastConfig, user2)).toBe(vastConfig.card_configurations[1]);
     });
 });
