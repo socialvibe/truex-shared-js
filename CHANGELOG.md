@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.85
+## v1.1.0
 * [CTV-2621](https://truextech.atlassian.net/browse/CTV-2621): A/B Testing Support
 
 ## v1.0.83
