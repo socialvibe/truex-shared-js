@@ -32,9 +32,9 @@ export function getChoiceCardTestConfiguration(vastConfig, userId) {
             var index = 0;
             const numCards = vastConfig.card_configurations.length;
             for(var i = 0; i < userId.length; i++) {
-                index += userId.charCodeAt(i) % numCards;
-                index = index % numCards;
+                index += userId.charCodeAt(i);
             }
+            index = index % numCards;
             return vastConfig.card_configurations[index];
         }
     }
