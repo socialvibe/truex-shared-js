@@ -1,6 +1,4 @@
-import {
-    hasChoiceCardTestVariants,
-    getChoiceCardTestConfiguration  } from './../ab-testing';
+import { getHashedIndex  } from '../get_hashed_index';
 
 describe("A/B test variants", () => {
     test("test with no variants", () => {
@@ -14,14 +12,12 @@ describe("A/B test variants", () => {
                     "name": "sample choice card"
                 }
             ]
-        }
+        };
 
-        expect(hasChoiceCardTestVariants(vastConfig)).toBe(false);
-        expect(getChoiceCardTestConfiguration(vastConfig)).toBe(null);
+        expect(getHashedIndex(vastConfig.user.id, vastConfig.card_configurations.length)).toBe(0);
 
         // Tolerate missing config
-        expect(hasChoiceCardTestVariants(undefined)).toBe(false);
-        expect(getChoiceCardTestConfiguration(undefined)).toBe(null);
+        expect(getHashedIndex(undefined)).toBe(0);
     });
 
     test("test with with variants", () => {
@@ -42,8 +38,7 @@ describe("A/B test variants", () => {
             ]
         };
 
-        expect(hasChoiceCardTestVariants(vastConfig)).toBe(true);
-        expect(getChoiceCardTestConfiguration(vastConfig)).toBe(vastConfig.card_configurations[0]);
-        expect(getChoiceCardTestConfiguration(vastConfig, user2)).toBe(vastConfig.card_configurations[1]);
+        expect(getHashedIndex(user1, vastConfig.card_configurations.length)).toBe(0);
+        expect(getHashedIndex(user2, vastConfig.card_configurations.length)).toBe(1);
     });
 });
