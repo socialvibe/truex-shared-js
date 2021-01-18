@@ -1,6 +1,6 @@
 import { getHashedIndex  } from '../get_hashed_index';
 
-describe("A/B test variants", () => {
+describe("getHashedIndex A/B test variants", () => {
     test("test with no variants", () => {
         const vastConfig = {
             "tag_type": "choice_card",
@@ -20,7 +20,7 @@ describe("A/B test variants", () => {
         expect(getHashedIndex(undefined)).toBe(0);
     });
 
-    test("test with with variants", () => {
+    test("test with variants", () => {
         const user1 = "test-user-1";
         const user2 = "test-user-2";
         const vastConfig = {
