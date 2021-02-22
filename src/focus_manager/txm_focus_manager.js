@@ -615,9 +615,13 @@ export class TXMFocusManager {
             return {focusable: f, bounds};
         });
 
-        // Sort first by x-position.
+        // Sort first by x-position, then y-position.
         focusablesAndBounds.sort((item1, item2) => {
-            return item1.bounds.left - item2.bounds.left;
+            var cmp = item1.bounds.left - item2.bounds.left;
+            if (cmp == 0) {
+                cmp = item1.bounds.top - item2.bounds.top;
+            }
+            return cmp;
         });
 
         const result = deriveRows(focusablesAndBounds);
