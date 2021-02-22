@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.0
+* [CTV-2658](https://truextech.atlassian.net/browse/CTV-2658): Tizen platform fixes
+
 ## v1.1.1
 * [CTV-2621](https://truextech.atlassian.net/browse/CTV-2621): A/B Testing Support
 
