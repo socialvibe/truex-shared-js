@@ -185,6 +185,27 @@ export class TXMPlatform {
         return this.describeError(error, true);
     }
 
+    exitApp() {
+        if (this.isTizen && window.tizen) {
+            window.tizen.application.getCurrentApplication().exit();
+            return;
+        }
+
+        if (this.isVizio && window.VIZIO && window.VIZIO.isSmartCastDevice) {
+            // we're using a smart cast TV do their exit call
+            window.VIZIO.exitApplication();
+            return;
+        }
+
+        // Fall back to something reasonable.
+        try {
+            window.close();
+        } catch (err) {}
+        try {
+            window.location = "about:blank";
+        } catch (err) {}
+    }
+
     _configure(userAgent) {
         const self = this;
         const actionKeyCodes = {};
