@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.0
+## v1.2.1
 * [CTV-2658](https://truextech.atlassian.net/browse/CTV-2658): Tizen platform fixes
 
 ## v1.1.1
