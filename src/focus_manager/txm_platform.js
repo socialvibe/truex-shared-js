@@ -276,6 +276,13 @@ export class TXMPlatform {
             // This may cause the lower resolution to have scrollbar.
             self.useScrollTop = true;
 
+            // LG uses history back actions by default instead of the explicit back key event,
+            // although keystroke events can be enabled by adding `disableBackHistoryAPI: true;`
+            // to the `appinfo.json` web app's file.
+            //
+            // see https://webostv.developer.lge.com/develop/app-developer-guide/back-button/
+            self.useHistoryBackActions = true;
+
             addDefaultKeyMap();
             actionKeyCodes[inputActions.back] = 461;
 
