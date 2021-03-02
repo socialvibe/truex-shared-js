@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.2
+* [CTV-2721](https://truextech.atlassian.net/browse/CTV-2658): LG platform fixes
+
 ## v1.2.1
 * [CTV-2658](https://truextech.atlassian.net/browse/CTV-2658): Tizen platform fixes
 
