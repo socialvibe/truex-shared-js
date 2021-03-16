@@ -291,6 +291,43 @@ describe("TXMPlatform", () => {
         });
     });
 
+    describe("PS5 Tests", () => {
+        let platform = new TXMPlatform(
+            "Mozilla/5.0 (PlayStation 5) AppleWebKit/601.2 (KHTML, like Gecko) TBD/v1.2.30.4-gd34FFEE something extra"
+        );
+
+        test("recognize the PS5 platform", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isPS5).toBe(true);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.name).toBe("PS5");
+            expect(platform.model).toBe("PS5");
+            expect(platform.version).toBe("MediaKit/v1.2.30.4");
+            expect(platform.isCTV).toBe(false);
+            expect(platform.isConsole).toBe(true);
+        });
+
+        test("PS5 key mapping", () => {
+            let keyCodes = platform.keyCodes;
+            expect(platform.getInputAction(keyCodes.upArrow)).toBe(inputActions.moveUp);
+            expect(platform.getInputAction(keyCodes.downArrow)).toBe(inputActions.moveDown);
+            expect(platform.getInputAction(keyCodes.leftArrow)).toBe(inputActions.moveLeft);
+            expect(platform.getInputAction(keyCodes.rightArrow)).toBe(inputActions.moveRight);
+            expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
+            expect(platform.getInputAction(keyCodes.esc)).toBe(inputActions.back);
+            expect(platform.getInputAction(128)).toBe(inputActions.playPause);
+            expect(platform.getInputAction(130)).toBe(inputActions.playPause);
+            expect(platform.getInputAction(keyCodes.space)).toBe(inputActions.buttonSquare);
+            expect(platform.getInputAction(112)).toBe(inputActions.buttonTriangle);
+        });
+    });
+
     describe("XboxOne Tests", () => {
         const xboxUserAgent = "need just 'Xbox' in the user agent";
 

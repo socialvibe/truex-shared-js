@@ -62,6 +62,7 @@ export class TXMPlatform {
         this.isLG = false;
         this.isTizen = false;
         this.isPS4 = false;
+        this.isPS5 = false;
 
         this.isFireTV = false;
         this.isAndroidTV = false;
@@ -109,7 +110,7 @@ export class TXMPlatform {
     get isTablet() { return this.isIPad || this.isAndroid && !this.isHandheld }
 
     get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV }
-    get isConsole() { return this.isXboxOne || this.isPS4 || this.isNintendoSwitch }
+    get isConsole() { return this.isXboxOne || this.isPS4 || this.isPS5 || this.isNintendoSwitch }
 
 
     // Otherwise the fallback scroll approach is to absolutely position a page's content div within its parent.
@@ -225,8 +226,11 @@ export class TXMPlatform {
         } else if (/PlayStation 4/.test(userAgent)) {
             configureForPS4();
 
-            // } else if (/Nintendo/.test(userAgent)) {
-            //     configureForNintendoSwitch();
+        } else if (/PlayStation 5/.test(userAgent)) {
+            configureForPS5();
+
+        // } else if (/Nintendo/.test(userAgent)) {
+        //     configureForNintendoSwitch();
 
         } else if (/Xbox/.test(userAgent)) {
             configureForXboxOne();
@@ -387,6 +391,50 @@ export class TXMPlatform {
             self.supportsInitialVideoSeek = false;
 
             addDefaultKeyMap();
+            actionKeyCodes[inputActions.buttonSquare] = 32;
+            actionKeyCodes[inputActions.buttonTriangle] = 112;
+
+            actionKeyCodes[inputActions.leftShoulder1] = 116; // L1
+            actionKeyCodes[inputActions.rightShoulder1] = 117; // R1
+
+            actionKeyCodes[inputActions.leftShoulder2] = 118; // L2
+            actionKeyCodes[inputActions.rightShoulder2] = 119; // R2
+
+            actionKeyCodes[inputActions.leftStick] = 120; // L3
+            actionKeyCodes[inputActions.rightStick] = 121; // R3
+
+            // BD Remote & CEC only
+            actionKeyCodes[inputActions.back] = [keyCodes.esc, keyCodes.backspace];
+            actionKeyCodes[inputActions.menu] = 36;
+            actionKeyCodes[inputActions.green] = 133; // used for test automation by stb-tester
+            actionKeyCodes[inputActions.prevTrack] = 122;
+            actionKeyCodes[inputActions.nextTrack] = 123;
+            actionKeyCodes[inputActions.skipForward] = 124;
+            actionKeyCodes[inputActions.skipBackward] = 125;
+            actionKeyCodes[inputActions.fastForward] = 126;
+            actionKeyCodes[inputActions.rewind] = 127; // del on keyboard, rewind key on remote
+            actionKeyCodes[inputActions.playPause] = [128, 130];
+            actionKeyCodes[inputActions.stop] = 129; // stop button acts the same as the pause button on a ps4 tv remote
+        }
+
+        function configureForPS5() {
+            self.isPS5 = true;
+            self.name = "PS5";
+            self.model = self.name;
+
+            let versionMatch = userAgent.match(/(MediaKit\/v([0-9]+\.)+[0-9]+)/);
+            if (!versionMatch) {
+                // Not found, fallback to older user agent pattern.
+                versionMatch = userAgent.match(/PlayStation 5 ([^\s)]+)\)/);
+            }
+            if (versionMatch) self.version = versionMatch[1];
+
+            self.useWindowScroll = false; // TODO ??
+
+            self.supportsInitialVideoSeek = false; // TODO ??
+
+            addDefaultKeyMap();
+            // TODO put in common code is this is the same as for PS4
             actionKeyCodes[inputActions.buttonSquare] = 32;
             actionKeyCodes[inputActions.buttonTriangle] = 112;
 
