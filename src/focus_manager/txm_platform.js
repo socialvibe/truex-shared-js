@@ -398,11 +398,7 @@ export class TXMPlatform {
             self.name = "PS5";
             self.model = self.name;
 
-            let versionMatch = userAgent.match(/(MediaKit\/v([0-9]+\.)+[0-9]+)/);
-            if (!versionMatch) {
-                // Not found, fallback to older user agent pattern.
-                versionMatch = userAgent.match(/PlayStation 5 ([^\s)]+)\)/);
-            }
+            let versionMatch = userAgent.match(/PlayStation 5\/([^\s)]+)\)/);
             if (versionMatch) self.version = versionMatch[1];
 
             self.useWindowScroll = false; // TODO ??
