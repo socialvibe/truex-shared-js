@@ -390,7 +390,7 @@ export class TXMPlatform {
 
             self.supportsInitialVideoSeek = false;
 
-            addPlaystationKeyMap();
+            addPlayStationKeymap();
         }
 
         function configureForPS5() {
@@ -405,10 +405,10 @@ export class TXMPlatform {
 
             self.supportsInitialVideoSeek = false; // TODO ??
 
-            addPlaystationKeymap();
+            addPlayStationKeymap();
         }
 
-        function addPlaystationKeymap() {
+        function addPlayStationKeymap() {
             addDefaultKeyMap();
             actionKeyCodes[inputActions.buttonSquare] = 32;
             actionKeyCodes[inputActions.buttonTriangle] = 112;
