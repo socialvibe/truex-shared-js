@@ -390,31 +390,7 @@ export class TXMPlatform {
 
             self.supportsInitialVideoSeek = false;
 
-            addDefaultKeyMap();
-            actionKeyCodes[inputActions.buttonSquare] = 32;
-            actionKeyCodes[inputActions.buttonTriangle] = 112;
-
-            actionKeyCodes[inputActions.leftShoulder1] = 116; // L1
-            actionKeyCodes[inputActions.rightShoulder1] = 117; // R1
-
-            actionKeyCodes[inputActions.leftShoulder2] = 118; // L2
-            actionKeyCodes[inputActions.rightShoulder2] = 119; // R2
-
-            actionKeyCodes[inputActions.leftStick] = 120; // L3
-            actionKeyCodes[inputActions.rightStick] = 121; // R3
-
-            // BD Remote & CEC only
-            actionKeyCodes[inputActions.back] = [keyCodes.esc, keyCodes.backspace];
-            actionKeyCodes[inputActions.menu] = 36;
-            actionKeyCodes[inputActions.green] = 133; // used for test automation by stb-tester
-            actionKeyCodes[inputActions.prevTrack] = 122;
-            actionKeyCodes[inputActions.nextTrack] = 123;
-            actionKeyCodes[inputActions.skipForward] = 124;
-            actionKeyCodes[inputActions.skipBackward] = 125;
-            actionKeyCodes[inputActions.fastForward] = 126;
-            actionKeyCodes[inputActions.rewind] = 127; // del on keyboard, rewind key on remote
-            actionKeyCodes[inputActions.playPause] = [128, 130];
-            actionKeyCodes[inputActions.stop] = 129; // stop button acts the same as the pause button on a ps4 tv remote
+            addPlaystationKeyMap();
         }
 
         function configureForPS5() {
@@ -433,8 +409,11 @@ export class TXMPlatform {
 
             self.supportsInitialVideoSeek = false; // TODO ??
 
+            addPlaystationKeymap();
+        }
+
+        function addPlaystationKeymap() {
             addDefaultKeyMap();
-            // TODO put in common code is this is the same as for PS4
             actionKeyCodes[inputActions.buttonSquare] = 32;
             actionKeyCodes[inputActions.buttonTriangle] = 112;
 
