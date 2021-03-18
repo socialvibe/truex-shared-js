@@ -293,7 +293,7 @@ describe("TXMPlatform", () => {
 
     describe("PS5 Tests", () => {
         let platform = new TXMPlatform(
-            "Mozilla/5.0 (PlayStation 5) AppleWebKit/601.2 (KHTML, like Gecko) TBD/v1.2.30.4-gd34FFEE something extra"
+            "Mozilla/5.0 (PlayStation; PlayStation 5/1.05) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/6.05.1.15"
         );
 
         test("recognize the PS5 platform", () => {
@@ -308,7 +308,7 @@ describe("TXMPlatform", () => {
             expect(platform.isXboxOne).toBe(false);
             expect(platform.name).toBe("PS5");
             expect(platform.model).toBe("PS5");
-            expect(platform.version).toBe("MediaKit/v1.2.30.4");
+            expect(platform.version).toBe("1.05");
             expect(platform.isCTV).toBe(false);
             expect(platform.isConsole).toBe(true);
         });
