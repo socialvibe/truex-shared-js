@@ -13,7 +13,7 @@ import debugCss from './debug-log.scss';
 export class DebugLog {
     constructor() {
         let debugLog = [];
-        
+
         let scrollPos = 0;
 
         let rootDiv;
@@ -44,6 +44,8 @@ export class DebugLog {
         }
 
         this.recordMsg = recordMsg;
+
+        this.isVisible = () => { return !!rootDiv }
 
         this.hide = () => {
             if (rootDiv) {
@@ -110,21 +112,30 @@ export class DebugLog {
         }
 
         this.captureConsoleLog = () => {
-            let originalActions = {
+            this.restoreConsoleLog();
+
+            const originalActions = {
                 log: console.log.bind(console),
                 info: console.info.bind(console),
                 warn: console.warn.bind(console),
                 error: console.error.bind(console)
             };
+            this.originalConsoleActions = originalActions;
 
             function logAction(kind) {
-                return function(msg) {
+                return function(msg, err) {
                     recordMsg(kind, msg);
-                    originalActions[kind](msg);
+                    if (err) {
+                        recordMsg(kind, `${err}`);
+                    }
+                    originalActions[kind].call(console, msg, err);
 
                     if (rootDiv) {
                         // Ensure new msg is visible.
                         displayLogMsg(kind, msg);
+                        if (err) {
+                            displayLogMsg(kind, `${err}`);
+                        }
                         scrollDebugLog(0, 0);
                     }
                 };
@@ -134,6 +145,16 @@ export class DebugLog {
             console.info = logAction('info');
             console.warn = logAction('warn');
             console.error = logAction('error');
+        };
+
+        this.restoreConsoleLog = () => {
+            const originalActions = this.originalConsoleActions;
+            if (!originalActions) return;
+            console.log = originalActions.log;
+            console.info = originalActions.info;
+            console.warn = originalActions.warn;
+            console.error = originalActions.error;
+            this.originalConsoleActions = undefined;
         };
     }
 }
