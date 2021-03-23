@@ -1,4 +1,5 @@
-import { inputActions } from 'truex-shared/focus_manager/txm_input_actions';
+import { inputActions } from '../focus_manager/txm_input_actions';
+import debugCss from './debug-log.scss';
 
 /**
  * Defines a debug log display that overlays the existing application page, typically with the recent contents of the
