@@ -123,19 +123,19 @@ export class DebugLog {
             this.originalConsoleActions = originalActions;
 
             function logAction(kind) {
-                return function(msg, err) {
-                    recordMsg(kind, msg);
-                    if (err) {
-                        recordMsg(kind, `${err}`);
+                return function(...args) {
+                    let msg = "";
+                    for(const index in args) {
+                        const arg = args[index];
+                        if (msg) msg += " ";
+                        msg += arg;
                     }
-                    originalActions[kind].call(console, msg, err);
+                    recordMsg(kind, msg);
+                    originalActions[kind].apply(console, args);
 
                     if (rootDiv) {
                         // Ensure new msg is visible.
                         displayLogMsg(kind, msg);
-                        if (err) {
-                            displayLogMsg(kind, `${err}`);
-                        }
                         scrollDebugLog(0, 0);
                     }
                 };
