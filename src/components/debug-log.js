@@ -124,12 +124,7 @@ export class DebugLog {
 
             function logAction(kind) {
                 return function(...args) {
-                    let msg = "";
-                    for(const index in args) {
-                        const arg = args[index];
-                        if (msg) msg += " ";
-                        msg += arg;
-                    }
+                    const msg = args.join(' ');
                     recordMsg(kind, msg);
                     originalActions[kind].apply(console, args);
 
