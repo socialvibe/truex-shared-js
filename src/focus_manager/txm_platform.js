@@ -133,24 +133,6 @@ export class TXMPlatform {
     }
 
     /**
-     * Returns platform appropriate audio media element.
-     */
-    createAudio() {
-        //if (this.isPS5) {
-            // Audio not supported on the PS5 for some reason (it is ono the PS4!).
-            // We fake it with an invisible video.
-            const video = document.createElement('video');
-            video.style.display = 'none';
-            video.muted = false;
-            video.volume = 1.0;
-            video.defaultMuted = false;
-            return video;
-        //}
-
-        return new Audio();
-    }
-
-    /**
      * Maps a key event's keycode into a platform independent input action.
      */
     getInputAction(keyCode) {
