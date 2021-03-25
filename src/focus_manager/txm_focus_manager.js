@@ -169,6 +169,9 @@ export class TXMFocusManager {
                 // but outside of the popstate event thread.
                 setTimeout(() => {
                     try {
+                        if (this.debug) {
+                            console.log(`${this.id} onPopState: injecting back action`);
+                        }
                         this.onInputAction(inputActions.back);
                     } catch (err) {
                         let errMsg = this.platform.describeErrorWithStack(err);
