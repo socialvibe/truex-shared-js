@@ -401,10 +401,6 @@ export class TXMPlatform {
             let versionMatch = userAgent.match(/PlayStation 5\/([^\s)]+)\)/);
             if (versionMatch) self.version = versionMatch[1];
 
-            self.useWindowScroll = false; // TODO ??
-
-            self.supportsInitialVideoSeek = false; // TODO ??
-
             addPlayStationKeymap();
         }
 
