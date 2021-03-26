@@ -169,6 +169,9 @@ export class TXMFocusManager {
                 // but outside of the popstate event thread.
                 setTimeout(() => {
                     try {
+                        if (this.debug) {
+                            console.log(`${this.id} onPopState: injecting back action`);
+                        }
                         this.onInputAction(inputActions.back);
                     } catch (err) {
                         let errMsg = this.platform.describeErrorWithStack(err);
@@ -185,6 +188,14 @@ export class TXMFocusManager {
 
         let keyCode = event.keyCode;
         let inputAction = this.platform.getInputAction(keyCode);
+
+        if (this.debug) {
+            const focusPath = this.getCurrentFocusPath();
+            const targetPath = getElementPath(event.target);
+            console.log(`*** ${this.id} focusManager.onKeyDown:`
+                + ` action: ${inputAction} key: ${keyCode} focus: ${focusPath} target: ${targetPath}`);
+        }
+
         if (keyCode === keyCodes.tab) {
             // Swallow TAB presses, they cause blue outlines to show on many browsers.
             handled = true;
@@ -197,9 +208,6 @@ export class TXMFocusManager {
         } else if (inputAction) {
             // Map the key event to in input action, process it.
             try {
-                if (this.debug) {
-                    console.log(`*** ${this.id} focusManager.onKeyDown: action: ${inputAction} key: ${keyCode}`);
-                }
                 handled = this.onInputAction(inputAction, event);
             } catch (err) {
                 handled = true;

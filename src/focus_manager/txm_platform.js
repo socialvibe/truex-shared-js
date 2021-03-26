@@ -62,6 +62,7 @@ export class TXMPlatform {
         this.isLG = false;
         this.isTizen = false;
         this.isPS4 = false;
+        this.isPS5 = false;
 
         this.isFireTV = false;
         this.isAndroidTV = false;
@@ -109,7 +110,7 @@ export class TXMPlatform {
     get isTablet() { return this.isIPad || this.isAndroid && !this.isHandheld }
 
     get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV }
-    get isConsole() { return this.isXboxOne || this.isPS4 || this.isNintendoSwitch }
+    get isConsole() { return this.isXboxOne || this.isPS4 || this.isPS5 || this.isNintendoSwitch }
 
 
     // Otherwise the fallback scroll approach is to absolutely position a page's content div within its parent.
@@ -225,8 +226,11 @@ export class TXMPlatform {
         } else if (/PlayStation 4/.test(userAgent)) {
             configureForPS4();
 
-            // } else if (/Nintendo/.test(userAgent)) {
-            //     configureForNintendoSwitch();
+        } else if (/PlayStation 5/.test(userAgent)) {
+            configureForPS5();
+
+        // } else if (/Nintendo/.test(userAgent)) {
+        //     configureForNintendoSwitch();
 
         } else if (/Xbox/.test(userAgent)) {
             configureForXboxOne();
@@ -386,6 +390,21 @@ export class TXMPlatform {
 
             self.supportsInitialVideoSeek = false;
 
+            addPlayStationKeymap();
+        }
+
+        function configureForPS5() {
+            self.isPS5 = true;
+            self.name = "PS5";
+            self.model = self.name;
+
+            let versionMatch = userAgent.match(/PlayStation 5\/([^\s)]+)\)/);
+            if (versionMatch) self.version = versionMatch[1];
+
+            addPlayStationKeymap();
+        }
+
+        function addPlayStationKeymap() {
             addDefaultKeyMap();
             actionKeyCodes[inputActions.buttonSquare] = 32;
             actionKeyCodes[inputActions.buttonTriangle] = 112;
