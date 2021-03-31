@@ -50,7 +50,10 @@ describe('BaseLoader Class', () => {
             loader.__reject(testError, 1, 2);
 
             return promise
-                .then(() => {})
+                .then(() => {
+                    // should not get here
+                    expect(false).toBe(true);
+                })
                 .catch(err => {
                     expect(err).toBe(testError);
                     expect(onerrorCB).toHaveBeenCalled();
