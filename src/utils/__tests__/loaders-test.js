@@ -42,6 +42,20 @@ describe('BaseLoader Class', () => {
             expect(loader.onerror).toBeUndefined();
             loader.onerror = onerrorCB;
             expect(loader.onerror).toBeDefined();
+
+            const promise = loader.promise;
+            const testError = new Error('test error');
+            let warning;
+            console.warn = (...args) => {warning = args.join(' ')};
+            loader.__reject(testError, 1, 2);
+
+            return promise
+                .then(() => {})
+                .catch(err => {
+                    expect(err).toBe(testError);
+                    expect(onerrorCB).toHaveBeenCalled();
+                    expect(warning).toEqual('rejected http://google.com/track Error: test error 1 2');
+                });
         });
     });
 });
