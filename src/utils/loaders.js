@@ -27,10 +27,10 @@ export class BaseLoader {
             this._onLoadCB(...data);
         }
         this._resolve(...data);
-        console.warn('resolved', this._url);
     }
 
     __reject(...data) {
+        console.warn('rejected', this._url, ...data);
         if (this._onErrorCB) {
             this._onErrorCB(...data);
         }
