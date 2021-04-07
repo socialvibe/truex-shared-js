@@ -25,7 +25,11 @@ export class TXMFocusManager {
         this._lastContentFocus = undefined;
         this._lastBottomFocus = undefined;
 
-        this.isBlockingBackActions = false;
+        this._isBlockingBackActions = false;
+        this._onBackAction = undefined;
+        this._handlesAllInputs = false; // input handling bubbles up default
+        this._oldActiveElement = undefined;
+
 
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
@@ -91,6 +95,33 @@ export class TXMFocusManager {
         }
     }
 
+    /**
+     * Ensures all key events are sent to the specific DOM element, with all input actions processed
+     * from those events, including the capture of history back actions. All events are assumed to be handled.
+     *
+     * Intended to be used for popup components that need to temporarily capture all keyboard inputs.
+     *
+     * {cleanup} should be called when complete to restore the keyboard focus to the original active element.
+     *
+     * @param {HTMLElement} withElement the element to set the keyboard focus to.
+     * @param {Function} onBackAction optional callback to invoke when the user hits the back action key
+     *  or history back is otherwise invoked.
+     */
+    captureKeyboardFocus(withElement, onBackAction) {
+        if (!withElement) throw new Error("captureKeyboardFocus: missing element arg");
+        this.blockBackActions(true);
+        this.addKeyEventListener(withElement);
+        this._onBackAction = onBackAction;
+        this._handlesAllInputs = true;
+        this._oldActiveElement = document.activeElement;
+
+        if (!withElement.tabIndex && withElement.tabIndex != 0) {
+            // Ensure the DOM element can receive the keyboard focus.
+            withElement.tabIndex = -1;
+        }
+        withElement.focus();
+    }
+
     cleanup() {
         this.removeKeyEventListener();
         this.restoreBackActions();
@@ -100,6 +131,12 @@ export class TXMFocusManager {
         this._topChromeFocusables = [];
         this._contentFocusables = [];
         this._bottomChromeFocusables = [];
+        this._onBackAction = undefined;
+
+        if (this._oldActiveElement) {
+            this._oldActiveElement.focus();
+            this._oldActiveElement = undefined;
+        }
     }
 
     /**
@@ -114,14 +151,14 @@ export class TXMFocusManager {
      */
     blockBackActions(mapHistoryBackToInputAction) {
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
-        this.isBlockingBackActions = true;
+        this._isBlockingBackActions = true;
         this.pushBackActionBlock();
         window.addEventListener("popstate", this.onPopState);
     }
 
     restoreBackActions() {
-        if (!this.isBlockingBackActions) return;
-        this.isBlockingBackActions = false;
+        if (!this._isBlockingBackActions) return;
+        this._isBlockingBackActions = false;
 
         var state = history.state;
         window.removeEventListener("popstate", this.onPopState);
@@ -148,7 +185,7 @@ export class TXMFocusManager {
     }
 
     pushBackActionStub() {
-        if (!this.isBlockingBackActions) return; // blocking is no longer in effect
+        if (!this._isBlockingBackActions) return; // blocking is no longer in effect
 
         history.pushState({backActionStub: true, forTruex: true, focusManager: this.id}, "", null);
     }
@@ -269,6 +306,11 @@ export class TXMFocusManager {
             }
         }
 
+        if (action == inputActions.back && this._onBackAction) {
+            this._onBackAction();
+            return true;
+        }
+
         let focus = this.currentFocus;
         // if no element is currently focused, and the user is attempting to navigate or select, set default focus
         if (!focus && (inputActions.isMovementAction(action) || inputAction == inputActions.select)) {
@@ -276,7 +318,7 @@ export class TXMFocusManager {
             this.setFocus(focus);
             return true;
         }
-        if (!focus) return false;
+        if (!focus) return this._handlesAllInputs;
 
         let capitalizedAction = action[0].toUpperCase() + action.slice(1);
         let actionMethodName = `on${capitalizedAction}Action`;
@@ -306,7 +348,7 @@ export class TXMFocusManager {
             return true;
         }
 
-        return false; // not handled
+        return this._handlesAllInputs;
     }
 
     /**
