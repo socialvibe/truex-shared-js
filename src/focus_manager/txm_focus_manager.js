@@ -40,6 +40,13 @@ export class TXMFocusManager {
         this.debug = false; // in case we need to debug focus manager processing
     }
 
+    debugLog(msg) {
+        if (this.debug) {
+            const time = new Date().toISOString().split('T')[1].replace(/Z$/, '');
+            console.log(`*** ${time} ${this.id} focusManager: ${msg}`);
+        }
+    }
+
     get currentFocus() {
         return this._focus;
     }
@@ -168,8 +175,14 @@ export class TXMFocusManager {
             // Ensure no back action blocks are present from this focus manager.
             if (state && state.forTruex && state.focusManager == this.id && state.backActionStub) {
                 history.go(-2); // remove stub and block
+                this.debugLog('restoreBackActions: remove stub and block');
+
             } else if (state && state.forTruex && state.focusManager == this.id && state.backActionBlock) {
                 history.back(); // remove block
+                this.debugLog('restoreBackActions: remove block');
+
+            } else {
+                this.debugLog('restoreBackActions: nothing removed');
             }
         }, 0);
     }
@@ -180,6 +193,7 @@ export class TXMFocusManager {
      */
     pushBackActionBlock() {
         history.pushState({backActionBlock: true, forTruex: true, focusManager: this.id}, "", null);
+        this.debugLog('pushBackActionBlock: pushed');
 
         // Push the back action stub that allows a back action to be consumed.
         this.pushBackActionStub();
@@ -189,6 +203,7 @@ export class TXMFocusManager {
         if (!this._isBlockingBackActions) return; // blocking is no longer in effect
 
         history.pushState({backActionStub: true, forTruex: true, focusManager: this.id}, "", null);
+        this.debugLog('pushBackActionStub: pushed');
     }
 
     onPopState(event) {
@@ -196,8 +211,13 @@ export class TXMFocusManager {
         const state = history.state;
         const isAtBackActionBlock = state && state.forTruex && state.focusManager == this.id && state.backActionBlock;
         if (!isAtBackActionBlock) {
+            if (this.debug) {
+                this.debugLog('onPopState: pop ignored, now at: ' + JSON.stringify(state));
+            }
             return;
         }
+
+        this.debugLog('onPopState: now at back action block');
 
         // Note: back action events can't have their processing stopped.
         //event.preventDefault();
@@ -207,9 +227,7 @@ export class TXMFocusManager {
                 // but outside of the popstate event thread.
                 setTimeout(() => {
                     try {
-                        if (this.debug) {
-                            console.log(`${this.id} onPopState: injecting back action`);
-                        }
+                        this.debugLog('onPopState: injecting back action');
                         this.onInputAction(inputActions.back);
                     } catch (err) {
                         let errMsg = this.platform.describeErrorWithStack(err);
@@ -230,8 +248,7 @@ export class TXMFocusManager {
         if (this.debug) {
             const focusPath = this.getCurrentFocusPath();
             const targetPath = getElementPath(event.target);
-            console.log(`*** ${this.id} focusManager.onKeyDown:`
-                + ` action: ${inputAction} key: ${keyCode} focus: ${focusPath} target: ${targetPath}`);
+            this.debugLog(`onKeyDown: action: ${inputAction} key: ${keyCode} focus: ${focusPath} target: ${targetPath}`);
         }
 
         if (keyCode === keyCodes.tab) {
@@ -331,7 +348,7 @@ export class TXMFocusManager {
                 onActionMethod.apply(focus, [event]);
                 return true;
             } else {
-                console.warn(`TXMFocusManager: current focus ${actionMethodName} found, but not a function`);
+                console.warn(`${this.id} focusManager: current focus ${actionMethodName} found, but not a function`);
             }
         }
 
@@ -340,7 +357,7 @@ export class TXMFocusManager {
                 let handled = focus.onInputAction(action, event);
                 if (handled) return true;
             } else {
-                console.warn(`TXMFocusManager: current focus onInputAction found, but not a function`);
+                console.warn(`${this.id} focusManager: current focus onInputAction found, but not a function`);
             }
         }
 
