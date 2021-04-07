@@ -1,5 +1,6 @@
 import { inputActions } from '../focus_manager/txm_input_actions';
 import debugCss from './debug-log.scss';
+import { TXMFocusManager } from "../focus_manager/txm_focus_manager";
 
 /**
  * Defines a debug log display that overlays the existing application page, typically with the recent contents of the
@@ -21,15 +22,24 @@ export class DebugLog {
 
         // Focus support:
         this.onInputAction = action => {
-            let direction = action == inputActions.moveUp ? -1
-                : action == inputActions.moveDown ? 1
-                : 0;
-            if (direction) {
-                scrollDebugLog(direction);
-                return true; // handled
+            if (action == inputActions.back) {
+                this.hide();
+
+            } else {
+                let direction = action == inputActions.moveUp ? -1
+                    : action == inputActions.moveDown ? 1
+                        : 0;
+                if (direction) {
+                    scrollDebugLog(direction);
+                }
             }
-            return false; // not handled
+
+            return true; // handled
         };
+
+        const focusManager = new TXMFocusManager();
+        focusManager.id = 'debug-log'; // for more readable logging
+        focusManager.onInputAction = this.onInputAction;
 
         function recordMsg(kind, msg) {
             if (kind && !msg) {
@@ -48,11 +58,13 @@ export class DebugLog {
         this.isVisible = () => { return !!rootDiv }
 
         this.hide = () => {
-            if (rootDiv) {
-                rootDiv.parentNode.removeChild(rootDiv);
-                rootDiv = null;
-                msgsDiv = null;
-            }
+            if (!rootDiv) return;
+
+            focusManager.cleanup();
+
+            rootDiv.parentNode.removeChild(rootDiv);
+            rootDiv = null;
+            msgsDiv = null;
         };
 
         this.show = (parentElement) => {
@@ -75,6 +87,8 @@ export class DebugLog {
 
             // Try to show the most recent messages, appropriately scrolled.
             scrollDebugLog(0, 0);
+
+            focusManager.captureKeyboardFocus(rootDiv);
         };
 
         function displayLogMsg(kind, msg) {

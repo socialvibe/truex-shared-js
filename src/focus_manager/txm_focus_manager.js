@@ -115,9 +115,10 @@ export class TXMFocusManager {
         this._handlesAllInputs = true;
         this._oldActiveElement = document.activeElement;
 
-        if (!withElement.tabIndex && withElement.tabIndex != 0) {
+        const tabIndex = withElement.getAttribute('tabindex');
+        if (!tabIndex) {
             // Ensure the DOM element can receive the keyboard focus.
-            withElement.tabIndex = -1;
+            withElement.setAttribute('tabindex', "-1");
         }
         withElement.focus();
     }
