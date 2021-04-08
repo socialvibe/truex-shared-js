@@ -1,7 +1,7 @@
 # Changelog
 
 ## v1.2.4
-* [CTV-2681](https://truextech.atlassian.net/browse/CTV-2681): Loader error logging
+* [CTV-2681](https://truextech.atlassian.net/browse/CTV-2681): capture focus support, loader error logging
 
 ## v1.2.3
 * [CTV-2718](https://truextech.atlassian.net/browse/CTV-2718): Add PS5 support
