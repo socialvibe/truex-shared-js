@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.5
+* [CTV-2766](https://truextech.atlassian.net/browse/CTV-2766): Add captureKeyboardFocus support
+
 ## v1.2.4
 * [CTV-2681](https://truextech.atlassian.net/browse/CTV-2681): Loader error logging
 
