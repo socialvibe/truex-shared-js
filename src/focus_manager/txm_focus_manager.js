@@ -331,7 +331,7 @@ export class TXMFocusManager {
 
         let focus = this.currentFocus;
         // if no element is currently focused, and the user is attempting to navigate or select, set default focus
-        if (!focus && (inputActions.isMovementAction(action) || inputAction == inputActions.select)) {
+        if (!focus && (inputActions.isMovementAction(action) || action == inputActions.select)) {
             focus = this.getFirstFocus();
             this.setFocus(focus);
             return true;
