@@ -142,6 +142,20 @@ export class TXMPlatform {
         return action;
     }
 
+    applyInputKeyMap(actionKeyCodes) {
+        for (const action in actionKeyCodes) {
+            const actionCodes = actionKeyCodes[action];
+            if (Array.isArray(actionCodes)) {
+                actionCodes.forEach(keyCode => {
+                    this._inputKeyMap[keyCode] = action;
+                });
+            } else {
+                // Assume a single key code.
+                this._inputKeyMap[actionCodes] = action;
+            }
+        }
+    }
+
     /**
      * Tolerates platform specific error description differences to show reasonbly readable error messages.
      * @return {String}
@@ -249,17 +263,7 @@ export class TXMPlatform {
 
         // Establish the direct key code to input action mapping.
         self._inputKeyMap = {};
-        for (let action in actionKeyCodes) {
-            let actionCodes = actionKeyCodes[action];
-            if (Array.isArray(actionCodes)) {
-                actionCodes.forEach(keyCode => {
-                    self._inputKeyMap[keyCode] = action;
-                });
-            } else {
-                // Assume a single key code.
-                self._inputKeyMap[actionCodes] = action;
-            }
-        }
+        self.applyInputKeyMap(actionKeyCodes);
 
         function configureForLgWebOs() {
             self.isLG = true;
