@@ -33,6 +33,30 @@ describe("TXMPlatform", () => {
             expect(platform.getInputAction(keyCodes.Q)).toBe(inputActions.leftShoulder1);
         });
 
+        test("key mapping override", () => {
+            let keyCodes = platform.keyCodes;
+            platform.applyInputKeyMap({
+                select: [keyCodes.D, keyCodes.space],
+                back: keyCodes.B,
+                moveUp: keyCodes.E,
+                moveDown: keyCodes.X,
+                moveLeft: keyCodes.S,
+                moveRight: keyCodes.F
+            });
+            expect(platform.getInputAction(keyCodes.D)).toBe(inputActions.select);
+            expect(platform.getInputAction(keyCodes.space)).toBe(inputActions.select);
+            expect(platform.getInputAction(keyCodes.B)).toBe(inputActions.back);
+            expect(platform.getInputAction(keyCodes.E)).toBe(inputActions.moveUp);
+            expect(platform.getInputAction(keyCodes.X)).toBe(inputActions.moveDown);
+            expect(platform.getInputAction(keyCodes.S)).toBe(inputActions.moveLeft);
+            expect(platform.getInputAction(keyCodes.F)).toBe(inputActions.moveRight);
+
+            // note that existing mappings are not removed
+            expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
+            expect(platform.getInputAction(keyCodes.esc)).toBe(inputActions.back);
+            expect(platform.getInputAction(keyCodes.upArrow)).toBe(inputActions.moveUp);
+        });
+
         test("default ad id support", () => {
             expect(platform.supportsUserAdvertisingId).toBe(false);
             return platform.getUserAdvertisingId().then(adId => {
