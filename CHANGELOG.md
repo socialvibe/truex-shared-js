@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.7
+* [CTV-2865](https://truextech.atlassian.net/browse/CTV-2865): Allow platform key map overrides
+
 ## v1.2.6
 * [CTV-2814](https://truextech.atlassian.net/browse/CTV-2814): focus crash fix for PS4
 
