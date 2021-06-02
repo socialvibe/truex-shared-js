@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.8
+* [CTV-2865](https://truextech.atlassian.net/browse/CTV-2899): Add DMP segement utility class
+
 ## v1.2.7
 * [CTV-2865](https://truextech.atlassian.net/browse/CTV-2865): Allow platform key map overrides
 
