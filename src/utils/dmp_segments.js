@@ -1,5 +1,5 @@
 
-class DMPSegements {
+export class DMPSegements {
   constructor(placement_hash, network_user_id, server_url) {
         this._placementHash = placement_hash;
         this._networkUserId = network_user_id;
@@ -185,5 +185,3 @@ class DMPSegements {
           pixel.src = "https://pixel.tapad.com/idsync/ex/receive?partner_id=3296&partner_device_id=" + partnerId + "-" + this._networkUserId;
     }
 }
-
-export default DMPSegements;
