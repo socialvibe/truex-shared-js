@@ -1,0 +1,28 @@
+// Establish standard truex fonts that be guaranteed to be available.
+
+// Currently just Gotham Bold.
+@font-face {
+  font-family: TruexBold;
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  src: url("https://media.truex.com/file_assets/2021-06-17/1b48aafcd8bb4fd94d4288847d1454c8.otf") format("opentype");
+}
+
+// Currently just Gotham Medium.
+@font-face {
+  font-family: TruexNormal;
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  src: url("https://media.truex.com/file_assets/2021-06-17/1ca7ee8ddb65dd9ce5c10ac7c8fa067b.otf") format("opentype");
+}
+
+// The bold version of TruexNormal is just TruexBold
+@font-face {
+  font-family: TruexNormal;
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  src: url("https://media.truex.com/file_assets/2021-06-17/1b48aafcd8bb4fd94d4288847d1454c8.otf") format("opentype");
+}
