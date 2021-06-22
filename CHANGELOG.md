@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.0
+* [CTV-2881](https://truextech.atlassian.net/browse/CTV-2881): Define truex fonts
+
 ## v1.2.9
 * [CTV-2865](https://truextech.atlassian.net/browse/CTV-2899): Fixed a class export for DMP segment utility class
 
