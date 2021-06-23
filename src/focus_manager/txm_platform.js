@@ -75,6 +75,8 @@ export class TXMPlatform {
         this.isXboxOne = false;
         this.isNintendoSwitch = false;
 
+        this.isSlowDevice = false;
+
         // Scroll support:
 
         // If true (e.g. for LG WebOS), scrolling only works via scrollTop changes on a top level div.
@@ -369,6 +371,8 @@ export class TXMPlatform {
 
             const versionMatch = userAgent.match(/FW\/([^\s)]+)/);
             self.version = versionMatch && versionMatch[1] || "?.?.?";
+
+            self.isSlowDevice = !!self.model.match(/^D24/); // D-series has bad performance
 
             // disable to ensure scrollbars are always hidden in auto-scale situations.
             self.useWindowScroll = false;
