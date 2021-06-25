@@ -85,6 +85,9 @@ export class TXMPlatform {
         // Otherwise we rely on window.scrollTo, but that only works if we are not scaled.
         this.useWindowScroll = true;
 
+        this.supportsMouse = false;
+        this.supportsTouch = false;
+
         this.supportsGyro = false; // on all platforms except perhaps for the Switch?
 
         // Indicates if the platform player can start playback directly at a specified time position.
@@ -276,6 +279,8 @@ export class TXMPlatform {
             self.isLG = true;
             self.name = "LG";
 
+            self.supportsMouse = true;
+
             var webOS = window.webOS;
             if (webOS) {
                 webOS.deviceInfo(device => {
@@ -315,6 +320,8 @@ export class TXMPlatform {
         function configureForTizen() {
             self.isTizen = true;
             self.name = "Tizen";
+
+            self.supportsMouse = true;
 
             let versionMatch = userAgent.match(/Tizen ([^\s)]+)\)/);
             if (versionMatch) self.version = versionMatch[1];
@@ -451,6 +458,9 @@ export class TXMPlatform {
 
             self.model = "Windows.Xbox";
             self.version = "Unknown";
+
+            self.supportsMouse = true;
+            self.supportsTouch = true;
 
             // The Windows API is available only to UWP web apps, not regular web pages (or web views within a C# UWP app).
             // We want to tolerate both ways of making web apps for the Xbox.
@@ -602,6 +612,8 @@ export class TXMPlatform {
 
         function configureForUnknownPlatform() {
             self.isUnknown = true;
+            self.supportsMouse = true;
+            self.supportsTouch = true;
             addDefaultKeyMap();
             addTestingKeyCodes();
         }
