@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.1
+* [CTV-2947](https://truextech.atlassian.net/browse/CTV-2947): Move deploy scripts to here
+
 ## v1.3.0
 * [CTV-2881](https://truextech.atlassian.net/browse/CTV-2881): Define truex fonts
 
