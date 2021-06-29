@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const winston = require("winston");
 // gist modules
-const s3 = require("s3-upload");
+const s3 = require("./s3-upload");
 const accumulateFiles = require("./accumulate-files");
 const getContentType = require("./content-type");
 
