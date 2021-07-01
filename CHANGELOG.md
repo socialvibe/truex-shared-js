@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.2
+* [CTV-2758](https://truextech.atlassian.net/browse/CTV-2758): Add Vizio support
+
 ## v1.3.0
 * [CTV-2881](https://truextech.atlassian.net/browse/CTV-2881): Define truex fonts
 

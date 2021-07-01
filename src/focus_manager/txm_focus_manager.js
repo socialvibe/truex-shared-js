@@ -5,6 +5,7 @@ import { getElementPath }        from '../utils/get_element_path';
 
 import '../utils/uuid-polyfill';
 import { v4 as uuid } from 'uuid';
+import timedTrace from "../utils/timed_trace";
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
@@ -42,8 +43,7 @@ export class TXMFocusManager {
 
     debugLog(msg) {
         if (this.debug) {
-            const time = new Date().toISOString().split('T')[1].replace(/Z$/, '');
-            console.log(`*** ${time} ${this.id} focusManager: ${msg}`);
+            timedTrace(`${this.id} focusManager: ${msg}`);
         }
     }
 
