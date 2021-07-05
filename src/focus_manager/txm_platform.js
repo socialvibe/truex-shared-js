@@ -75,6 +75,8 @@ export class TXMPlatform {
         this.isXboxOne = false;
         this.isNintendoSwitch = false;
 
+        this.isSlowDevice = false;
+
         // Scroll support:
 
         // If true (e.g. for LG WebOS), scrolling only works via scrollTop changes on a top level div.
@@ -82,6 +84,9 @@ export class TXMPlatform {
 
         // Otherwise we rely on window.scrollTo, but that only works if we are not scaled.
         this.useWindowScroll = true;
+
+        this.supportsMouse = false;
+        this.supportsTouch = false;
 
         this.supportsGyro = false; // on all platforms except perhaps for the Switch?
 
@@ -274,6 +279,8 @@ export class TXMPlatform {
             self.isLG = true;
             self.name = "LG";
 
+            self.supportsMouse = true;
+
             var webOS = window.webOS;
             if (webOS) {
                 webOS.deviceInfo(device => {
@@ -313,6 +320,8 @@ export class TXMPlatform {
         function configureForTizen() {
             self.isTizen = true;
             self.name = "Tizen";
+
+            self.supportsMouse = true;
 
             let versionMatch = userAgent.match(/Tizen ([^\s)]+)\)/);
             if (versionMatch) self.version = versionMatch[1];
@@ -369,6 +378,8 @@ export class TXMPlatform {
 
             const versionMatch = userAgent.match(/FW\/([^\s)]+)/);
             self.version = versionMatch && versionMatch[1] || "?.?.?";
+
+            self.isSlowDevice = !!self.model.match(/^D24/); // D-series has bad performance
 
             // disable to ensure scrollbars are always hidden in auto-scale situations.
             self.useWindowScroll = false;
@@ -447,6 +458,9 @@ export class TXMPlatform {
 
             self.model = "Windows.Xbox";
             self.version = "Unknown";
+
+            self.supportsMouse = true;
+            self.supportsTouch = true;
 
             // The Windows API is available only to UWP web apps, not regular web pages (or web views within a C# UWP app).
             // We want to tolerate both ways of making web apps for the Xbox.
@@ -598,6 +612,8 @@ export class TXMPlatform {
 
         function configureForUnknownPlatform() {
             self.isUnknown = true;
+            self.supportsMouse = true;
+            self.supportsTouch = true;
             addDefaultKeyMap();
             addTestingKeyCodes();
         }
