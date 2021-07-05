@@ -2,23 +2,10 @@
 const util = require("util");
 const fs = require("fs");
 const path = require("path");
-const winston = require("winston");
-// gist modules
-const s3 = require("./s3-upload");
+
+const s3 = require("s3-upload");
 const accumulateFiles = require("./accumulate-files");
 const getContentType = require("./content-type");
-
-// winston/logging configuration
-const tsFormat = () => new Date().toLocaleTimeString();
-const logger = winston.createLogger({
-    transports: [
-        // colorize the output to the console
-        new winston.transports.Console({
-            timestamp: tsFormat,
-            colorize: true,
-        }),
-    ],
-});
 
 // helper function to flatten array
 const flattenDeep = (arr) => {
