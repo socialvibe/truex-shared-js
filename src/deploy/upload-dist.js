@@ -19,7 +19,7 @@ const flattenDeep = (arr) => {
 module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}) => {
     const distDir = path.resolve(sourcePath);
 
-    logger.info("uploading dist/");
+    console.log("uploading " + sourcePath);
 
     return accumulateFiles(distDir)
         .then((results) => {
@@ -40,7 +40,7 @@ module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}) => {
                     path.relative(path.resolve(distDir), d.filePath)
                 );
                 const contentType = getContentType(d.filePath);
-                logger.info(`uploaded file: ${bucket}/${key}`);
+                console.log(`uploaded file: ${bucket}/${key}`);
                 return s3.uploadFile(
                     bucket,
                     key,
