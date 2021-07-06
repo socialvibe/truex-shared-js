@@ -14,7 +14,6 @@
     "@babel/core": "^7.8.3",
     "@babel/preset-env": "^7.4.1",
     "@babel/runtime": "^7.4.1",
-    "babelify": "^10.0.0",
     "aws-sdk": "^2.260.1",
     "babel-jest": "^25.1.0",
     "core-js": "3",
@@ -24,6 +23,5 @@
   "dependencies": {
     "uuid": "^3.4.0",
     "whatwg-fetch": "^3.0.0"
-  },
-  "browserify": {"transform": ["babelify"]}
+  }
 }
