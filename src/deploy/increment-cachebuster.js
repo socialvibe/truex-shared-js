@@ -1,6 +1,5 @@
 const path = require("path");
-const got = require("got");
-const moment = require("moment");
+require('whatwg-fetch');
 
 module.exports = (env) => {
     const environment = env === "prod" ? "" : "qa-";
@@ -8,30 +7,24 @@ module.exports = (env) => {
     const endpoint = path.join("cachebuster", "increment_cachebuster");
     const urlParams = "delay=10";
 
-    return new Promise((resolve, reject) => {
-        const isTravis = 'TRAVIS' in process.env && 'CI' in process.env;
+    const isTravis = 'TRAVIS' in process.env && 'CI' in process.env;
+    if (isTravis) {
+        return Promise.resolve();
+    }
 
-        if (isTravis) {
-            resolve();
-        }
+    const url = `http://${hostname}/${endpoint}?${urlParams}`;
+    return fetch(url, {method: 'POST'})
+        .then(resp => {
+            if (resp.ok) return resp.json();
 
-        (async () => {
-            const { body } = await got.post(
-                `http://${hostname}/${endpoint}?${urlParams}`,
-                {
-                    responseType: "json",
-                }
-            );
-
-            console.log(
-                `expected cachebuster value: ${body.current_cachebuster_value}`
-            );
-            console.log(
-                `cachebuster is set to increment at: ${moment()
-                .add(10, "minutes")
-                .format("YYYY-MM-DD h:mm:ss a")}`
-            );
+            const statusText = resp.statusText || 'request failed';
+            throw new Error(`increment_cachebuster failed: ${statusText}, url: ${url}`);
+        })
+        .then(body => {
+            console.log(`expected cachebuster value: ${body.current_cachebuster_value}`);
+            const nextIncrement = new Date();
+            nextIncrement.setMinutes(nextIncrement.getMinutes() + 10);
+            console.log(`cachebuster is set to increment at: ${nextIncrement.toLocaleString()}`);
             resolve(body.current_cachebuster_value);
-        })();
-    });
+        });
 };
