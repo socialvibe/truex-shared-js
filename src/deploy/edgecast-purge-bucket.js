@@ -8,7 +8,7 @@ module.exports = (bucket, path, edgeCastToken, edgeCastCustomerId) => {
 
     protocols.forEach((protocol) => {
         const pathToPurge = `${protocol}${p.join(bucket, `${path}/*`)}`;
-        logger.info(`purging path ${pathToPurge}`);
+        console.log(`purging path ${pathToPurge}`);
         pathsToPurge.push(pathToPurge);
     });
 
