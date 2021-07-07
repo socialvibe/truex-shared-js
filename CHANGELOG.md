@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.6
+* [CTV-2947](https://truextech.atlassian.net/browse/CTV-2947): Move deploy scripts to here
+
 ## v1.3.2
 * [CTV-2758](https://truextech.atlassian.net/browse/CTV-2758): Add Vizio support
 
