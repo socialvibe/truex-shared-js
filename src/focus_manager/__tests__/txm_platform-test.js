@@ -175,6 +175,41 @@ describe("TXMPlatform", () => {
         });
     });
 
+    describe("Comcast Tests", () => {
+        let platform = new TXMPlatform(
+          "Mozilla/5.0 (Linux; x86_64 GNU/Linux) AppleWebKit/601.1 (KHTML, like Gecko) Version/8.0 Safari/601.1 WPE"
+        );
+
+        test("recognize the Comcast platform", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(true);
+            expect(platform.name).toBe("Comcast");
+            expect(platform.isCTV).toBe(true);
+            expect(platform.isConsole).toBe(false);
+            expect(platform.model).toBe("Comcast");
+        });
+
+        test("comcast key mapping", () => {
+            let keyCodes = platform.keyCodes;
+            expect(platform.getInputAction(keyCodes.upArrow)).toBe(inputActions.moveUp);
+            expect(platform.getInputAction(keyCodes.downArrow)).toBe(inputActions.moveDown);
+            expect(platform.getInputAction(keyCodes.leftArrow)).toBe(inputActions.moveLeft);
+            expect(platform.getInputAction(keyCodes.rightArrow)).toBe(inputActions.moveRight);
+            expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
+            expect(platform.getInputAction(keyCodes.backspace)).toBe(inputActions.back);
+            expect(platform.getInputAction(179)).toBe(inputActions.playPause);
+            expect(platform.getInputAction(227)).toBe(inputActions.rewind);
+            expect(platform.getInputAction(228)).toBe(inputActions.fastForward);
+        });
+    });
+
     describe("LG Tests", () => {
         // Mock LG OS API
         window.PalmSystem = new Object();
