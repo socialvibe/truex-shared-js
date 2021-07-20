@@ -176,9 +176,19 @@ describe("TXMPlatform", () => {
     });
 
     describe("Comcast Tests", () => {
+
+        window.$badger = {
+            deviceInfo(callback) {
+                callback({modelNameAscii: "Comcast Fake Model", version: "1.2.3"});
+            }
+        };
+
+
         let platform = new TXMPlatform(
           "Mozilla/5.0 (Linux; x86_64 GNU/Linux) AppleWebKit/601.1 (KHTML, like Gecko) Version/8.0 Safari/601.1 WPE"
         );
+
+        delete window.$badger;
 
         test("recognize the Comcast platform", () => {
             expect(platform.isUnknown).toBe(false);

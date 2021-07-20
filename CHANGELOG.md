@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.7
+* [CTV-2835](https://truextech.atlassian.net/browse/CTV-2835): Add Comcast support
+
 ## v1.3.6
 * [CTV-2947](https://truextech.atlassian.net/browse/CTV-2947): Move deploy scripts to here
 

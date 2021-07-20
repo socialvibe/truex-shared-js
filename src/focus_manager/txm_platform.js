@@ -248,7 +248,7 @@ export class TXMPlatform {
             || /CrKey/.test(userAgent)) {
             configureForVizio();
 
-        } else if (/Linux/.test(userAgent) && /WPE/i.test(userAgent)) {
+        } else if (/Linux/.test(userAgent) && window.$badger) {
             configureForComcast();
 
         } else if (/PlayStation 4/.test(userAgent)) {
