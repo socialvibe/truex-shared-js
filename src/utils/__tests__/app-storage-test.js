@@ -12,7 +12,8 @@ describe("AppStorage", () => {
     expect(appStorage.getItem("test1")).toBeNull();
     appStorage.removeItem("test2");
     expect(appStorage.getItem("test2")).toBeNull();
-
+  });
+  test("AppStorage with null localStorage", () => {
     localStorage = null;
     appStorage.setItem("test3", "storage4");
     expect(appStorage.getItem("test3")).toBe("storage4");
