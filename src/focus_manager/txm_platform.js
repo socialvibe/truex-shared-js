@@ -66,6 +66,7 @@ export class TXMPlatform {
         this.isVizio = false;
         this.isLG = false;
         this.isTizen = false;
+        this.isComcast = false;
         this.isPS4 = false;
         this.isPS5 = false;
 
@@ -119,7 +120,7 @@ export class TXMPlatform {
     get isHandheld() { return this.isIPhone || this.isAndroid && /Mobile/.test(this.userAgent) }
     get isTablet() { return this.isIPad || this.isAndroid && !this.isHandheld }
 
-    get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV }
+    get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV || this.isComcast }
     get isConsole() { return this.isXboxOne || this.isPS4 || this.isPS5 || this.isNintendoSwitch }
 
 
@@ -246,6 +247,9 @@ export class TXMPlatform {
             // Older smartcasts were more "pure" chromecast devices:
             || /CrKey/.test(userAgent)) {
             configureForVizio();
+
+        } else if (/Linux/.test(userAgent) && window.$badger) {
+            configureForComcast();
 
         } else if (/PlayStation 4/.test(userAgent)) {
             configureForPS4();
@@ -392,6 +396,18 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.rewind] = 412;
             actionKeyCodes[inputActions.stop] = 413;
             actionKeyCodes[inputActions.nextTrack] = [418];
+        }
+
+        function configureForComcast() {
+            self.isComcast = true;
+            self.name = "Comcast";
+            self.model = self.name;
+
+            addDefaultKeyMap();
+
+            actionKeyCodes[inputActions.playPause] = 179;
+            actionKeyCodes[inputActions.rewind] = 227;
+            actionKeyCodes[inputActions.fastForward] = 228;
         }
 
         function configureForPS4() {
