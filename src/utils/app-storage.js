@@ -1,7 +1,6 @@
-/* For some platform (e.g. Comcast), there is no local storage.
+/** For some platform (e.g. Comcast), there is no local storage.
  * It needs to fall back using Cookie instead.
  */
-
 export class AppStorage {
   setItem(key, value, daysValid, domain) {
     if (localStorage) {
