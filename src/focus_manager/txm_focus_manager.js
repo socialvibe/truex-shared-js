@@ -244,8 +244,6 @@ export class TXMFocusManager {
     }
 
     onKeyDown(event) {
-        let handled = false;
-
         let keyCode = event.keyCode;
 
         const throttleDelay = this.keyThrottleDelay;
@@ -257,11 +255,12 @@ export class TXMFocusManager {
             this._lastKeyEventTimestamp = now;
             if (keyCode == this._lastKeyCode && elapsedTime <= throttleDelay) {
                 // Swallow the excess key event.
-                return;
+                return true; // handled
             }
             this._lastKeyCode = keyCode;
         }
 
+        let handled = false;
         let inputAction = this.platform.getInputAction(keyCode);
 
         if (this.debug) {
