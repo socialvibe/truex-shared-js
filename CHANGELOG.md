@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.8
+* [CTV-3036](https://truextech.atlassian.net/browse/CTV-3036): Sticky Key Detection and Interaction Capping
+
 ## v1.3.7
 * [CTV-2835](https://truextech.atlassian.net/browse/CTV-2835): Add Comcast support
 
