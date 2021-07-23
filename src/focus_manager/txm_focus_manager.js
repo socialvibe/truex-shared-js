@@ -31,6 +31,10 @@ export class TXMFocusManager {
         this._handlesAllInputs = false; // input handling bubbles up default
         this._oldActiveElement = undefined;
 
+        // Set to 0 to disable throttling.
+        this.keyThrottleDelay = 100; // milliseconds
+        this._lastKeyCode = undefined;
+        this._lastKeyEventTimestamp = 0;
 
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
@@ -240,9 +244,23 @@ export class TXMFocusManager {
     }
 
     onKeyDown(event) {
-        let handled = false;
-
         let keyCode = event.keyCode;
+
+        const throttleDelay = this.keyThrottleDelay;
+        if (throttleDelay > 0) {
+            // We are throttling key presses that happen too fast, e.g. when holding down a key on the remote.
+            // Otherwise too much processing and tracking happens.
+            const now = Date.now();
+            const elapsedTime = now - this._lastKeyEventTimestamp;
+            this._lastKeyEventTimestamp = now;
+            if (keyCode == this._lastKeyCode && elapsedTime <= throttleDelay) {
+                // Swallow the excess key event.
+                return true; // handled
+            }
+            this._lastKeyCode = keyCode;
+        }
+
+        let handled = false;
         let inputAction = this.platform.getInputAction(keyCode);
 
         if (this.debug) {

@@ -114,6 +114,7 @@ describe("TXMFocusManager", () => {
 
     describe("focus manager optional onSelectAction callback", () => {
         const fm = new TXMFocusManager();
+        fm.keyThrottleDelay = 0; // disable throttling for this test
 
         test("onSelectAction callback should only happen on focus1", () => {
             focus1.onSelectAction = jest.fn();
@@ -153,8 +154,22 @@ describe("TXMFocusManager", () => {
         });
     });
 
+    test("key event throttling", ()=> {
+        const fm = new TXMFocusManager();
+        fm.keyThrottleDelay = 100; // ensure throttling for this test
+        fm.onInputAction = jest.fn();
+        fm.onKeyDown(keyEvent);
+        expect(fm.onInputAction).toHaveBeenCalledTimes(1);
+        fm.onKeyDown(keyEvent);
+        fm.onKeyDown(keyEvent);
+        fm.onKeyDown(keyEvent);
+        fm.onKeyDown(keyEvent);
+        expect(fm.onInputAction).toHaveBeenCalledTimes(1);
+    });
+
     test("focus manager onInputAction callback", () => {
         const fm = new TXMFocusManager();
+        fm.keyThrottleDelay = 0; // disable throttling for this test
 
         focus1.onSelectAction = undefined;
         focus2.onSelectAction = undefined;
@@ -184,6 +199,7 @@ describe("TXMFocusManager", () => {
         jest.setTimeout(10 * 1000);
 
         const fm = new TXMFocusManager();
+        fm.keyThrottleDelay = 0; // disable throttling for this test
         fm.setFocus(focus1);
 
         const injectedActions = [];

@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.3.8
+## v1.3.9
 * [CTV-3036](https://truextech.atlassian.net/browse/CTV-3036): Sticky Key Detection and Interaction Capping
 
 ## v1.3.7
