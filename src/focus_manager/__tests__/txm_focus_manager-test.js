@@ -154,6 +154,19 @@ describe("TXMFocusManager", () => {
         });
     });
 
+    test("key event throttling", ()=> {
+        const fm = new TXMFocusManager();
+        fm.keyThrottleDelay = 100; // ensure throttling for this test
+        fm.onInputAction = jest.fn();
+        fm.onKeyDown(keyEvent);
+        expect(fm.onInputAction).toHaveBeenCalledTimes(1);
+        fm.onKeyDown(keyEvent);
+        fm.onKeyDown(keyEvent);
+        fm.onKeyDown(keyEvent);
+        fm.onKeyDown(keyEvent);
+        expect(fm.onInputAction).toHaveBeenCalledTimes(1);
+    });
+
     test("focus manager onInputAction callback", () => {
         const fm = new TXMFocusManager();
         fm.keyThrottleDelay = 0; // disable throttling for this test
