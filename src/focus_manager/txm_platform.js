@@ -248,7 +248,7 @@ export class TXMPlatform {
             || /CrKey/.test(userAgent)) {
             configureForVizio();
 
-        } else if (/Linux/.test(userAgent) && window.$badger) {
+        } else if (isRunningOnComcast()) {
             configureForComcast();
 
         } else if (/PlayStation 4/.test(userAgent)) {
@@ -396,6 +396,21 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.rewind] = 412;
             actionKeyCodes[inputActions.stop] = 413;
             actionKeyCodes[inputActions.nextTrack] = [418];
+        }
+
+        function isRunningOnComcast() {
+            if (/Linux/.test(userAgent)) {
+                if (window.$badger) return true; // Host app has loaded the comcast badger library
+
+                // Otherwise, test for the comcast bridge service.
+                const SM = window.ServiceManager;
+                if (SM) {
+                    const getService = SM.getServiceForJavaScript || SM.createService;
+                    const bridge = getService("com.comcast.BridgeObject_1") || getService("com.comcast.BridgeObj1");
+                    if (bridge) return true;
+                }
+            }
+            return false;
         }
 
         function configureForComcast() {
