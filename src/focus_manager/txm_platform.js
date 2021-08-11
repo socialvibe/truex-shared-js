@@ -422,6 +422,7 @@ export class TXMPlatform {
                     // Older version.
                     const getService = SM.getServiceForJavaScript || SM.createService;
                     bridge = getService("com.comcast.BridgeObject_1") || getService("com.comcast.BridgeObj1");
+                    console.log("bridge " + bridge);
                 }
                 if (bridge) return true;
             }
