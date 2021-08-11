@@ -268,11 +268,11 @@ export class TXMPlatform {
                 configureForAndroidTV();
             }
 
-        } else if (/Linux/.test(userAgent) && (window.$badger || window.ServiceManager)) {
+        } else if (/Linux/.test(userAgent) && (window.$badger || !window.localStorage)) {
             // "Real" comcast apps uses the badger lib.
-            // When running running from test apps like Skyline this will not have been set up,
-            // so we use the presence of the platform specific ServiceManager. If we ever encounter
-            // a platform with its own SM, then we will have to distinguish between them now.
+            // When running running from test apps like Skyline this will not have been set up, so
+            // we use a hack for detecting the known comcast limitation. If we ever encounter another platform
+            // that also is missing localStorage (unlikely), then we will have to distinguish between them then.
             configureForComcast();
 
         } else {
