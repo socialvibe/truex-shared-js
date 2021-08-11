@@ -268,26 +268,21 @@ export class TXMPlatform {
                 configureForAndroidTV();
             }
 
-        } else if (/Linux/.test(userAgent) && window.$badger) {
-            configureForComcast();
-
-        } else if (/Linux/.test(userAgent) && hasComcastService()) {
-            // Probably running on Comcast from a test app (so no Comcast badger lib set up)
-            // We need to query the service manager, which unfortunately is asynchronous.
+        } else if (/Linux/.test(userAgent) && (window.$badger || window.ServiceManager)) {
+            // "Real" comcast apps uses the badger lib.
+            // When running running from test apps like Skyline this will not have been set up,
+            // so we use the presence of the platform specific ServiceManager. If we ever encounter
+            // a platform with its own SM, then we will have to distinguish between them now.
             configureForComcast();
 
         } else {
             configureForUnknownPlatform();
         }
 
-        applyKeyMap();
+        // Establish the direct key code to input action mapping.
+        self._inputKeyMap = {};
+        self.applyInputKeyMap(actionKeyCodes);
         return;
-
-        function applyKeyMap() {
-            // Establish the direct key code to input action mapping.
-            self._inputKeyMap = {};
-            self.applyInputKeyMap(actionKeyCodes);
-        }
 
         function configureForLgWebOs() {
             self.isLG = true;
@@ -406,31 +401,6 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.rewind] = 412;
             actionKeyCodes[inputActions.stop] = 413;
             actionKeyCodes[inputActions.nextTrack] = [418];
-        }
-
-        // Dynamically tests if the comcast service is available.
-        function hasComcastService() {
-            const SM = window.ServiceManager;
-            console.log("hasComcastService " + SM);
-            if (SM) {
-                var bridge;
-                if ("version" in SM) {
-                    console.log("*** with version");
-                    // Using newer version of the service manager.
-                    SM.getServiceForJavaScript("com.comcast.BridgeObject_1", result => {
-                        bridge = result;
-                        console.log("*** bridge on callback: " + bridge);
-                    });
-                } else {
-                    // Older version.
-                    const getService = SM.getServiceForJavaScript || SM.createService;
-                    bridge = getService("com.comcast.BridgeObject_1") || getService("com.comcast.BridgeObj1");
-                    console.log("*** older version bridge " + bridge);
-                }
-                console.log("*** bridge: " + bridge);
-                if (bridge) return true;
-            }
-            return false;
         }
 
         function configureForComcast() {
