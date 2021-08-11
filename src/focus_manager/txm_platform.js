@@ -415,18 +415,19 @@ export class TXMPlatform {
             if (SM) {
                 var bridge;
                 if ("version" in SM) {
-                    console.log("version ");
+                    console.log("*** with version");
                     // Using newer version of the service manager.
                     SM.getServiceForJavaScript("com.comcast.BridgeObject_1", result => {
                         bridge = result;
-                        console.log("bridge " + bridge);
+                        console.log("*** bridge on callback: " + bridge);
                     });
                 } else {
                     // Older version.
                     const getService = SM.getServiceForJavaScript || SM.createService;
                     bridge = getService("com.comcast.BridgeObject_1") || getService("com.comcast.BridgeObj1");
-                    console.log("older version bridge " + bridge);
+                    console.log("*** older version bridge " + bridge);
                 }
+                console.log("*** bridge: " + bridge);
                 if (bridge) return true;
             }
             return false;
