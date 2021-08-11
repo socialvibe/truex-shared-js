@@ -411,18 +411,21 @@ export class TXMPlatform {
         // Dynamically tests if the comcast service is available.
         function hasComcastService() {
             const SM = window.ServiceManager;
+            console.log("hasComcastService " + SM);
             if (SM) {
                 var bridge;
                 if ("version" in SM) {
+                    console.log("version ");
                     // Using newer version of the service manager.
                     SM.getServiceForJavaScript("com.comcast.BridgeObject_1", result => {
                         bridge = result;
+                        console.log("bridge " + bridge);
                     });
                 } else {
                     // Older version.
                     const getService = SM.getServiceForJavaScript || SM.createService;
                     bridge = getService("com.comcast.BridgeObject_1") || getService("com.comcast.BridgeObj1");
-                    console.log("bridge " + bridge);
+                    console.log("older version bridge " + bridge);
                 }
                 if (bridge) return true;
             }
