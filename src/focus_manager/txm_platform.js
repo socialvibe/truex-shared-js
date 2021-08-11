@@ -248,9 +248,6 @@ export class TXMPlatform {
             || /CrKey/.test(userAgent)) {
             configureForVizio();
 
-        } else if (isRunningOnComcast()) {
-            configureForComcast();
-
         } else if (/PlayStation 4/.test(userAgent)) {
             configureForPS4();
 
@@ -271,13 +268,26 @@ export class TXMPlatform {
                 configureForAndroidTV();
             }
 
+        } else if (/Linux/.test(userAgent) && window.$badger) {
+            configureForComcast();
+
+        } else if (/Linux/.test(userAgent) && hasComcastService()) {
+            // Probably running on Comcast from a test app (so no Comcast badger lib set up)
+            // We need to query the service manager, which unfortunately is asynchronous.
+            configureForComcast();
+
         } else {
             configureForUnknownPlatform();
         }
 
-        // Establish the direct key code to input action mapping.
-        self._inputKeyMap = {};
-        self.applyInputKeyMap(actionKeyCodes);
+        applyKeyMap();
+        return;
+
+        function applyKeyMap() {
+            // Establish the direct key code to input action mapping.
+            self._inputKeyMap = {};
+            self.applyInputKeyMap(actionKeyCodes);
+        }
 
         function configureForLgWebOs() {
             self.isLG = true;
@@ -398,17 +408,22 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.nextTrack] = [418];
         }
 
-        function isRunningOnComcast() {
-            if (/Linux/.test(userAgent)) {
-                if (window.$badger) return true; // Host app has loaded the comcast badger library
-
-                // Otherwise, test for the comcast bridge service.
-                const SM = window.ServiceManager;
-                if (SM) {
+        // Dynamically tests if the comcast service is available.
+        function hasComcastService() {
+            const SM = window.ServiceManager;
+            if (SM) {
+                var bridge;
+                if ("version" in SM) {
+                    // Using newer version of the service manager.
+                    SM.getServiceForJavaScript("com.comcast.BridgeObject_1", result => {
+                        bridge = result;
+                    });
+                } else {
+                    // Older version.
                     const getService = SM.getServiceForJavaScript || SM.createService;
-                    const bridge = getService("com.comcast.BridgeObject_1") || getService("com.comcast.BridgeObj1");
-                    if (bridge) return true;
+                    bridge = getService("com.comcast.BridgeObject_1") || getService("com.comcast.BridgeObj1");
                 }
+                if (bridge) return true;
             }
             return false;
         }
