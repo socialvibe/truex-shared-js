@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.10
+* [CTV-3074](https://truextech.atlassian.net/browse/CTV-3074): [Comcast] Audio does not Pause (4789)
+
 ## v1.3.9
 * [CTV-3036](https://truextech.atlassian.net/browse/CTV-3036): Sticky Key Detection and Interaction Capping
 

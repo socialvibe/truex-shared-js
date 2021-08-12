@@ -248,9 +248,6 @@ export class TXMPlatform {
             || /CrKey/.test(userAgent)) {
             configureForVizio();
 
-        } else if (/Linux/.test(userAgent) && window.$badger) {
-            configureForComcast();
-
         } else if (/PlayStation 4/.test(userAgent)) {
             configureForPS4();
 
@@ -271,6 +268,13 @@ export class TXMPlatform {
                 configureForAndroidTV();
             }
 
+        } else if (/Linux/.test(userAgent) && (window.$badger || !window.localStorage)) {
+            // "Real" comcast apps uses the badger lib.
+            // When running running from test apps like Skyline this will not have been set up, so
+            // we use a hack for detecting the known comcast limitation. If we ever encounter another platform
+            // that also is missing localStorage (unlikely), then we will have to distinguish between them then.
+            configureForComcast();
+
         } else {
             configureForUnknownPlatform();
         }
@@ -278,6 +282,7 @@ export class TXMPlatform {
         // Establish the direct key code to input action mapping.
         self._inputKeyMap = {};
         self.applyInputKeyMap(actionKeyCodes);
+        return;
 
         function configureForLgWebOs() {
             self.isLG = true;
