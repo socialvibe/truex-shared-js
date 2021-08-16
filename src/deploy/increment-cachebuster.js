@@ -1,5 +1,5 @@
 const path = require("path");
-require('whatwg-fetch');
+require('node-fetch');
 
 module.exports = (env) => {
     const environment = env === "prod" ? "" : "qa-";
