@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.11
+* [Bugfix] increment-cachebuster.js -  replace whatwg-fetch w/ node-fetch b/c xmlHttpRequest is not defined
+
 ## v1.3.10
 * [CTV-3074](https://truextech.atlassian.net/browse/CTV-3074): [Comcast] Audio does not Pause (4789)
 

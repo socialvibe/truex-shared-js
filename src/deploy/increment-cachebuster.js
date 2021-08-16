@@ -1,5 +1,5 @@
 const path = require("path");
-require('whatwg-fetch');
+const fetch = require('node-fetch');
 
 module.exports = (env) => {
     const environment = env === "prod" ? "" : "qa-";
@@ -25,6 +25,6 @@ module.exports = (env) => {
             const nextIncrement = new Date();
             nextIncrement.setMinutes(nextIncrement.getMinutes() + 10);
             console.log(`cachebuster is set to increment at: ${nextIncrement.toLocaleString()}`);
-            resolve(body.current_cachebuster_value);
+            return body.current_cachebuster_value;
         });
 };
