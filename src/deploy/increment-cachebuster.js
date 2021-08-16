@@ -25,5 +25,6 @@ module.exports = (env) => {
             const nextIncrement = new Date();
             nextIncrement.setMinutes(nextIncrement.getMinutes() + 10);
             console.log(`cachebuster is set to increment at: ${nextIncrement.toLocaleString()}`);
+            return body.current_cachebuster_value;
         });
 };
