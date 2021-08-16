@@ -1,5 +1,5 @@
 const path = require("path");
-require('node-fetch');
+const fetch = require('node-fetch');
 
 module.exports = (env) => {
     const environment = env === "prod" ? "" : "qa-";
