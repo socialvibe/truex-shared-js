@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.4.0
+* [CTV-2979](https://truextech.atlassian.net/browse/CTV-2979): Add adFetchCompleted TAR event
+
 ## v1.3.11
 * [Bugfix] increment-cachebuster.js -  replace whatwg-fetch w/ node-fetch b/c xmlHttpRequest is not defined
 
