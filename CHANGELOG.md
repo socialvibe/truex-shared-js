@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.0
+* [CTV-3162](https://truextech.atlassian.net/browse/CTV-3162): Ads can programmatically set key event throttle threshold
+
 ## v1.4.0
 * [CTV-2979](https://truextech.atlassian.net/browse/CTV-2979): Add adFetchCompleted TAR event
 
