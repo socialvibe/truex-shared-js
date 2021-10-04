@@ -165,6 +165,25 @@ describe("TXMFocusManager", () => {
         fm.onKeyDown(keyEvent);
         fm.onKeyDown(keyEvent);
         expect(fm.onInputAction).toHaveBeenCalledTimes(1);
+
+        return new Promise((resolve, reject) => {
+            // Eventually a new key event gets past the threshold and results things.
+            const keysTimesLeft = [20, 20, 20, 20, 20, 100, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+            waitForNextKey();
+
+            function waitForNextKey() {
+                const keyDelay = keysTimesLeft.shift();
+                if (keyDelay) {
+                    setTimeout(() => {
+                        fm.onKeyDown(keyEvent);
+                        waitForNextKey();
+                    }, keyDelay);
+                } else {
+                    expect(fm.onInputAction).toHaveBeenCalledTimes(4);
+                    resolve();
+                }
+            }
+        });
     });
 
     test("focus manager onInputAction callback", () => {
