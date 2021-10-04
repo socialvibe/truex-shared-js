@@ -167,7 +167,7 @@ describe("TXMFocusManager", () => {
         expect(fm.onInputAction).toHaveBeenCalledTimes(1);
 
         return new Promise((resolve, reject) => {
-            // Eventually a new key event gets past the threshold and results things.
+            // Eventually a new key event gets past the threshold and resets the timeouts.
             const keysTimesLeft = [20, 20, 20, 20, 20, 100, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
             waitForNextKey();
 
