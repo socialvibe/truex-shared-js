@@ -33,6 +33,9 @@ describe("truex_servers testing", () => {
 
             expect(servers.serverUrlOf("something.elsewhere.com")).toBe("https://something.elsewhere.com");
             expect(servers.serverUrlOf("http://localhost:8080")).toBe("http://localhost:8080");
+            expect(servers.serverUrlOf("http://qa-media.truex.com")).toBe("http://qa-media.truex.com");
+            expect(servers.serverUrlOf("https://qa-media.truex.com")).toBe("https://qa-media.truex.com");
+            expect(servers.serverUrlOf("//qa-media.truex.com")).toBe("https://qa-media.truex.com");
 
             if (isProd) {
                 expect(servers.truexServerUrl).toBe("https://serve.truex.com");

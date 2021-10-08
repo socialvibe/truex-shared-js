@@ -39,11 +39,17 @@ export class TruexServers {
         function serverUrlOf(host) {
             var result = host;
             const qaPrefix = 'qa-';
-            if (!isProd && !host.startsWith(qaPrefix) && host.indexOf('truex.com') >= 0) {
+            const hasProtocol = host.match(/^[a-zA-Z]+:\/\//);
+            const hasImplicitProtocol = host.match(/^\/\//);
+            if (!isProd && !hasProtocol && !hasImplicitProtocol
+                && !host.startsWith(qaPrefix) && host.indexOf('truex.com') >= 0) {
                 result = qaPrefix + host;
             }
-            if (!result.startsWith('http')) {
-                result = 'https://' + result;
+            if (!hasProtocol) {
+                if (!hasImplicitProtocol) {
+                    result = '//' + result;
+                }
+                result = 'https:' + result;
             }
             return result;
         }
