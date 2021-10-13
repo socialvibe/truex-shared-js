@@ -14,15 +14,18 @@ export function isTruexProductionUrl(url) {
  * Describes various qa vs production versions of some key truex backend servers
  */
 export class TruexServers {
-    constructor(vastConfigOrUrl) {
+    constructor(vastConfigOrUrlOrFlag) {
         var isProd = false; // by default
 
         var firstAd;
-        if (typeof vastConfigOrUrl == 'string') {
-            isProd = isTruexProductionUrl(vastConfigOrUrl);
+        if (vastConfigOrUrlOrFlag === true) {
+            isProd = true;
+
+        } else if (typeof vastConfigOrUrlOrFlag == 'string') {
+            isProd = isTruexProductionUrl(vastConfigOrUrlOrFlag);
 
         } else {
-            firstAd = vastConfigOrUrl && vastConfigOrUrl.ads && vastConfigOrUrl.ads[0];
+            firstAd = vastConfigOrUrlOrFlag && vastConfigOrUrlOrFlag.ads && vastConfigOrUrlOrFlag.ads[0];
             if (firstAd) {
                 isProd = isTruexProductionUrl(firstAd.window_url);
             }
