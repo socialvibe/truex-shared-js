@@ -33,6 +33,15 @@ describe("truex_servers testing", () => {
         const prodConfig = {ads: [{window_url: "https://media.truex.com/container/3.x/current/desktop/?whatever=1234"}]}
         verifyServers(new TruexServers(prodConfig), true);
 
+        const skipCardConfig = {ads: [], "card_creative_url": "https://media.truex.com/integration/ctv/choicecard-ctv.js"};
+        verifyServers(new TruexServers(skipCardConfig), true);
+
+        const skipCardConfig2 = {ads: [], "card_creative_url": "https://qa-media.truex.com/integration/ctv/choicecard-ctv.js"};
+        verifyServers(new TruexServers(skipCardConfig2), false);
+
+        const demoConfig = {ads: [], "service_url": "measure.truex.com"};
+        verifyServers(new TruexServers(demoConfig), true);
+
         function verifyServers(servers, isProd) {
             expect(servers.isProduction).toBe(isProd);
 

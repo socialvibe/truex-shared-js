@@ -17,7 +17,6 @@ export class TruexServers {
     constructor(vastConfigOrUrlOrFlag) {
         var isProd = false; // by default
 
-        var firstAd;
         if (vastConfigOrUrlOrFlag === true) {
             isProd = true;
 
@@ -25,9 +24,12 @@ export class TruexServers {
             isProd = isTruexProductionUrl(vastConfigOrUrlOrFlag);
 
         } else {
-            firstAd = vastConfigOrUrlOrFlag && vastConfigOrUrlOrFlag.ads && vastConfigOrUrlOrFlag.ads[0];
+            const vc = vastConfigOrUrlOrFlag;
+            const firstAd = vc && vc.ads && vc.ads[0];
             if (firstAd) {
                 isProd = isTruexProductionUrl(firstAd.window_url);
+            } else {
+                isProd = isTruexProductionUrl(vc.card_creative_url || vc.service_url);
             }
         }
 
