@@ -13,6 +13,8 @@ describe("truex_servers testing", () => {
         expect(isTruexProductionUrl("https://qa-media.truex.com")).toBe(false);
         expect(isTruexProductionUrl("https://qa-server.truex.com")).toBe(false);
         expect(isTruexProductionUrl("https://media.somewhere.else.com")).toBe(false);
+        expect(isTruexProductionUrl("qa-media.truex.com")).toBe(false);
+        expect(isTruexProductionUrl("media.truex.com")).toBe(true);
     });
 
     test("truex servers", () => {
