@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.5.3
+## v1.5.4
 * [CTV-3205](https://truextech.atlassian.net/browse/CTV-3205): HTML5 - Preproduction Environment
 
 ## v1.5.0

@@ -20,6 +20,9 @@ describe("truex_servers testing", () => {
     test("truex servers", () => {
         verifyServers(new TruexServers(false), false);
         verifyServers(new TruexServers(true), true);
+        verifyServers(new TruexServers(), false);
+        verifyServers(new TruexServers(null), false);
+        verifyServers(new TruexServers({}), false);
 
         const hiltonAd = "https://qa-get.truex.com/15c7f5269a09bd8c5007ba98263571dd80c458e5/vast/config?dimension_2=0&dimension_5=hilton&stream_position=preroll&stream_id=1234";
         verifyServers(new TruexServers(hiltonAd), false);

@@ -17,13 +17,13 @@ export class TruexServers {
     constructor(vastConfigOrUrlOrFlag) {
         var isProd = false; // by default
 
-        if (vastConfigOrUrlOrFlag === true) {
-            isProd = true;
+        if (typeof vastConfigOrUrlOrFlag == 'boolean') {
+            isProd = vastConfigOrUrlOrFlag;
 
         } else if (typeof vastConfigOrUrlOrFlag == 'string') {
             isProd = isTruexProductionUrl(vastConfigOrUrlOrFlag);
 
-        } else {
+        } else if (vastConfigOrUrlOrFlag) {
             const vc = vastConfigOrUrlOrFlag;
             const firstAd = vc && vc.ads && vc.ads[0];
             isProd = isTruexProductionUrl(firstAd && firstAd.window_url || vc.card_creative_url || vc.service_url);
