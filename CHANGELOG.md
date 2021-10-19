@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.4
+* [CTV-3205](https://truextech.atlassian.net/browse/CTV-3205): HTML5 - Preproduction Environment
+
 ## v1.5.0
 * [CTV-3162](https://truextech.atlassian.net/browse/CTV-3162): Ads can programmatically set key event throttle threshold
 
