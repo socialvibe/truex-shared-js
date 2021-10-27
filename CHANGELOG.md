@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.4.1
+* [CTV-3257](https://truextech.atlassian.net/browse/CTV-3257): HTML5 adStarted event fires too early
+
 ## v1.4.0
 * [CTV-2979](https://truextech.atlassian.net/browse/CTV-2979): Add adFetchCompleted TAR event
 
