@@ -1,5 +1,6 @@
 const adEvents = {
     adStarted: 'adStarted',
+    adLoaded: 'adLoaded',
     adCompleted: 'adCompleted',
     adError: 'adError',
     noAdsAvailable: 'noAdsAvailable',

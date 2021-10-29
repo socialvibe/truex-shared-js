@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.5
+* [CTV-3257](https://truextech.atlassian.net/browse/CTV-3257): HTML5 adStarted event fires too early
+
 ## v1.5.4
 * [CTV-3205](https://truextech.atlassian.net/browse/CTV-3205): HTML5 - Preproduction Environment
 
