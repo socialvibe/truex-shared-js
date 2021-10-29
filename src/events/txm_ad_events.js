@@ -4,6 +4,7 @@ const adEvents = {
     adError: 'adError',
     noAdsAvailable: 'noAdsAvailable',
     adFreePod: 'adFreePod',
+    adFetchCompleted: 'adFetchCompleted',
     userCancelStream: 'userCancelStream',
     optIn: 'optIn',
     optOut: 'optOut',

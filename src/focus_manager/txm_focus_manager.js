@@ -252,12 +252,12 @@ export class TXMFocusManager {
             // Otherwise too much processing and tracking happens.
             const now = Date.now();
             const elapsedTime = now - this._lastKeyEventTimestamp;
-            this._lastKeyEventTimestamp = now;
             if (keyCode == this._lastKeyCode && elapsedTime <= throttleDelay) {
                 // Swallow the excess key event.
                 return true; // handled
             }
             this._lastKeyCode = keyCode;
+            this._lastKeyEventTimestamp = now;
         }
 
         let handled = false;
