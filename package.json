@@ -1,6 +1,6 @@
 {
   "name": "truex-shared",
-  "version": "1.5.4",
+  "version": "1.5.6",
   "description": "Common JS code shared across true[X] repos",
   "private": true,
   "files": [
