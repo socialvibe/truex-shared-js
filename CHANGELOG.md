@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.7
+* [CTV-2685](https://truextech.atlassian.net/browse/CTV-2685): HTML5 - focus should not be reset during focus lost on button opacity changes
+
 ## v1.5.5
 * [CTV-3257](https://truextech.atlassian.net/browse/CTV-3257): HTML5 adStarted event fires too early
 

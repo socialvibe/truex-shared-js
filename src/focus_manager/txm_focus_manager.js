@@ -58,12 +58,9 @@ export class TXMFocusManager {
     setFocus(newFocus) {
         let oldFocus = this.currentFocus;
         if (oldFocus === newFocus) return;
-        if (oldFocus) {
-            this._focus = undefined;
-            if (oldFocus.onFocusSet) oldFocus.onFocusSet(false);
-        }
+        this._focus = newFocus || undefined;
+        if (oldFocus && oldFocus.onFocusSet) oldFocus.onFocusSet(false);
         if (newFocus) {
-            this._focus = newFocus;
             this._saveLastFocus(newFocus, newFocus);
             if (newFocus.onFocusSet) newFocus.onFocusSet(true);
         } else {
