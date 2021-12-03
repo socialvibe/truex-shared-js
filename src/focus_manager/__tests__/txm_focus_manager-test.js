@@ -620,59 +620,5 @@ describe("TXMFocusManager", () => {
                 expect(fm.currentFocus).toBe(focuses[2]);
             });
         });
-
-        describe("derived 2D focus navigation", () => {
-            const fm = new TXMFocusManager();
-
-            function newStub({id, x, y, w, h}) {
-                const element = {id, top: y, left: x, bottom: y + h, right: x + w, width: w, height: h};
-                element.getBoundingClientRect = () => element;
-                element.classList = {
-                    add: () => {},
-                    remove: () => {}
-                };
-                return new Focusable(element);
-            }
-
-            function testNavigation(currFocus, action, newFocus) {
-                fm.setFocus(currFocus);
-                fm.onInputAction(action);
-                expect(fm.currentFocus).toBe(newFocus);
-            }
-
-            test("test focus grid with overlaps", () => {
-                // NOTE: overlaps are ignored, row/col based solely on top/left position.
-                const f_0_0 = newStub({id: "f_0_0", x: 10, y: 10, w: 40, h: 40});
-                const f_0_2 = newStub({id: "f_0_2", x: 60, y: 10, w: 40, h: 50});
-                const f_1_2 = newStub({id: "f_1_2", x: 60, y: 20, w: 40, h: 40}); // overlaps, still in same row
-                const f_2_4 = newStub({id: "f_2_4", x: 140, y: 70, w: 40, h: 40});  // overlaps, still in same row
-                const f_3_0 = newStub({id: "f_3_0", x: 10, y: 80, w: 50, h: 40});
-                const f_3_1 = newStub({id: "f_3_1", x: 20, y: 80, w: 100, h: 40});
-                const f_3_3 = newStub({id: "f_3_3", x: 80, y: 80, w: 40, h: 40});
-                const f_4_5 = newStub({id: "f_4_5", x: 200, y: 400, w: 40, h: 40});
-
-                const focusableGrid = fm.derive2DNavigationArray([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
-                expect(focusableGrid).toEqual([
-                    [f_0_0,     undefined, f_0_2],
-                    [undefined, undefined, f_1_2],
-                    [undefined, undefined, undefined, undefined, f_2_4],
-                    [f_3_0,     f_3_1,     undefined, f_3_3],
-                    [undefined, undefined, undefined, undefined, undefined, f_4_5]
-                ]);
-
-                // Moving along the same row or column takes precedence.
-                testNavigation(f_0_0, inputActions.moveDown, f_3_1);
-                testNavigation(f_3_1, inputActions.moveUp, f_0_0);
-                testNavigation(f_0_0, inputActions.moveRight, f_0_2);
-                testNavigation(f_0_2, inputActions.moveDown, f_1_2);
-                testNavigation(f_1_2, inputActions.moveUp, f_0_2);
-                testNavigation(f_1_2, inputActions.moveDown, f_2_4);
-                testNavigation(f_2_4, inputActions.moveUp, f_1_2);
-                testNavigation(f_2_4, inputActions.moveLeft, f_1_2);
-                testNavigation(f_2_4, inputActions.moveRight, f_4_5);
-                testNavigation(f_3_1, inputActions.moveRight, f_3_3);
-                testNavigation(f_3_3, inputActions.moveLeft, f_3_1);
-            });
-        });
     });
 });
