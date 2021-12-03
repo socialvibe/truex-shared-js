@@ -695,7 +695,7 @@ export class TXMFocusManager {
         const focusablesAndBounds = focusables.map(f => {
             const e = f.element;
             const bounds = e && e.getBoundingClientRect() || {left: 0, right: 0, top: 0, bottom: 0};
-            return {focusable: f, bounds};
+            return {focusable: f, bounds, column: 0};
         });
 
         // Sort first by x-position, then y-position.
@@ -707,10 +707,14 @@ export class TXMFocusManager {
             return cmp;
         });
 
-        const result = deriveRows(focusablesAndBounds);
+        const itemRows = deriveRows(focusablesAndBounds);
 
-        // Now give the 2D array of just the focusables.
-        return result.map(row => row.map(item => item.focusable));
+        const itemGrid = getFocusableGrid(itemRows);
+        return itemGrid;
+
+        // NOTE: we strictly use only the top/left corner of each item so as to avoid problems with overlaps.
+        // This ensures we always have a true grid. If two focusable are on the exact same corner, the last one
+        // wins, meaning the previous one is not navigable. This should not occur in actual useful ads.
 
         function deriveRows(items) {
             if (!items || items.length <= 0) return [];
@@ -722,9 +726,9 @@ export class TXMFocusManager {
             let lastBounds;
             items.forEach(item => {
                 const bounds = item.bounds;
-                if (lastBounds && bounds.bottom <= lastBounds.top) {
+                if (lastBounds && bounds.top < lastBounds.top) {
                     itemsAbove.push(item);
-                } else if (lastBounds && bounds.top >= lastBounds.bottom) {
+                } else if (lastBounds && bounds.top > lastBounds.top) {
                     itemsBelow.push(item);
                 } else {
                     lastBounds = bounds;
@@ -745,6 +749,32 @@ export class TXMFocusManager {
             }
 
             return results;
+        }
+
+        function getFocusableGrid(itemRows) {
+            // Note: focusablesAndBounds is already sorted by x.
+            var lastColX = 0;
+            var lastCol = 0;
+            focusablesAndBounds.forEach((item, index) => {
+                const itemX = item.bounds.left;
+                if (index <= 0) {
+                    // First column
+                    lastColX = itemX;
+                } else if (lastColX != itemX) {
+                    // New column.
+                    lastColX = itemX;
+                    lastCol += 1;
+                }
+                item.column = lastCol;
+            });
+
+            return itemRows.map(itemRow => {
+                const rowWithColumns = [];
+                itemRow.forEach(item => {
+                    rowWithColumns[item.column] = item.focusable;
+                });
+                return rowWithColumns;
+            });
         }
     }
 }
