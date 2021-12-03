@@ -634,25 +634,45 @@ describe("TXMFocusManager", () => {
                 return new Focusable(element);
             }
 
-            const f_0_0 = newStub({id: "f_0_0", top: 10, left: 10, bottom: 50, right: 50});
-            const f_0_1 = newStub({id: "f_0_1", top: 20, left: 60, bottom: 60, right: 100}); // overlaps, still in same row
-            const f_1_0 = newStub({id: "f_1_0", top: 80, left: 20, bottom: 120, right: 60});
-            const f_1_1 = newStub({id: "f_1_1", top: 80, left: 80, bottom: 120, right: 120});
-            const f_1_2 = newStub({id: "f_1_2", top: 70, left: 140, bottom: 110, right: 180});  // overlaps, still in same row
-            const f_2_0 = newStub({id: "f_2_0", top: 400, left: 200, bottom: 440, right: 240});
+            function testNavigation(currFocus, action, newFocus) {
+                fm.setFocus(currFocus);
+                fm.onInputAction(action);
+                expect(fm.currentFocus).toBe(newFocus);
+            }
 
-            const focusablesInOrder = fm.derive2DNavigationArray([f_2_0, f_0_0, f_1_2, f_1_1, f_0_1, f_1_0]);
-            expect(focusablesInOrder.length).toBe(3);
-            expect(focusablesInOrder[0]).toEqual([f_0_0, f_0_1]);
-            expect(focusablesInOrder[1]).toEqual([f_1_0, f_1_1, f_1_2]);
-            expect(focusablesInOrder[2]).toEqual([f_2_0]);
+            test("test focus grid with overlaps", () => {
+                // NOTE: overlaps are ignored, row/col based solely on top/left position.
+                const f_0_0 = newStub({id: "f_0_0", top: 10, left: 10, bottom: 50, right: 50});
+                const f_0_2 = newStub({id: "f_0_2", top: 10, left: 60, bottom: 60, right: 100});
+                const f_1_2 = newStub({id: "f_1_2", top: 20, left: 60, bottom: 60, right: 100}); // overlaps, still in same row
+                const f_2_4 = newStub({id: "f_2_4", top: 70, left: 140, bottom: 110, right: 180});  // overlaps, still in same row
+                const f_3_0 = newStub({id: "f_3_0", top: 80, left: 10, bottom: 120, right: 60});
+                const f_3_1 = newStub({id: "f_3_1", top: 80, left: 20, bottom: 120, right: 120});
+                const f_3_3 = newStub({id: "f_3_3", top: 80, left: 80, bottom: 120, right: 120});
+                const f_4_5 = newStub({id: "f_4_5", top: 400, left: 200, bottom: 440, right: 240});
 
-            fm.setContentFocusables(focusablesInOrder);
-            expect(fm.currentFocus).toBe(focusablesInOrder[0][0]);
-            fm.onInputAction(inputActions.moveDown);
-            expect(fm.currentFocus).toBe(focusablesInOrder[1][0]);
-            fm.onInputAction(inputActions.moveDown);
-            expect(fm.currentFocus).toBe(focusablesInOrder[2][0]);
+                const focusableGrid = fm.derive2DNavigationArray([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
+                expect(focusableGrid).toEqual([
+                    [f_0_0,     undefined, f_0_2],
+                    [undefined, undefined, f_1_2],
+                    [undefined, undefined, undefined, undefined, f_2_4],
+                    [f_3_0,     f_3_1,     undefined, f_3_3],
+                    [undefined, undefined, undefined, undefined, undefined, f_4_5]
+                ]);
+
+                // Moving along the same row or column takes precedence.
+                testNavigation(f_0_0, inputActions.moveDown, f_3_1);
+                testNavigation(f_3_1, inputActions.moveUp, f_0_0);
+                testNavigation(f_0_0, inputActions.moveRight, f_0_2);
+                testNavigation(f_0_2, inputActions.moveDown, f_1_2);
+                testNavigation(f_1_2, inputActions.moveUp, f_0_2);
+                testNavigation(f_1_2, inputActions.moveDown, f_2_4);
+                testNavigation(f_2_4, inputActions.moveUp, f_1_2);
+                testNavigation(f_2_4, inputActions.moveLeft, f_1_2);
+                testNavigation(f_2_4, inputActions.moveRight, f_4_5);
+                testNavigation(f_3_1, inputActions.moveRight, f_3_3);
+                testNavigation(f_3_3, inputActions.moveLeft, f_3_1);
+            });
         });
     });
 });
