@@ -624,8 +624,8 @@ describe("TXMFocusManager", () => {
         describe("derived 2D focus navigation", () => {
             const fm = new TXMFocusManager();
 
-            function newStub({id, top, left, bottom, right}) {
-                const element = {id, top, left, bottom, right, width: right - left, height: bottom - top};
+            function newStub({id, x, y, w, h}) {
+                const element = {id, top: y, left: x, bottom: y + h, right: x + w, width: w, height: h};
                 element.getBoundingClientRect = () => element;
                 element.classList = {
                     add: () => {},
@@ -642,14 +642,14 @@ describe("TXMFocusManager", () => {
 
             test("test focus grid with overlaps", () => {
                 // NOTE: overlaps are ignored, row/col based solely on top/left position.
-                const f_0_0 = newStub({id: "f_0_0", top: 10, left: 10, bottom: 50, right: 50});
-                const f_0_2 = newStub({id: "f_0_2", top: 10, left: 60, bottom: 60, right: 100});
-                const f_1_2 = newStub({id: "f_1_2", top: 20, left: 60, bottom: 60, right: 100}); // overlaps, still in same row
-                const f_2_4 = newStub({id: "f_2_4", top: 70, left: 140, bottom: 110, right: 180});  // overlaps, still in same row
-                const f_3_0 = newStub({id: "f_3_0", top: 80, left: 10, bottom: 120, right: 60});
-                const f_3_1 = newStub({id: "f_3_1", top: 80, left: 20, bottom: 120, right: 120});
-                const f_3_3 = newStub({id: "f_3_3", top: 80, left: 80, bottom: 120, right: 120});
-                const f_4_5 = newStub({id: "f_4_5", top: 400, left: 200, bottom: 440, right: 240});
+                const f_0_0 = newStub({id: "f_0_0", x: 10, y: 10, w: 40, h: 40});
+                const f_0_2 = newStub({id: "f_0_2", x: 60, y: 10, w: 40, h: 50});
+                const f_1_2 = newStub({id: "f_1_2", x: 60, y: 20, w: 40, h: 40}); // overlaps, still in same row
+                const f_2_4 = newStub({id: "f_2_4", x: 140, y: 70, w: 40, h: 40});  // overlaps, still in same row
+                const f_3_0 = newStub({id: "f_3_0", x: 10, y: 80, w: 50, h: 40});
+                const f_3_1 = newStub({id: "f_3_1", x: 20, y: 80, w: 100, h: 40});
+                const f_3_3 = newStub({id: "f_3_3", x: 80, y: 80, w: 40, h: 40});
+                const f_4_5 = newStub({id: "f_4_5", x: 200, y: 400, w: 40, h: 40});
 
                 const focusableGrid = fm.derive2DNavigationArray([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
                 expect(focusableGrid).toEqual([
