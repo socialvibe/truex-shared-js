@@ -652,7 +652,7 @@ export class TXMFocusManager {
                 if (mustBeInVisualLane && !overlapsFocusLane(newLane)) return;
 
                 const newLaneCenter = getLaneCenter(newLane);
-                const newLaneDistance = newLaneCenter - focusLaneCenter;
+                const newLaneDistance = Math.abs(newLaneCenter - focusLaneCenter);
 
                 var useNewFocus = false;
                 if (currResult) {
