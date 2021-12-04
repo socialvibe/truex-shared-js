@@ -644,8 +644,8 @@ export class TXMFocusManager {
                 // only look at focusables that are actually visually beyond the current focus edge
                 if (newDistance < 0) return;
 
-                const newRange = getLaneRange(newBounds);
-                if (mustBeInVisualLane && !overlapsFocusLane(newRange)) return;
+                const newLane = getLaneRange(newBounds);
+                if (mustBeInVisualLane && !overlapsFocusLane(newLane)) return;
 
                 if (currResult) {
                     if (newDistance < currDistance) {
