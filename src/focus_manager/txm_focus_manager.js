@@ -412,7 +412,7 @@ export class TXMFocusManager {
         let newFocus;
         if (this.isInTopChrome(focus)) {
             // Focus is in the top chrome.
-            newFocus = this.moveFocus(focus, action, this._topChromeFocusables);
+            newFocus = this.findNextFocus(focus, action, this._topChromeFocusables);
             if (!newFocus && action == inputActions.moveDown) {
                 newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
                 if (!newFocus) {
@@ -422,7 +422,7 @@ export class TXMFocusManager {
 
         } else if (this.isInContent(focus)) {
             // Focus is in the content area.
-            newFocus = this.moveFocus(focus, action, this._contentFocusables);
+            newFocus = this.findNextFocus(focus, action, this._contentFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
                     newFocus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
@@ -433,7 +433,7 @@ export class TXMFocusManager {
 
         } else if (this.isInBottomChrome(focus)) {
             // Focus is in the bottom chrome.
-            newFocus = this.moveFocus(focus, action, this._bottomChromeFocusables);
+            newFocus = this.findNextFocus(focus, action, this._bottomChromeFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
                     newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
@@ -607,34 +607,77 @@ export class TXMFocusManager {
         return this._bottomChromeFocusables.indexOf(focusable) >= 0;
     }
 
-    moveFocus(atPosition, forAction, inFocusables) {
-        if (!atPosition) return;
+    getBoundsOf(focusable) {
+        return focusable && focusable.element && focusable.element.getBoundingClientRect()
+          || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
+    }
 
-        if (inputActions.isUpDownAction(forAction)) {
-            let rowStep = forAction == inputActions.moveUp ? -1 : 1;
+    findNextFocus(fromFocus, forAction, inFocusables) {
+        if (!fromFocus) return;
 
-            // Skip over "holes" in the implied column
-            for (let rowIndex = atPosition.row + rowStep;
-                 0 <= rowIndex && rowIndex < inFocusables.length; rowIndex += rowStep) {
-                let row = inFocusables[rowIndex];
-                if (!row) continue;
-                if (!Array.isArray(row)) continue; // shouldn't happen as per ensureArray
-                let component = row[atPosition.col];
-                if (!component) continue; // skip over empty holes
-                return component;
-            }
+        const focusBounds = this.getBoundsOf(fromFocus);
 
-        } else if (inputActions.isLeftRightAction(forAction)) {
-            let colStep = forAction == inputActions.moveLeft ? -1 : 1;
+        var getRange;
+        var getDistance;
+        switch (forAction) {
+            case inputActions.moveRight:
+                getRange = bounds => { return {start: bounds.left, end: bounds.right} };
+                getDistance = range => range.start - focusBounds.right;
+                break;
+            case inputActions.moveLeft:
+                getRange = bounds => { return {start: bounds.left, end: bounds.right} };
+                getDistance = range => focusBounds.left - range.end;
+                break;
+            case inputActions.moveDown:
+                getRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
+                getDistance = range => range.start - focusBounds.bottom;
+                break;
+            case inputActions.moveUp:
+                getRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
+                getDistance = range => focusBounds.top - range.end;
+                break;
+            default:
+                // Not a movement action.
+                return;
+        }
+        const focusRange = getRange(focusBounds);
 
-            // Skip over "holes" in the implied row.
-            let row = inFocusables[atPosition.row];
-            if (!row) return; // shouldn't happen as per findFocusPosition()
-            for (let colIndex = atPosition.col + colStep; 0 <= colIndex && colIndex < row.length; colIndex += colStep) {
-                let component = row[colIndex];
-                if (!component) continue; // skip over empty holes
-                return component;
-            }
+        // First try to find the best match in the same visual row or column.
+        var result = findBestResult(true);
+        if (!result) {
+            // Nothing in the same visual lane. Fallback to the first one beyond the current focus edge at all.
+            result = findBestResult(false);
+        }
+        return result;
+
+        function findBestResult(mustBeInVisualLane) {
+            var currResult;
+            var currDistance;
+            inFocusables.forEach(newF => {
+                const newRange = getRange(newF);
+                const newDistance = getDistance(newRange);
+                // only look at focusables that are actually visually beyond the current focus edge
+                if (newDistance <= 0) return;
+                if (mustBeInVisualLane && !overlapsFocus(newRange)) return;
+                if (currResult) {
+                    if (newDistance < currDistance) {
+                        // This focusable is closer to the current focus.
+                        currResult = newF;
+                        currDistance = newDistance;
+                    }
+                } else {
+                    // First possible result.
+                    currResult = newF;
+                    currDistance = newDistance;
+                }
+            });
+            return currResult;
+        }
+
+        function overlapsFocus(range) {
+            if (focusRange.start <= range.start && range.start <= focusRange.end) return true;
+            if (range.start <= focusRange.start && focusRange.start <= range.end) return true;
+            return false;
         }
     }
 
