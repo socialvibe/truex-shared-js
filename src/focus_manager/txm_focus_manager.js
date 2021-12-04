@@ -410,10 +410,9 @@ export class TXMFocusManager {
         }
 
         let newFocus;
-        let pos = this.findFocusPosition(focus, this._topChromeFocusables);
-        if (pos) {
+        if (this.isInTopChrome(focus)) {
             // Focus is in the top chrome.
-            newFocus = this.getNewFocus(pos, action, this._topChromeFocusables);
+            newFocus = this.moveFocus(focus, action, this._topChromeFocusables);
             if (!newFocus && action == inputActions.moveDown) {
                 newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
                 if (!newFocus) {
@@ -421,9 +420,9 @@ export class TXMFocusManager {
                 }
             }
 
-        } else if (pos = this.findFocusPosition(focus, this._contentFocusables)) {
+        } else if (this.isInContent(focus)) {
             // Focus is in the content area.
-            newFocus = this.getNewFocus(pos, action, this._contentFocusables);
+            newFocus = this.moveFocus(focus, action, this._contentFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
                     newFocus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
@@ -432,9 +431,9 @@ export class TXMFocusManager {
                 }
             }
 
-        } else if (pos = this.findFocusPosition(focus, this._bottomChromeFocusables)) {
+        } else if (this.isInBottomChrome(focus)) {
             // Focus is in the bottom chrome.
-            newFocus = this.getNewFocus(pos, action, this._bottomChromeFocusables);
+            newFocus = this.moveFocus(focus, action, this._bottomChromeFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
                     newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
@@ -510,7 +509,7 @@ export class TXMFocusManager {
      */
     setTopChromeFocusables(focusables) {
         this._lastTopFocus = undefined;
-        this._topChromeFocusables = this.ensure2DArray(focusables);
+        this._topChromeFocusables = this.ensureArray(focusables);
     }
 
     /**
@@ -519,7 +518,7 @@ export class TXMFocusManager {
      */
     setBottomChromeFocusables(focusables) {
         this._lastBottomFocus = undefined;
-        this._bottomChromeFocusables = this.ensure2DArray(focusables);
+        this._bottomChromeFocusables = this.ensureArray(focusables);
     }
 
     /**
@@ -537,7 +536,7 @@ export class TXMFocusManager {
         const isInBottomChrome = this.isInBottomChrome(current);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
-        this._contentFocusables = this.ensure2DArray(focusables);
+        this._contentFocusables = this.ensureArray(focusables);
 
         // Mark the default content focus, but only if it is actually a valid content focusable.
         this._lastContentFocus = this.isInContent(defaultFocus) && defaultFocus;
@@ -597,31 +596,18 @@ export class TXMFocusManager {
     }
 
     isInTopChrome(focusable) {
-        return !!this.findFocusPosition(focusable, this._topChromeFocusables);
+        return this._topChromeFocusables.indexOf(focusable) >= 0;
     }
 
     isInContent(focusable) {
-        return !!this.findFocusPosition(focusable, this._contentFocusables);
+        return this._contentFocusables.indexOf(focusable) >= 0;
     }
 
     isInBottomChrome(focusable) {
-        return !!this.findFocusPosition(focusable, this._bottomChromeFocusables);
+        return this._bottomChromeFocusables.indexOf(focusable) >= 0;
     }
 
-    findFocusPosition(focus, inFocusables) {
-        if (!focus) return;
-        for (let rowIndex in inFocusables) {
-            let row = inFocusables[rowIndex];
-            if (!row || !Array.isArray(row)) continue; // shouldn't happen in practice
-            for (let colIndex in row) {
-                let component = row[colIndex];
-                if (!component) continue; // skip over holes
-                if (component === focus) return {row: parseInt(rowIndex), col: parseInt(colIndex)};
-            }
-        }
-    }
-
-    getNewFocus(atPosition, forAction, inFocusables) {
+    moveFocus(atPosition, forAction, inFocusables) {
         if (!atPosition) return;
 
         if (inputActions.isUpDownAction(forAction)) {
@@ -632,7 +618,7 @@ export class TXMFocusManager {
                  0 <= rowIndex && rowIndex < inFocusables.length; rowIndex += rowStep) {
                 let row = inFocusables[rowIndex];
                 if (!row) continue;
-                if (!Array.isArray(row)) continue; // shouldn't happen as per ensure2DArray
+                if (!Array.isArray(row)) continue; // shouldn't happen as per ensureArray
                 let component = row[atPosition.col];
                 if (!component) continue; // skip over empty holes
                 return component;
@@ -652,129 +638,9 @@ export class TXMFocusManager {
         }
     }
 
-    ensure2DArray(array) {
+    ensureArray(array) {
         if (!array) return []; // i.e. empty, no focusables
-        if (!Array.isArray(array)) return [[array]]; // treat as a single element matrix
-        let hasSubArrays = array.find(e => Array.isArray(e));
-        if (hasSubArrays) {
-            // Already a 2D array.
-            // - ensure single top-level elements become rows
-            // - ensure shorter rows are extend their last element to the max row length.
-            let maxRowLen = array.reduce((maxLen, e) => {
-                return Math.max(maxLen, Array.isArray(e) ? e.length : 1)
-            }, 0);
-            let result = [];
-            for (let rowIndex in array) {
-                let row = array[rowIndex];
-                if (!Array.isArray(row)) row = [row];
-                else row = row.concat(); // avoid anti-aliasing
-                if (row.length < maxRowLen) {
-                    // Extend shorter rows out.
-                    let lastElmnt = row[rowIndex.length - 1];
-                    for (let i = row.length; i < maxRowLen; i++) {
-                        row.push(lastElmnt);
-                    }
-                }
-                result.push(row);
-            }
-            return result;
-
-        } else {
-            // Interpret as 2D matrix with a single row.
-            return [array];
-        }
-    }
-
-    /**
-     * Returns the 2D navigation array from the elements visual positions. E.g. move left/right among
-     * elements along the same vertical band, move up/down for elements above and below.
-     */
-    derive2DNavigationArray(focusables) {
-        if (!focusables || focusables.length <= 0) return [];
-
-        const focusablesAndBounds = focusables.map(f => {
-            const e = f.element;
-            const bounds = e && e.getBoundingClientRect() || {left: 0, right: 0, top: 0, bottom: 0};
-            return {focusable: f, bounds, column: 0};
-        });
-
-        // Sort first by x-position, then y-position.
-        focusablesAndBounds.sort((item1, item2) => {
-            var cmp = item1.bounds.left - item2.bounds.left;
-            if (cmp == 0) {
-                cmp = item1.bounds.top - item2.bounds.top;
-            }
-            return cmp;
-        });
-
-        const itemRows = deriveRows(focusablesAndBounds);
-
-        const itemGrid = getFocusableGrid(itemRows);
-        return itemGrid;
-
-        // NOTE: we strictly use only the top/left corner of each item so as to avoid problems with overlaps.
-        // This ensures we always have a true grid. If two focusable are on the exact same corner, the last one
-        // wins, meaning the previous one is not navigable. This should not occur in actual useful ads.
-
-        function deriveRows(items) {
-            if (!items || items.length <= 0) return [];
-
-            const itemsAbove = [];
-            const itemsBelow = [];
-            const itemsInRow = [];
-
-            let lastBounds;
-            items.forEach(item => {
-                const bounds = item.bounds;
-                if (lastBounds && bounds.top < lastBounds.top) {
-                    itemsAbove.push(item);
-                } else if (lastBounds && bounds.top > lastBounds.top) {
-                    itemsBelow.push(item);
-                } else {
-                    lastBounds = bounds;
-                    itemsInRow.push(item);
-                }
-            });
-
-            const resultsAbove = deriveRows(itemsAbove);
-
-            let results = resultsAbove;
-            if (itemsInRow.length > 0) {
-                results.push(itemsInRow);
-            }
-
-            const resultsBelow = deriveRows(itemsBelow);
-            if (resultsBelow.length > 0) {
-                results = results.concat(resultsBelow);
-            }
-
-            return results;
-        }
-
-        function getFocusableGrid(itemRows) {
-            // Note: focusablesAndBounds is already sorted by x.
-            var lastColX = 0;
-            var lastCol = 0;
-            focusablesAndBounds.forEach((item, index) => {
-                const itemX = item.bounds.left;
-                if (index <= 0) {
-                    // First column
-                    lastColX = itemX;
-                } else if (lastColX != itemX) {
-                    // New column.
-                    lastColX = itemX;
-                    lastCol += 1;
-                }
-                item.column = lastCol;
-            });
-
-            return itemRows.map(itemRow => {
-                const rowWithColumns = [];
-                itemRow.forEach(item => {
-                    rowWithColumns[item.column] = item.focusable;
-                });
-                return rowWithColumns;
-            });
-        }
+        if (!Array.isArray(array)) return [array]; // treat as a single element array
+        return array;
     }
 }
