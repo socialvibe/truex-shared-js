@@ -89,7 +89,7 @@ describe("focus navigation", () => {
     testInput(A, down, B);
     testInput(A, right, B);
     testInput(B, up, A);
-    testInput(B, right, A);
+    testInput(B, left, A);
     testInput(B, right, B);
     testInput(A, up, A);
   });
@@ -113,7 +113,7 @@ describe("focus navigation", () => {
     testInput(A, right, B);
     testInput(B, left, A);
     testInput(B, down, E);
-    testInput(E, right, D);
+    testInput(E, left, D);
 
     testInput(C, down, D);
     testInput(C, up, A);
