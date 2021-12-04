@@ -640,6 +640,7 @@ export class TXMFocusManager {
             var currDistance;
             inFocusables.forEach(newF => {
                 const newBounds = getBoundsOf(newF);
+
                 const newDistance = getDistanceBeyondFocus(newBounds);
                 // only look at focusables that are actually visually beyond the current focus edge
                 if (newDistance < 0) return;
