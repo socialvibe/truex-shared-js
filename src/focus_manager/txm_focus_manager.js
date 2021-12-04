@@ -612,30 +612,30 @@ export class TXMFocusManager {
 
         const focusBounds = getBoundsOf(fromFocus);
 
-        var getRange;
-        var getDistance;
+        var getLaneRange;
+        var getDistanceBeyondFocus;
         switch (forAction) {
             case inputActions.moveRight:
-                getRange = bounds => { return {start: bounds.left, end: bounds.right} };
-                getDistance = range => range.start - focusBounds.right;
+                getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
+                getDistanceBeyondFocus = newBounds => newBounds.left - focusBounds.right;
                 break;
             case inputActions.moveLeft:
-                getRange = bounds => { return {start: bounds.left, end: bounds.right} };
-                getDistance = range => focusBounds.left - range.end;
+                getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
+                getDistanceBeyondFocus = newBounds => focusBounds.left - newBounds.right;
                 break;
             case inputActions.moveDown:
-                getRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
-                getDistance = range => range.start - focusBounds.bottom;
+                getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
+                getDistanceBeyondFocus = newBounds => newBounds.top - focusBounds.bottom;
                 break;
             case inputActions.moveUp:
-                getRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
-                getDistance = range => focusBounds.top - range.end;
+                getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
+                getDistanceBeyondFocus = newBounds => focusBounds.top - newBounds.bottom;
                 break;
             default:
                 // Not a movement action.
                 return;
         }
-        const focusRange = getRange(focusBounds);
+        const focusLane = getLaneRange(focusBounds);
 
         // First try to find the best match in the same visual row or column.
         var result = findBestResult(true);
@@ -650,11 +650,13 @@ export class TXMFocusManager {
             var currDistance;
             inFocusables.forEach(newF => {
                 const newBounds = getBoundsOf(newF);
-                const newRange = getRange(newBounds);
-                const newDistance = getDistance(newRange);
+                const newDistance = getDistanceBeyondFocus(newBounds);
                 // only look at focusables that are actually visually beyond the current focus edge
                 if (newDistance < 0) return;
-                if (mustBeInVisualLane && !overlapsFocus(newRange)) return;
+
+                const newRange = getLaneRange(newBounds);
+                if (mustBeInVisualLane && !overlapsFocusLane(newRange)) return;
+
                 if (currResult) {
                     if (newDistance < currDistance) {
                         // This focusable is closer to the current focus.
@@ -675,9 +677,9 @@ export class TXMFocusManager {
               || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
         }
 
-        function overlapsFocus(range) {
-            if (focusRange.start <= range.start && range.start <= focusRange.end) return true;
-            if (range.start <= focusRange.start && focusRange.start <= range.end) return true;
+        function overlapsFocusLane(newRange) {
+            if (focusLane.start <= newRange.start && newRange.start <= focusLane.end) return true;
+            if (newRange.start <= focusLane.start && focusLane.start <= newRange.end) return true;
             return false;
         }
     }
