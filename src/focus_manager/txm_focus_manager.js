@@ -559,18 +559,13 @@ export class TXMFocusManager {
     }
 
     getFirstFocusIn(focusables) {
-        if (!Array.isArray(focusables)) return;
-        for (let rowIndex in focusables) {
-            let row = focusables[rowIndex];
-            if (!row) continue;
-            if (!Array.isArray(row)) return row; // Treat as an element.
-            for (let colIndex in row) {
-                let component = row[colIndex];
-                if (!component) continue;
-                if (Array.isArray(component)) continue; // shouldn't happen
-                return component;
+        if (Array.isArray(focusables)) {
+            for (let index in focusables) {
+                const f = focusables[index];
+                if (f) return f;
             }
         }
+        return undefined;
     }
 
     getLastFocus() {
@@ -581,18 +576,13 @@ export class TXMFocusManager {
     }
 
     getLastFocusIn(focusables) {
-        if (!Array.isArray(focusables)) return;
-        for (let rowIndex = focusables.length - 1; rowIndex >= 0; rowIndex--) {
-            let row = focusables[rowIndex];
-            if (!row) continue;
-            if (!Array.isArray(row)) return row; // Treat as an element.
-            for (let colIndex = row.length - 1; colIndex >= 0; colIndex--) {
-                let component = row[colIndex];
-                if (!component) continue;
-                if (Array.isArray(component)) continue; // shouldn't happen
-                return component;
+        if (Array.isArray(focusables)) {
+            for (let index = focusables.length - 1; index >= 0; index--) {
+                const f = focusables[index];
+                if (f) return f;
             }
         }
+        return undefined;
     }
 
     isInTopChrome(focusable) {
