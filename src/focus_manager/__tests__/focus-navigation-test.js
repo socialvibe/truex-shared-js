@@ -192,8 +192,8 @@ describe("focus navigation", () => {
 
     testInput(AAA, right, AAA);
     testInput(AAA, down, BBB);
-    testInput(CCC, up, AAA);
-    testInput(BBB, up, CCC);
+    testInput(CCC, up, BBB);
+    testInput(BBB, up, AAA);
     testInput(BBB, down, CCC);
     testInput(BBB,left, BBB);
   });

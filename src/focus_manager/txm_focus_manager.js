@@ -607,15 +607,10 @@ export class TXMFocusManager {
         return this._bottomChromeFocusables.indexOf(focusable) >= 0;
     }
 
-    getBoundsOf(focusable) {
-        return focusable && focusable.element && focusable.element.getBoundingClientRect()
-          || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
-    }
-
     findNextFocus(fromFocus, forAction, inFocusables) {
         if (!fromFocus) return;
 
-        const focusBounds = this.getBoundsOf(fromFocus);
+        const focusBounds = getBoundsOf(fromFocus);
 
         var getRange;
         var getDistance;
@@ -654,7 +649,8 @@ export class TXMFocusManager {
             var currResult;
             var currDistance;
             inFocusables.forEach(newF => {
-                const newRange = getRange(newF);
+                const newBounds = getBoundsOf(newF);
+                const newRange = getRange(newBounds);
                 const newDistance = getDistance(newRange);
                 // only look at focusables that are actually visually beyond the current focus edge
                 if (newDistance < 0) return;
@@ -672,6 +668,11 @@ export class TXMFocusManager {
                 }
             });
             return currResult;
+        }
+
+        function getBoundsOf(focusable) {
+            return focusable && focusable.element && focusable.element.getBoundingClientRect()
+              || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
         }
 
         function overlapsFocus(range) {
