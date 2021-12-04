@@ -625,7 +625,9 @@ export class TXMFocusManager {
                 // Not a movement action.
                 return;
         }
+
         const focusLane = getLaneRange(focusBounds);
+        const focusLaneCenter = getLaneCenter(focusLane);
 
         // First try to find the best match in the same visual row or column.
         var result = findBestResult(true);
@@ -638,6 +640,7 @@ export class TXMFocusManager {
         function findBestResult(mustBeInVisualLane) {
             var currResult;
             var currDistance;
+            var currLaneDistance;
             inFocusables.forEach(newF => {
                 const newBounds = getBoundsOf(newF);
 
@@ -648,19 +651,29 @@ export class TXMFocusManager {
                 const newLane = getLaneRange(newBounds);
                 if (mustBeInVisualLane && !overlapsFocusLane(newLane)) return;
 
+                const newLaneCenter = getLaneCenter(newLane);
+                const newLaneDistance = newLaneCenter - focusLaneCenter;
+
+                var useNewFocus = false;
                 if (currResult) {
-                    if (newDistance < currDistance) {
+                    if (newDistance < currDistance || newDistance == currDistance && newLaneDistance < currLaneDistance) {
                         // This focusable is closer to the current focus.
-                        currResult = newF;
-                        currDistance = newDistance;
+                        useNewFocus = true;
                     }
                 } else {
-                    // First possible result.
+                    useNewFocus = true; // first possible result
+                }
+                if (useNewFocus) {
                     currResult = newF;
                     currDistance = newDistance;
+                    currLaneDistance = newLaneDistance;
                 }
             });
             return currResult;
+        }
+
+        function getLaneCenter(laneRange) {
+            return (laneRange.end - laneRange.start) / 2;
         }
 
         function getBoundsOf(focusable) {

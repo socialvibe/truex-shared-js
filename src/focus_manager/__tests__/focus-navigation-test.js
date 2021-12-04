@@ -151,23 +151,24 @@ describe("focus navigation", () => {
       D1, D2,    E1, E2,
       D3, D4,    E3, E4]);
 
-    testInput(A1, left, A2);
-    testInput(A2, left, B1);
-    testInput(A2, down, A3);
+    testInput(A1, right, A2);
+    testInput(A2, right, B1);
+    testInput(A1, down, A3);
+    testInput(A2, down, A4);
     testInput(A3, down, D1);
     testInput(A4, down, D2);
 
-    testInput(B1, left, B2);
-    testInput(B2, left, B2);
+    testInput(B1, right, B2);
+    testInput(B2, right, B2);
 
     testInput(D1, up, A3);
     testInput(D2, up, A4);
-    testInput(D1, left, D2);
-    testInput(D2, left, E1);
-    testInput(D3, left, D4);
-    testInput(D4, left, E3);
+    testInput(D1, right, D2);
+    testInput(D2, right, E1);
+    testInput(D3, right, D4);
+    testInput(D4, right, E3);
 
-    testInput(E1, up, B1);
+    testInput(E1, up, B3);
     testInput(E1, right, E2);
     testInput(E1, left, D2);
     testInput(E2, up, B4);
