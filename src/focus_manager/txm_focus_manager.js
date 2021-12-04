@@ -649,7 +649,7 @@ export class TXMFocusManager {
                 if (newDistance < 0) return;
 
                 const newLane = getLaneRange(newBounds);
-                if (mustBeInVisualLane && !overlapsFocusLane(newLane)) return;
+                if (mustBeInVisualLane && !overlapsLane(newLane)) return;
 
                 const newLaneCenter = getLaneCenter(newLane);
                 const newLaneDistance = Math.abs(newLaneCenter - focusLaneCenter);
@@ -681,9 +681,9 @@ export class TXMFocusManager {
               || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
         }
 
-        function overlapsFocusLane(newRange) {
-            if (focusLane.start <= newRange.start && newRange.start <= focusLane.end) return true;
-            if (newRange.start <= focusLane.start && focusLane.start <= newRange.end) return true;
+        function overlapsLane(newLane) {
+            if (focusLane.start <= newLane.start && newLane.start <= focusLane.end) return true;
+            if (newLane.start <= focusLane.start && focusLane.start <= newLane.end) return true;
             return false;
         }
     }
