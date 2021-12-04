@@ -2,7 +2,7 @@ import { TXMFocusManager } from "../txm_focus_manager";
 import { Focusable } from "../txm_focusable";
 import { inputActions } from "../txm_input_actions";
 
-describe("derived 2D focus navigation", () => {
+describe("focus navigation", () => {
 
   const focusManager = new TXMFocusManager();
 
@@ -38,16 +38,8 @@ describe("derived 2D focus navigation", () => {
     const f_3_3 = newFocusable({id: "f_3_3", x: 80, y: 80, w: 40, h: 40});
     const f_4_5 = newFocusable({id: "f_4_5", x: 200, y: 400, w: 40, h: 40});
 
-    // Note: all focusables get sorted into rows by increasing y, each row into columns by increasing x.
-    const focusableGrid = focusManager.derive2DNavigationArray([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
-    expect(focusableGrid).toEqual([
-      [f_0_0,     undefined, f_0_2],
-      [undefined, undefined, f_1_2],
-      [undefined, undefined, undefined, undefined, f_2_4],
-      [f_3_0,     f_3_1,     undefined, f_3_3],
-      [undefined, undefined, undefined, undefined, undefined, f_4_5]
-    ]);
-    focusManager.setContentFocusables(focusableGrid);
+    // Note: all focus navigation is done according to the implicit sort into rows by increasing y, each row into columns by increasing x,
+    focusManager.setContentFocusables([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
 
     // Moving along the same row or column takes precedence.
     testInput(f_0_0, down, f_3_1);
@@ -71,12 +63,10 @@ describe("derived 2D focus navigation", () => {
     const E = newFocusable({id: "E", x: 30, y: 30, w: 10, h: 10});
     const F = newFocusable({id: "F", x: 50, y: 30, w: 10, h: 10});
 
-    const focusableGrid = focusManager.derive2DNavigationArray([A, B, C, D, E, F]);
-    expect(focusableGrid).toEqual([
-      [A, B, C],
-      [D, E, F],
+    focusManager.setContentFocusables([
+      A, B, C,
+      D, E, F,
     ]);
-    focusManager.setContentFocusables(focusableGrid);
 
     testInput(A, down, D);
     testInput(D, up, A);
@@ -94,12 +84,7 @@ describe("derived 2D focus navigation", () => {
     const A = newFocusable({id: "A", x: 10, y: 10, w: 10, h: 10});
     const B = newFocusable({id: "B", x: 30, y: 30, w: 10, h: 10});
 
-    const focusableGrid = focusManager.derive2DNavigationArray([A, B]);
-    expect(focusableGrid).toEqual([
-      [A],
-      [undefined, B],
-    ]);
-    focusManager.setContentFocusables(focusableGrid);
+    focusManager.setContentFocusables([A, B]);
 
     testInput(A, down, B);
     testInput(A, right, B);
@@ -116,13 +101,11 @@ describe("derived 2D focus navigation", () => {
     const D = newFocusable({id: "D", x: 10, y: 100, w: 10, h: 10});
     const E = newFocusable({id: "E", x: 100, y: 100, w: 10, h: 10});
 
-    const focusableGrid = focusManager.derive2DNavigationArray([A, B, C, D, E]);
-    expect(focusableGrid).toEqual([
-      [A, undefined, B],
-      [undefined, C],
-      [D, undefined, E],
+    focusManager.setContentFocusables([
+      A,  B,
+        C,
+      D,  E
     ]);
-    focusManager.setContentFocusables(focusableGrid);
 
     testInput(A, left, A);
     testInput(A, down, D);
@@ -161,16 +144,12 @@ describe("derived 2D focus navigation", () => {
     const E3 = newFocusable({id: "E3", x: 100, y: 110, w: 5, h: 5});
     const E4 = newFocusable({id: "E4", x: 110, y: 110, w: 5, h: 5});
 
-    const focusableGrid = focusManager.derive2DNavigationArray(
-      [A1, A2, A3, A4, B1, B2, B3, B4, C, D1, D2, D3, D4, E1, E2, E3, E4]);
-    expect(focusableGrid).toEqual([
-      [A1,        A2,        undefined, B1, B2],
-      [A3,        A4,        undefined, B3, B4],
-      [undefined, undefined, C],
-      [D1,        D2,        undefined, E1, E2],
-      [D3,        D4,        undefined, E3, E4],
-    ]);
-    focusManager.setContentFocusables(focusableGrid);
+    focusManager.setContentFocusables([
+      A1, A2,    B1, B2,
+      A3, A4,    B3, B4,
+              C,
+      D1, D2,    E1, E2,
+      D3, D4,    E3, E4]);
 
     testInput(A1, left, A2);
     testInput(A2, left, B1);
@@ -203,21 +182,19 @@ describe("derived 2D focus navigation", () => {
 
   test("test misaligned button column", () => {
     const AAA = newFocusable({id: "AAA", x: 10, y: 10, w: 5, h: 10});
-    const BBB = newFocusable({id: "BBB", x: 11, y: 20, w: 5, h: 10});
-    const CCC = newFocusable({id: "CCC", x: 10, y: 30, w: 5, h: 10});
+    const BBB = newFocusable({id: "BBB", x: 12, y: 20, w: 5, h: 5});
+    const CCC = newFocusable({id: "CCC", x: 10, y: 30, w: 5, h: 5});
 
-    const focusableGrid = focusManager.derive2DNavigationArray([AAA, BBB, CCC]);
-    expect(focusableGrid).toEqual([
-      [AAA],
-      [undefined, BBB],
-      [CCC],
-    ]);
-    focusManager.setContentFocusables(focusableGrid);
+    focusManager.setContentFocusables([
+      AAA,
+       BBB,
+      CCC]);
 
-    testInput(AAA, down, CCC);
+    testInput(AAA, right, AAA);
+    testInput(AAA, down, BBB);
     testInput(CCC, up, AAA);
-    testInput(BBB, up, AAA);
+    testInput(BBB, up, CCC);
     testInput(BBB, down, CCC);
-    testInput(BBB,left, AAA);
+    testInput(BBB,left, BBB);
   });
 });
