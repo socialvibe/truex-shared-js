@@ -630,14 +630,14 @@ export class TXMFocusManager {
         const focusLaneCenter = getLaneCenter(focusLane);
 
         // First try to find the best match in the same visual row or column.
-        var result = findBestResult(true);
+        var result = findNextClosestFocus(true);
         if (!result) {
             // Nothing in the same visual lane. Fallback to the first one beyond the current focus edge at all.
-            result = findBestResult(false);
+            result = findNextClosestFocus(false);
         }
         return result;
 
-        function findBestResult(mustBeInVisualLane) {
+        function findNextClosestFocus(mustBeInVisualLane) {
             var currResult;
             var currDistance;
             var currLaneDistance;
