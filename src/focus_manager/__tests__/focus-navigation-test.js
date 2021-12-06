@@ -13,11 +13,23 @@ describe("focus navigation", () => {
 
   function newFocusable({id, x, y, w, h}) {
     const element = {id, top: y, left: x, bottom: y + h, right: x + w, width: w, height: h};
-    element.getBoundingClientRect = () => element;
     element.classList = {
       add: () => {},
       remove: () => {}
     };
+
+    element.getBoundingClientRect = () => element;
+
+    element.setX = function(x) {
+      this.x = x;
+      this.right = x + this.width;
+    };
+
+    element.setY = function(y) {
+      this.y = y;
+      this.bottom = y + this.height;
+    };
+
     return new Focusable(element);
   }
 
@@ -314,15 +326,15 @@ describe("focus navigation", () => {
 
   test("test multiple matches in focus column", () => {
     const AAA = newFocusable({id: "AAA", x: 30, y: 10, w: 10, h: 10});
-    const BBB = newFocusable({id: "BBB", x: 60, y: 10, w: 10, h: 10});
+    const BBB = newFocusable({id: "BBB", x: 80, y: 10, w: 10, h: 10});
     const ZZZZZZZZZZZZ = newFocusable({id: "ZZZZZZZZZZZZ", x: 10, y: 30, w: 100, h: 10});
-    const DDD = newFocusable({id: "DDD", x: 5, y: 60, w: 10, h: 10});
-    const EEE = newFocusable({id: "EEE", x: 25, y: 60, w: 20, h: 10});
+    const DDDD = newFocusable({id: "DDDD", x: 5, y: 60, w: 30, h: 10});
+    const EEE = newFocusable({id: "EEE", x: 45, y: 60, w: 20, h: 10});
 
     focusManager.setContentFocusables([
          AAA, BBB,
        ZZZZZZZZZZZZ,
-      DDD, EEE
+      DDDD, EEE
     ]);
 
     testInput(AAA, down, ZZZZZZZZZZZZ);
@@ -335,34 +347,34 @@ describe("focus navigation", () => {
 
     // align B is exactly with Z's right edge, which makes it a closer match
     const origBx = BBB.element.x;
-    BBB.element.x = ZZZZZZZZZZZZ.element.right - BBB.element.width;
+    BBB.element.setX(ZZZZZZZZZZZZ.element.right - BBB.element.width);
     testInput(ZZZZZZZZZZZZ, up, BBB);
 
-    BBB.element.x = origBx;
-    AAA.element.x = ZZZZZZZZZZZZ.element.x - AAA.element.width + 2; // overlap just a bit with Z's left edge
+    BBB.element.setX(origBx);
+    AAA.element.setX(ZZZZZZZZZZZZ.element.x - AAA.element.width + 2); // overlap just a bit with Z's left edge
     testInput(ZZZZZZZZZZZZ, up, AAA);
 
     // Competing equal distance defer to the left most
-    AAA.element.x = ZZZZZZZZZZZZ.element.x - AAA.element.width;
-    BBB.element.x = ZZZZZZZZZZZZ.element.right - BBB.element.width;
+    AAA.element.setX(ZZZZZZZZZZZZ.element.x - AAA.element.width);
+    BBB.element.setX(ZZZZZZZZZZZZ.element.right - BBB.element.width);
     testInput(ZZZZZZZZZZZZ, up, AAA);
 
     // Make B hang off of Z' right edge a bit, should not be reached moving right.
-    BBB.element.x = ZZZZZZZZZZZZ.element.right - 2;
+    BBB.element.setX(ZZZZZZZZZZZZ.element.right - 2);
     testInput(ZZZZZZZZZZZZ, right, ZZZZZZZZZZZZ);
 
     testInput(ZZZZZZZZZZZZ, down, EEE);
-    EEE.element.x += 10; // move a bit more off center
-    testInput(ZZZZZZZZZZZZ, down, DDD); // D is now closer to Z's left edge
+    EEE.element.setX(EEE.element.x + 10); // move a bit more off center
+    testInput(ZZZZZZZZZZZZ, down, DDDD); // D is now closer to Z's left edge
   });
 
   // I.e, like above but rotated.
   test("test multiple matches in focus row", () => {
     const A = newFocusable({id: "A", x: 10, y: 30, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 10, y: 60, w: 10, h: 10});
+    const B = newFocusable({id: "B", x: 10, y: 80, w: 10, h: 10});
     const Z = newFocusable({id: "Z", x: 30, y: 10, w: 10, h: 100});
-    const D = newFocusable({id: "D", x: 60, y: 5, w: 10, h: 10});
-    const E = newFocusable({id: "E", x: 60, y: 25, w: 20, h: 10});
+    const D = newFocusable({id: "D", x: 60, y: 5, w: 10, h: 30});
+    const E = newFocusable({id: "E", x: 60, y: 45, w: 20, h: 10});
 
     focusManager.setContentFocusables([
             Z,
@@ -382,24 +394,24 @@ describe("focus navigation", () => {
 
     // align B is exactly with Z's bottom edge, which makes it a closer match
     const origBy = B.element.y;
-    B.element.y = Z.element.bottom - B.element.height;
+    B.element.setY(Z.element.bottom - B.element.height);
     testInput(Z, left, B);
 
-    B.element.y = origBy;
-    A.element.y = Z.element.y - A.element.height + 2; // overlap just a bit with Z's left edge
+    B.element.setY(origBy);
+    A.element.setY(Z.element.y - A.element.height + 2); // overlap just a bit with Z's left edge
     testInput(Z, left, A);
 
     // Competing equal distance defer to the left most
-    A.element.y = Z.element.y - A.element.height;
-    B.element.y = Z.element.bottom - B.element.height;
+    A.element.setY(Z.element.y - A.element.height);
+    B.element.setY(Z.element.bottom - B.element.height);
     testInput(Z, up, A);
 
     // Make B hang off of Z' bottom edge a bit, should not be reached moving down.
-    BBB.element.y = ZZZZZZZZZZZZ.element.bottom - 2;
+    BBB.element.setY(ZZZZZZZZZZZZ.element.bottom - 2);
     testInput(ZZZZZZZZZZZZ, down, ZZZZZZZZZZZZ);
 
     testInput(Z, right, E);
-    E.element.y += 10; // move a bit more off center
+    E.element.setY(E.element.y + 10); // move a bit more off center
     testInput(Z, right, D); // D is now closer to Z's top edge
   });
 });
