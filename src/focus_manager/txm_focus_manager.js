@@ -665,6 +665,10 @@ export class TXMFocusManager {
             return currResult;
         }
 
+        function getLaneCenter(laneRange) {
+            return (laneRange.end - laneRange.start) / 2;
+        }
+
         function getDistanceFromFocusLane(laneRange) {
             // Returns the smallest distance from the start vs end vs center points.
             const laneCenter = getLaneCenter(laneRange);
