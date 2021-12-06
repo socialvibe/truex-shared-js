@@ -666,7 +666,7 @@ export class TXMFocusManager {
         }
 
         function getLaneCenter(laneRange) {
-            return (laneRange.end - laneRange.start) / 2;
+            return (laneRange.start + laneRange.end) / 2;
         }
 
         function getDistanceFromFocusLane(laneRange) {
@@ -691,8 +691,8 @@ export class TXMFocusManager {
         }
 
         function overlapsLane(newLane) {
-            if (focusLane.start <= newLane.start && newLane.start <= focusLane.end) return true;
-            if (newLane.start <= focusLane.start && focusLane.start <= newLane.end) return true;
+            if (focusLane.start <= newLane.start && newLane.start < focusLane.end) return true;
+            if (newLane.start <= focusLane.start && focusLane.start < newLane.end) return true;
             return false;
         }
     }

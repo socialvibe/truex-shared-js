@@ -29,12 +29,12 @@ describe("focus navigation", () => {
 
   test("test focus grid with overlaps, gaps", () => {
     // NOTE: overlaps are ignored, row/col based solely on top/left position.
-    const f_0_0 = newFocusable({id: "f_0_0", x: 10, y: 10, w: 40, h: 40});
-    const f_0_2 = newFocusable({id: "f_0_2", x: 60, y: 10, w: 40, h: 50});
-    const f_1_2 = newFocusable({id: "f_1_2", x: 60, y: 20, w: 40, h: 40}); // overlaps, still in same row
-    const f_2_4 = newFocusable({id: "f_2_4", x: 140, y: 70, w: 40, h: 40});  // overlaps, still in same row
+    const f_0_0 = newFocusable({id: "f_0_0", x: 10, y: 10, w: 40, h: 30});
+    const f_0_2 = newFocusable({id: "f_0_2", x: 60, y: 10, w: 40, h: 30});
+    const f_1_2 = newFocusable({id: "f_1_2", x: 55, y: 40, w: 55, h: 40}); // overlaps
+    const f_2_4 = newFocusable({id: "f_2_4", x: 110, y: 70, w: 40, h: 40});  // overlaps
     const f_3_0 = newFocusable({id: "f_3_0", x: 10, y: 80, w: 50, h: 40});
-    const f_3_1 = newFocusable({id: "f_3_1", x: 20, y: 80, w: 100, h: 40});
+    const f_3_1 = newFocusable({id: "f_3_1", x: 20, y: 80, w: 50, h: 40});
     const f_3_3 = newFocusable({id: "f_3_3", x: 80, y: 80, w: 40, h: 40});
     const f_4_5 = newFocusable({id: "f_4_5", x: 200, y: 400, w: 40, h: 40});
 
@@ -42,14 +42,14 @@ describe("focus navigation", () => {
     focusManager.setContentFocusables([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
 
     // Moving along the same row or column takes precedence.
-    testInput(f_0_0, down, f_3_1);
-    testInput(f_3_1, up, f_0_0);
+    testInput(f_0_0, down, f_3_0);
+    testInput(f_3_0, up, f_1_2);
     testInput(f_0_0, right, f_0_2);
     testInput(f_0_2, down, f_1_2);
     testInput(f_1_2, up, f_0_2);
-    testInput(f_1_2, down, f_2_4);
-    testInput(f_2_4, up, f_1_2);
+    testInput(f_1_2, down, f_3_0);
     testInput(f_2_4, left, f_1_2);
+    testInput(f_2_4, up, f_0_2);
     testInput(f_2_4, right, f_4_5);
     testInput(f_3_1, right, f_3_3);
     testInput(f_3_3, left, f_3_1);
