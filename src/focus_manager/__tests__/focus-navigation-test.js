@@ -155,11 +155,11 @@ describe("focus navigation", () => {
     ]);
 
     testInput(A, down, B);
-    testInput(A, right, B);
+    testInput(A, left, B);
     testInput(B, up, A);
     testInput(B, right, A);
     testInput(B, down, C);
-    testInput(C, up, A);
+    testInput(C, up, B);
     testInput(C, left, A);
     testInput(A, left, B);
   });
