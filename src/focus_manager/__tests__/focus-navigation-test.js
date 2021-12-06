@@ -84,7 +84,10 @@ describe("focus navigation", () => {
     const A = newFocusable({id: "A", x: 10, y: 10, w: 10, h: 10});
     const B = newFocusable({id: "B", x: 30, y: 30, w: 10, h: 10});
 
-    focusManager.setContentFocusables([A, B]);
+    focusManager.setContentFocusables([
+      A,
+           B
+    ]);
 
     testInput(A, down, B);
     testInput(A, right, B);
@@ -92,6 +95,73 @@ describe("focus navigation", () => {
     testInput(B, left, A);
     testInput(B, right, B);
     testInput(A, up, A);
+  });
+
+  test("test stepping down", () => {
+    const A = newFocusable({id: "A", x: 10, y: 10, w: 10, h: 10});
+    const B = newFocusable({id: "B", x: 30, y: 30, w: 10, h: 10});
+    const C = newFocusable({id: "C", x: 90, y: 90, w: 10, h: 10});
+
+    focusManager.setContentFocusables([
+      A,
+         B,
+             C
+    ]);
+
+    testInput(A, down, B);
+    testInput(A, right, B);
+    testInput(B, down, C);
+    testInput(B, right, C);
+    testInput(C, down, C);
+    testInput(C, right, C);
+    testInput(C, up, B);
+    testInput(C, left, B);
+    testInput(B, up, A);
+    testInput(B, left, A);
+  });
+
+  test("test stepping up", () => {
+    const A = newFocusable({id: "A", x: 10, y: 90, w: 10, h: 10});
+    const B = newFocusable({id: "B", x: 30, y: 30, w: 10, h: 10});
+    const C = newFocusable({id: "C", x: 90, y: 10, w: 10, h: 10});
+
+    focusManager.setContentFocusables([
+            A,
+         B,
+      C
+    ]);
+
+    testInput(A, up, B);
+    testInput(A, right, B);
+    testInput(B, up, C);
+    testInput(B, right, C);
+    testInput(C, up, C);
+    testInput(C, right, C);
+    testInput(C, down, B);
+    testInput(C, left, B);
+    testInput(B, down, A);
+    testInput(B, left, A);
+  });
+
+  test("test stepping up and down", () => {
+    const A = newFocusable({id: "A", x: 30, y: 10, w: 10, h: 10});
+    const B = newFocusable({id: "B", x: 10, y: 30, w: 10, h: 10});
+    const C = newFocusable({id: "C", x: 90, y: 90, w: 10, h: 10});
+
+    focusManager.setContentFocusables([
+         A,
+      B,
+            C
+    ]);
+
+    testInput(A, down, B);
+    testInput(A, right, B);
+    testInput(B, up, A);
+    testInput(B, right, A);
+    testInput(B, down, C);
+    testInput(C, up, A);
+    testInput(C, left, A);
+    testInput(A, left, B);
   });
 
   test("test button square with center", () => {
@@ -121,7 +191,24 @@ describe("focus navigation", () => {
     testInput(C, right, B);
   });
 
-  test("test closest button from center", () => {
+  test("test right to closest row", () => {
+    const A = newFocusable({id: "A", x: 10, y: 10, w: 40, h: 5});
+    const B = newFocusable({id: "B", x: 100, y: 10, w: 40, h: 5});
+    const C = newFocusable({id: "C", x: 10, y: 30, w: 40, h: 5});
+    const D = newFocusable({id: "D", x: 10, y: 30, w: 40, h: 5});
+
+    focusManager.setContentFocusables([
+      A, B,
+      C,
+      D]);
+
+    testInput(A, right, B);
+    testInput(A, down, C);
+    testInput(C, up, A);
+    testInput(C, right, B);
+  });
+
+  test("test closest buttons from center", () => {
     const A1 = newFocusable({id: "A1", x: 0, y: 0, w: 5, h: 5});
     const A2 = newFocusable({id: "A2", x: 10, y: 0, w: 5, h: 5});
     const A3 = newFocusable({id: "A3", x: 0, y: 10, w: 5, h: 5});
@@ -211,7 +298,24 @@ describe("focus navigation", () => {
        DDD]);
 
     testInput(AAA, right, BBB);
-    testInput(AAA, down, CC);
+    testInput(AAA, down, CCC);
+    testInput(CCC, up, AAA);
+    testInput(CCC, right, BBB);
+  });
+
+  test("test right with only vs next column", () => {
+    const AAA = newFocusable({id: "AAA", x: 15, y: 10, w: 40, h: 5});
+    const BBB = newFocusable({id: "BBB", x: 100, y: 10, w: 40, h: 5});
+    const CCC = newFocusable({id: "CCC", x: 10, y: 30, w: 40, h: 5});
+    const DDD = newFocusable({id: "DDD", x: 15, y: 30, w: 40, h: 5});
+
+    focusManager.setContentFocusables([
+      AAA, BBB,
+      CCC,
+      DDD]);
+
+    testInput(AAA, right, BBB);
+    testInput(AAA, down, CCC);
     testInput(CCC, up, AAA);
     testInput(CCC, right, BBB);
   });
