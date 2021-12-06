@@ -198,4 +198,21 @@ describe("focus navigation", () => {
     testInput(BBB, down, CCC);
     testInput(BBB,left, BBB);
   });
+
+  test("test right with overlapping vs next column", () => {
+    const AAA = newFocusable({id: "AAA", x: 15, y: 10, w: 40, h: 5});
+    const BBB = newFocusable({id: "BBB", x: 100, y: 10, w: 40, h: 5});
+    const CCC = newFocusable({id: "CCC", x: 10, y: 30, w: 40, h: 5});
+    const DDD = newFocusable({id: "DDD", x: 15, y: 30, w: 40, h: 5});
+
+    focusManager.setContentFocusables([
+       AAA, BBB,
+      CCC,
+       DDD]);
+
+    testInput(AAA, right, BBB);
+    testInput(AAA, down, CC);
+    testInput(CCC, up, AAA);
+    testInput(CCC, right, BBB);
+  });
 });
