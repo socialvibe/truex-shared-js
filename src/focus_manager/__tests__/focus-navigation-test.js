@@ -329,7 +329,7 @@ describe("focus navigation", () => {
     const BBB = newFocusable({id: "BBB", x: 80, y: 10, w: 10, h: 10});
     const ZZZZZZZZZZZZ = newFocusable({id: "ZZZZZZZZZZZZ", x: 10, y: 30, w: 100, h: 10});
     const DDDD = newFocusable({id: "DDDD", x: 5, y: 60, w: 30, h: 10});
-    const EEE = newFocusable({id: "EEE", x: 45, y: 60, w: 20, h: 10});
+    const EEE = newFocusable({id: "EEE", x: 50, y: 60, w: 20, h: 10});
 
     focusManager.setContentFocusables([
          AAA, BBB,
@@ -374,7 +374,7 @@ describe("focus navigation", () => {
     const B = newFocusable({id: "B", x: 10, y: 80, w: 10, h: 10});
     const Z = newFocusable({id: "Z", x: 30, y: 10, w: 10, h: 100});
     const D = newFocusable({id: "D", x: 60, y: 5, w: 10, h: 30});
-    const E = newFocusable({id: "E", x: 60, y: 45, w: 20, h: 10});
+    const E = newFocusable({id: "E", x: 60, y: 50, w: 10, h: 20});
 
     focusManager.setContentFocusables([
             Z,
@@ -407,8 +407,8 @@ describe("focus navigation", () => {
     testInput(Z, up, A);
 
     // Make B hang off of Z' bottom edge a bit, should not be reached moving down.
-    BBB.element.setY(ZZZZZZZZZZZZ.element.bottom - 2);
-    testInput(ZZZZZZZZZZZZ, down, ZZZZZZZZZZZZ);
+    B.element.setY(Z.element.bottom - 2);
+    testInput(Z, down, Z);
 
     testInput(Z, right, E);
     E.element.setY(E.element.y + 10); // move a bit more off center
