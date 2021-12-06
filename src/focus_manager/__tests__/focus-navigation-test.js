@@ -347,6 +347,10 @@ describe("focus navigation", () => {
     BBB.element.x = ZZZZZZZZZZZZ.element.right - BBB.element.width;
     testInput(ZZZZZZZZZZZZ, up, AAA);
 
+    // Make B hang off of Z' right edge a bit, should not be reached moving right.
+    BBB.element.x = ZZZZZZZZZZZZ.element.right - 2;
+    testInput(ZZZZZZZZZZZZ, right, ZZZZZZZZZZZZ);
+
     testInput(ZZZZZZZZZZZZ, down, EEE);
     EEE.element.x += 10; // move a bit more off center
     testInput(ZZZZZZZZZZZZ, down, DDD); // D is now closer to Z's left edge
@@ -389,6 +393,10 @@ describe("focus navigation", () => {
     A.element.y = Z.element.y - A.element.height;
     B.element.y = Z.element.bottom - B.element.height;
     testInput(Z, up, A);
+
+    // Make B hang off of Z' bottom edge a bit, should not be reached moving down.
+    BBB.element.y = ZZZZZZZZZZZZ.element.bottom - 2;
+    testInput(ZZZZZZZZZZZZ, down, ZZZZZZZZZZZZ);
 
     testInput(Z, right, E);
     E.element.y += 10; // move a bit more off center
