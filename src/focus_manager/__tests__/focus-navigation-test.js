@@ -2,7 +2,7 @@ import { TXMFocusManager } from "../txm_focus_manager";
 import { Focusable } from "../txm_focusable";
 import { inputActions } from "../txm_input_actions";
 
-describe("focus navigation", () => {
+describe("focus navigation tests", () => {
 
   const focusManager = new TXMFocusManager();
 

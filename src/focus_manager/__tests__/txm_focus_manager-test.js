@@ -392,9 +392,9 @@ describe("TXMFocusManager", () => {
 
         describe("simple left/right focus navigation", () => {
             const fm = new TXMFocusManager();
+            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
 
             test("No loss of focus moving down off row", () => {
-                fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
                 fm.onInputAction(inputActions.moveDown);
                 expect(fm.currentFocus).toBe(focuses[1]);
             });
