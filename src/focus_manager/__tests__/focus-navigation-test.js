@@ -312,7 +312,7 @@ describe("focus navigation", () => {
     testInput(BBB, left, BBB);
   });
 
-  test("test multiple matches in focus lane", () => {
+  test("test multiple matches in focus column", () => {
     const AAA = newFocusable({id: "AAA", x: 30, y: 10, w: 10, h: 10});
     const BBB = newFocusable({id: "BBB", x: 60, y: 10, w: 10, h: 10});
     const ZZZZZZZZZZZZ = newFocusable({id: "ZZZZZZZZZZZZ", x: 10, y: 30, w: 100, h: 10});
@@ -328,6 +328,9 @@ describe("focus navigation", () => {
     testInput(AAA, down, ZZZZZZZZZZZZ);
     testInput(BBB, down, ZZZZZZZZZZZZ);
 
+    testInput(AAA, left, AAA);
+    testInput(AAA, right, BBB);
+
     testInput(ZZZZZZZZZZZZ, up, AAA);
 
     // align B is exactly with Z's right edge, which makes it a closer match
@@ -339,8 +342,56 @@ describe("focus navigation", () => {
     AAA.element.x = ZZZZZZZZZZZZ.element.x - AAA.element.width + 2; // overlap just a bit with Z's left edge
     testInput(ZZZZZZZZZZZZ, up, AAA);
 
+    // Competing equal distance defer to the left most
+    AAA.element.x = ZZZZZZZZZZZZ.element.x - AAA.element.width;
+    BBB.element.x = ZZZZZZZZZZZZ.element.right - BBB.element.width;
+    testInput(ZZZZZZZZZZZZ, up, AAA);
+
     testInput(ZZZZZZZZZZZZ, down, EEE);
     EEE.element.x += 10; // move a bit more off center
     testInput(ZZZZZZZZZZZZ, down, DDD); // D is now closer to Z's left edge
+  });
+
+  // I.e, like above but rotated.
+  test("test multiple matches in focus row", () => {
+    const A = newFocusable({id: "A", x: 10, y: 30, w: 10, h: 10});
+    const B = newFocusable({id: "B", x: 10, y: 60, w: 10, h: 10});
+    const Z = newFocusable({id: "Z", x: 30, y: 10, w: 10, h: 100});
+    const D = newFocusable({id: "D", x: 60, y: 5, w: 10, h: 10});
+    const E = newFocusable({id: "E", x: 60, y: 25, w: 20, h: 10});
+
+    focusManager.setContentFocusables([
+            Z,
+      A, /* Z */ D,
+         /* Z */
+      B, /* Z */ E
+         /* Z */
+    ]);
+
+    testInput(A, right, Z);
+    testInput(B, right, Z);
+
+    testInput(A, up, A);
+    testInput(A, down, B);
+
+    testInput(Z, left, A);
+
+    // align B is exactly with Z's bottom edge, which makes it a closer match
+    const origBy = B.element.y;
+    B.element.y = Z.element.bottom - B.element.height;
+    testInput(Z, left, B);
+
+    B.element.y = origBy;
+    A.element.y = Z.element.y - A.element.height + 2; // overlap just a bit with Z's left edge
+    testInput(Z, left, A);
+
+    // Competing equal distance defer to the left most
+    A.element.y = Z.element.y - A.element.height;
+    B.element.y = Z.element.bottom - B.element.height;
+    testInput(Z, up, A);
+
+    testInput(Z, right, E);
+    E.element.y += 10; // move a bit more off center
+    testInput(Z, right, D); // D is now closer to Z's top edge
   });
 });
