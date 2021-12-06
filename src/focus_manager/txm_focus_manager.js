@@ -639,41 +639,46 @@ export class TXMFocusManager {
 
         function findNextClosestFocus(mustBeInVisualLane) {
             var currResult;
-            var currDistance;
+            var currFocusDistance;
             var currLaneDistance;
             inFocusables.forEach(newF => {
                 const newBounds = getBoundsOf(newF);
 
-                const newDistance = getDistanceBeyondFocus(newBounds);
+                const newFocusDistance = getDistanceBeyondFocus(newBounds);
                 // only look at focusables that are actually visually beyond the current focus edge
-                if (newDistance < 0) return;
+                if (newFocusDistance < 0) return;
 
                 const newLane = getLaneRange(newBounds);
                 if (mustBeInVisualLane && !overlapsLane(newLane)) return;
 
-                const newLaneCenter = getLaneCenter(newLane);
-                const newLaneDistance = Math.abs(newLaneCenter - focusLaneCenter);
+                const newLaneDistance = getDistanceFromFocusLane(newLane);
 
-                var useNewFocus = false;
-                if (currResult) {
-                    if (newDistance < currDistance || newDistance == currDistance && newLaneDistance < currLaneDistance) {
-                        // This focusable is closer to the current focus.
-                        useNewFocus = true;
-                    }
-                } else {
-                    useNewFocus = true; // first possible result
-                }
-                if (useNewFocus) {
+                if (currResult === undefined
+                    || newFocusDistance < currFocusDistance
+                    || newFocusDistance == currFocusDistance && newLaneDistance < currLaneDistance) {
+                    // This focusable is closer to the current focus, or is the first one.
                     currResult = newF;
-                    currDistance = newDistance;
+                    currFocusDistance = newFocusDistance;
                     currLaneDistance = newLaneDistance;
                 }
             });
             return currResult;
         }
 
-        function getLaneCenter(laneRange) {
-            return (laneRange.end - laneRange.start) / 2;
+        function getDistanceFromFocusLane(laneRange) {
+            // Returns the smallest distance from the start vs end vs center points.
+            const laneCenter = getLaneCenter(laneRange);
+            return [
+                getDistance(laneRange.start, focusLane.start),
+                getDistance(laneRange.start, focusLane.end),
+                getDistance(laneCenter, focusLaneCenter),
+                getDistance(laneRange.end, focusLane.start),
+                getDistance(laneRange.end, focusLane.end)
+            ].reduce((prev, curr) => Math.min(prev, curr));
+        }
+
+        function getDistance(pos1, pos2) {
+            return Math.abs(pos1 - pos2);
         }
 
         function getBoundsOf(focusable) {
