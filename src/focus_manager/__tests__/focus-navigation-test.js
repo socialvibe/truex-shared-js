@@ -195,7 +195,7 @@ describe("focus navigation", () => {
     const A = newFocusable({id: "A", x: 10, y: 10, w: 40, h: 5});
     const B = newFocusable({id: "B", x: 100, y: 10, w: 40, h: 5});
     const C = newFocusable({id: "C", x: 10, y: 30, w: 40, h: 5});
-    const D = newFocusable({id: "D", x: 10, y: 30, w: 40, h: 5});
+    const D = newFocusable({id: "D", x: 10, y: 90, w: 40, h: 5});
 
     focusManager.setContentFocusables([
       A, B,
@@ -206,6 +206,7 @@ describe("focus navigation", () => {
     testInput(A, down, C);
     testInput(C, up, A);
     testInput(C, right, B);
+    testInput(B, down, C);
   });
 
   test("test closest buttons from center", () => {
@@ -286,37 +287,60 @@ describe("focus navigation", () => {
     testInput(BBB,left, BBB);
   });
 
-  test("test right with overlapping vs next column", () => {
-    const AAA = newFocusable({id: "AAA", x: 15, y: 10, w: 40, h: 5});
-    const BBB = newFocusable({id: "BBB", x: 100, y: 10, w: 40, h: 5});
-    const CCC = newFocusable({id: "CCC", x: 10, y: 30, w: 40, h: 5});
-    const DDD = newFocusable({id: "DDD", x: 15, y: 30, w: 40, h: 5});
+  test("test button completely covering another", () => {
+    const AAA = newFocusable({id: "AAA", x: 10, y: 10, w: 100, h: 100});
+    const BBB = newFocusable({id: "BBB", x: 50, y: 50, w: 10, h: 10});
 
+    // AAAAAAAAAAAAAAAA
+    // A              A
+    // A     BBBB     A
+    // A              A
+    // AAAAAAAAAAAAAAAA
     focusManager.setContentFocusables([
-       AAA, BBB,
-      CCC,
-       DDD]);
+       AAA, BBB
+    ]);
 
-    testInput(AAA, right, BBB);
-    testInput(AAA, down, CCC);
-    testInput(CCC, up, AAA);
-    testInput(CCC, right, BBB);
+    testInput(AAA, right, AAA);
+    testInput(AAA, down, AAA);
+    testInput(AAA, up, AAA);
+    testInput(AAA, left, AAA);
+
+    // Should not be possible to get to BBB, but if it happened, perhaps with autofocus:
+    testInput(BBB, right, BBB);
+    testInput(BBB, down, BBB);
+    testInput(BBB, up, BBB);
+    testInput(BBB, left, BBB);
   });
 
-  test("test right with only vs next column", () => {
-    const AAA = newFocusable({id: "AAA", x: 15, y: 10, w: 40, h: 5});
-    const BBB = newFocusable({id: "BBB", x: 100, y: 10, w: 40, h: 5});
-    const CCC = newFocusable({id: "CCC", x: 10, y: 30, w: 40, h: 5});
-    const DDD = newFocusable({id: "DDD", x: 15, y: 30, w: 40, h: 5});
+  test("test multiple matches in focus lane", () => {
+    const AAA = newFocusable({id: "AAA", x: 30, y: 10, w: 10, h: 10});
+    const BBB = newFocusable({id: "BBB", x: 60, y: 10, w: 10, h: 10});
+    const ZZZZZZZZZZZZ = newFocusable({id: "ZZZZZZZZZZZZ", x: 10, y: 30, w: 100, h: 10});
+    const DDD = newFocusable({id: "DDD", x: 5, y: 60, w: 10, h: 10});
+    const EEE = newFocusable({id: "EEE", x: 25, y: 60, w: 20, h: 10});
 
     focusManager.setContentFocusables([
-      AAA, BBB,
-      CCC,
-      DDD]);
+         AAA, BBB,
+       ZZZZZZZZZZZZ,
+      DDD, EEE
+    ]);
 
-    testInput(AAA, right, BBB);
-    testInput(AAA, down, CCC);
-    testInput(CCC, up, AAA);
-    testInput(CCC, right, BBB);
+    testInput(AAA, down, ZZZZZZZZZZZZ);
+    testInput(BBB, down, ZZZZZZZZZZZZ);
+
+    testInput(ZZZZZZZZZZZZ, up, AAA);
+
+    // align B is exactly with Z's right edge, which makes it a closer match
+    const origBx = BBB.element.x;
+    BBB.element.x = ZZZZZZZZZZZZ.element.right - BBB.element.width;
+    testInput(ZZZZZZZZZZZZ, up, BBB);
+
+    BBB.element.x = origBx;
+    AAA.element.x = ZZZZZZZZZZZZ.element.x - AAA.element.width + 2; // overlap just a bit with Z's left edge
+    testInput(ZZZZZZZZZZZZ, up, AAA);
+
+    testInput(ZZZZZZZZZZZZ, down, EEE);
+    EEE.element.x += 10; // move a bit more off center
+    testInput(ZZZZZZZZZZZZ, down, DDD); // D is now closer to Z's left edge
   });
 });
