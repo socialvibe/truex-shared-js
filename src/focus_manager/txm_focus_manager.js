@@ -642,6 +642,8 @@ export class TXMFocusManager {
             var currFocusDistance;
             var currLaneDistance;
             inFocusables.forEach(newF => {
+                if (!newF) return;
+
                 const newBounds = getBoundsOf(newF);
 
                 const newFocusDistance = getDistanceBeyondFocus(newBounds);

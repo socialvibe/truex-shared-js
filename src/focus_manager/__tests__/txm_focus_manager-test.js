@@ -4,6 +4,35 @@ import { TXMFocusManager } from "../txm_focus_manager";
 import { keyCodes } from "../txm_platform";
 
 describe("TXMFocusManager", () => {
+    function newFocusableStub(id) {
+        const element = {id, bounds: {}};
+        element.classList = {
+            add: () => {},
+            remove: () => {}
+        };
+        element.getBoundingClientRect = () => element.bounds;
+        const f = new Focusable(element);
+        f.setBounds = function({x = 0, y = 0, w = 10, h = 10} = {}) {
+            this.element.bounds = {top: y, left: x, right: x + w, bottom: y + h, width: w, height: h};
+        };
+        f.setBounds();
+        return f;
+    }
+
+    function newFocusRow({x, y, w = 10, h = 10}, ...focuses) {
+        focuses.forEach(f => {
+            if (f) f.setBounds({x, y, w, h});
+            x += w + 10;
+        });
+        return focuses;
+    }
+
+    function testInput(focusManager, currFocus, action, newFocus) {
+        focusManager.setFocus(currFocus);
+        focusManager.onInputAction(action);
+        expect(focusManager.currentFocus).toBe(newFocus);
+    }
+
     let testDiv1 = document.createElement("div");
     testDiv1.id = "focus1";
     let focus1 = new Focusable(testDiv1);
@@ -324,24 +353,21 @@ describe("TXMFocusManager", () => {
     describe("focus manager navigation", () => {
         let focuses = [];
         for (let i = 0; i <= 10; i++) {
-            let f = new Focusable();
-            f.id = `focuses${i}`;
+            let f = newFocusableStub(`focuses${i}`);
             focuses.push(f);
         }
 
         test("test default focus", () => {
             const fm = new TXMFocusManager();
-            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
+            fm.setContentFocusables(newFocusRow({x: 10, y: 10}, focuses[1], focuses[2], focuses[3]));
 
             // Default focus.
-            fm.setFocus(undefined);
-            fm.onInputAction(inputActions.moveDown);
-            expect(fm.currentFocus).toBe(focuses[1]);
+            testInput(fm, undefined, inputActions.moveDown, focuses[1]);
         });
 
         describe("test current focus not in content or chrome focusables", () => {
             const fm = new TXMFocusManager();
-            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
+            fm.setContentFocusables(newFocusRow({x: 10, y: 10}, focuses[1], focuses[2], focuses[3]));
 
             let extraFocusable = new Focusable();
             extraFocusable.id = "extraFocusable";
@@ -392,104 +418,77 @@ describe("TXMFocusManager", () => {
 
         describe("simple left/right focus navigation", () => {
             const fm = new TXMFocusManager();
-            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
+            fm.setContentFocusables(newFocusRow({x: 10, y: 10}, focuses[1], focuses[2], focuses[3]));
+            expect(fm.currentFocus).toBe(focuses[1]);
 
             test("No loss of focus moving down off row", () => {
-                fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, focuses[1], inputActions.moveDown, focuses[1]);
             });
 
             test("basic move right", () => {
-                fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[2]);
-
-                fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[3]);
+                testInput(fm, focuses[1], inputActions.moveRight, focuses[2]);
+                testInput(fm, focuses[2], inputActions.moveRight, focuses[3]);
             });
 
             test("No loss of focus moving right off of right side", () => {
-                fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[3]);
+                testInput(fm, focuses[3], inputActions.moveRight, focuses[3]);
             });
 
             test("basic move left", () => {
-                fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[2]);
-
-                fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, focuses[3], inputActions.moveLeft, focuses[2]);
+                testInput(fm, focuses[2], inputActions.moveLeft, focuses[1]);
             });
 
             test("No loss of focus moving left off of left side", () => {
-                fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, focuses[1], inputActions.moveLeft, focuses[1]);
             });
         });
 
         describe("2D grid focus content navigation, no chrome", () => {
             const fm = new TXMFocusManager();
-
             fm.setTopChromeFocusables([]);
             fm.setBottomChromeFocusables([]);
-            fm.setContentFocusables([
-                [focuses[1], focuses[2], focuses[3]],
-                [focuses[4], undefined, focuses[5]],
-                focuses[6], // covers entire logical row
-            ]);
+            fm.setContentFocusables(
+                newFocusRow({x: 10, y: 10},                   focuses[1], focuses[2], focuses[3])
+                  .concat(newFocusRow({x: 10, y: 30},         focuses[4], undefined, focuses[5]))
+                  .concat(newFocusRow({x: 10, y: 50, w: 100}, focuses[6])) // covers entire logical row
+            );
 
-            test("default initial focus is first content item", () => {
-                expect(fm.currentFocus).toBe(focuses[1]);
-            });
+            // default initial focus is first content item
+            expect(fm.currentFocus).toBe(focuses[1]);
 
             test("no loss of focus moving up off of the top edge", () => {
-                fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, focuses[1], inputActions.moveUp, focuses[1]);
             });
 
             test("no loss of focus moving left off of the left edge", () => {
-                fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, focuses[1], inputActions.moveLeft, focuses[1]);
             });
 
-            test("no loss of focus moving left off of the left edge", () => {
-                fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[2]);
+            test("moving right", () => {
+                testInput(fm, focuses[1], inputActions.moveRight, focuses[2]);
             });
 
             test("skip down over middle hole in focusables grid", () => {
-                expect(fm.currentFocus).toBe(focuses[2]);
-                fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[6]);
+                testInput(fm, focuses[2], inputActions.moveDown, focuses[6]);
 
                 // moving down along right column doesn't have a hole though
-                fm.setFocus(focuses[3]);
-                fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[5]);
+                testInput(fm, focuses[3], inputActions.moveDown, focuses[5]);
             });
 
             test("skip left over middle hole in focusables grid", () => {
-                fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                testInput(fm, focuses[5], inputActions.moveLeft, focuses[4]);
             });
 
             test("move down and back up left column", () => {
-                fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[6]);
-
-                fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[4]);
-
-                fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, focuses[4], inputActions.moveDown, focuses[6]);
+                testInput(fm, focuses[6], inputActions.moveUp, focuses[4]);
+                testInput(fm, focuses[4], inputActions.moveUp, focuses[1]);
             });
 
             test("loss of context when move down to bottom row from right column and back up left column", () => {
-                fm.setFocus(focuses[5]);
-                fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[6]);
-
-                fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                testInput(fm, focuses[5], inputActions.moveDown, focuses[6]);
+                testInput(fm, focuses[6], inputActions.moveUp, focuses[4]);
             });
         });
 
