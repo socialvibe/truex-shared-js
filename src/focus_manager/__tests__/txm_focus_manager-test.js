@@ -506,81 +506,59 @@ describe("TXMFocusManager", () => {
             fm.setTopChromeFocusables([topChrome[1], topChrome[2], topChrome[3]]);
             fm.setBottomChromeFocusables([bottomChrome[1], bottomChrome[2]]);
             fm.setContentFocusables([
-                [focuses[1], focuses[2], focuses[3]],
+                focuses[1], focuses[2], focuses[3],
                 focuses[4]
             ]);
 
-            test("default initial focus is first content item", () => {
-                expect(fm.currentFocus).toBe(focuses[1]);
-            });
+            // default initial focus is first content item"
+            expect(fm.currentFocus).toBe(focuses[1]);
 
             test("default focus on movement is in content area", () => {
-                fm.setFocus(undefined);
-                fm.navigateToNewFocus(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, undefined, inputActions.moveLeft, focuses[1]);
             });
 
             test("no loss of focus moving left off the left edge of top chrome", () => {
-                fm.setFocus(topChrome[1]);
-                fm.navigateToNewFocus(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(topChrome[1]);
+                testInput(fm, topChrome[1], inputActions.moveLeft, topChrome[1]);
             });
 
             test("move right along top chrome", () => {
-                fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(topChrome[2]);
-
-                fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(topChrome[3]);
+                testInput(fm, topChrome[1], inputActions.moveRight, topChrome[2]);
+                testInput(fm, topChrome[2], inputActions.moveRight, topChrome[3]);
             });
 
             test("no loss of focus moving right or up off the right edge of top chrome", () => {
-                fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(topChrome[3]);
-
-                fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(topChrome[3]);
+                testInput(fm, topChrome[3], inputActions.moveRight, topChrome[3]);
+                testInput(fm, topChrome[3], inputActions.moveUp, topChrome[3]);
             });
 
             test("moving down from top chrome goes to first content focus", () => {
-                // establish last saved top focus for later
-                fm.navigateToNewFocus(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(topChrome[2]);
-
-                fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                testInput(fm, topChrome[3], inputActions.moveLeft, topChrome[2]);
+                testInput(fm, topChrome[2], inputActions.moveDown, focuses[1]);
             });
 
             test("moving down within content stays within content focusables", () => {
-                fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[4]);
-
-                fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[1]);
-
-                fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                testInput(fm, focuses[1], inputActions.moveDown, focuses[4]);
+                testInput(fm, focuses[4], inputActions.moveDown, focuses[1]);
+                testInput(fm, focuses[1], inputActions.moveDown, focuses[4]);
             });
 
             test("moving down from last content row moves down to first bottom chrome", () => {
-                fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(bottomChrome[1]);
+                testInput(fm, focuses[4], inputActions.moveDown, bottomChrome[1]);
             });
 
             test("no loss of focus moving down from last bottom chrome row", () => {
-                fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(bottomChrome[1]);
+                testInput(fm, bottomChrome[1], inputActions.moveDown, bottomChrome[1]);
             });
 
             test("moving within bottom chrome works", () => {
-                fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(bottomChrome[2]);
+                testInput(fm, bottomChrome[1], inputActions.moveRight, bottomChrome[2]);
             });
 
             test("moving up from bottom chrome moves to last saved content focus", () => {
-                fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
-                fm.setFocus(focuses[2]);
-                fm.setFocus(bottomChrome[2]);
+                testInput(fm, focuses[2], inputActions.moveDown, bottomChrome[2]);
+
+                fm.navigateToNewFocus(inputActions.moveUp);
+                expect(fm.currentFocus).toBe(focuses[2]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
                 expect(fm.currentFocus).toBe(focuses[2]);
