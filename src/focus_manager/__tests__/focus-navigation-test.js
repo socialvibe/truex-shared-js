@@ -21,7 +21,7 @@ describe("focus navigation tests", () => {
 
     element.getBoundingClientRect = () => element;
 
-    element.setBounds = function({x = this.x, y = this.y, w = this.width, h = this.height}) {
+    element.setBounds = function({x = this.x || 0, y = this.y || 0, w = this.width || 0, h = this.height || 0}) {
       this.x = x;
       this.y = y;
       this.width = w;
