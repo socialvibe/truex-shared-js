@@ -509,7 +509,7 @@ export class TXMFocusManager {
      */
     setTopChromeFocusables(focusables) {
         this._lastTopFocus = undefined;
-        this._topChromeFocusables = this.ensureArray(focusables);
+        this._topChromeFocusables = this.flattenArray(focusables);
     }
 
     /**
@@ -518,7 +518,7 @@ export class TXMFocusManager {
      */
     setBottomChromeFocusables(focusables) {
         this._lastBottomFocus = undefined;
-        this._bottomChromeFocusables = this.ensureArray(focusables);
+        this._bottomChromeFocusables = this.flattenArray(focusables);
     }
 
     /**
@@ -536,7 +536,7 @@ export class TXMFocusManager {
         const isInBottomChrome = this.isInBottomChrome(current);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
-        this._contentFocusables = this.ensureArray(focusables);
+        this._contentFocusables = this.flattenArray(focusables);
 
         // Mark the default content focus, but only if it is actually a valid content focusable.
         this._lastContentFocus = this.isInContent(defaultFocus) && defaultFocus;
@@ -699,9 +699,18 @@ export class TXMFocusManager {
         }
     }
 
-    ensureArray(array) {
-        if (!array) return []; // i.e. empty, no focusables
-        if (!Array.isArray(array)) return [array]; // treat as a single element array
-        return array;
+    flattenArray(array) {
+        const result = [];
+        traverse(array);
+        return result;
+
+        function traverse(currArray) {
+            if (!currArray) return;
+            if (Array.isArray(currArray)) {
+                currArray.forEach(traverse);
+            } else {
+                result.push(currArray); // found an element
+            }
+        }
     }
 }
