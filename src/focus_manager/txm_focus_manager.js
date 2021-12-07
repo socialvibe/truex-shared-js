@@ -704,12 +704,12 @@ export class TXMFocusManager {
         traverse(array);
         return result;
 
-        function traverse(currArray) {
-            if (!currArray) return;
-            if (Array.isArray(currArray)) {
-                currArray.forEach(traverse);
+        function traverse(value) {
+            if (!value) return;
+            if (Array.isArray(value)) {
+                value.forEach(traverse);
             } else {
-                result.push(currArray); // found an element
+                result.push(value); // found an element
             }
         }
     }
