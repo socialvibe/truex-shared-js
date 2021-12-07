@@ -11,8 +11,9 @@ describe("focus navigation tests", () => {
   const left = inputActions.moveLeft;
   const right = inputActions.moveRight;
 
-  function newFocusable({id, x, y, w, h}) {
-    const element = {id, top: y, left: x, bottom: y + h, right: x + w, width: w, height: h};
+  // Creates a focusable element stub that can be positioned and sized.
+  function newFocusable(id, bounds = {x: 0, y: 0, w: 0, h: 0}) {
+    const element = { id };
     element.classList = {
       add: () => {},
       remove: () => {}
@@ -20,15 +21,18 @@ describe("focus navigation tests", () => {
 
     element.getBoundingClientRect = () => element;
 
-    element.setX = function(x) {
+    element.setBounds = function({x = this.x, y = this.y, w = this.width, h = this.height}) {
       this.x = x;
-      this.right = x + this.width;
+      this.y = y;
+      this.width = w;
+      this.height = h;
+      this.left = x;
+      this.top = y;
+      this.right = x + w;
+      this.bottom = y + h;
     };
 
-    element.setY = function(y) {
-      this.y = y;
-      this.bottom = y + this.height;
-    };
+    element.setBounds(bounds);
 
     return new Focusable(element);
   }
@@ -41,14 +45,14 @@ describe("focus navigation tests", () => {
 
   test("test focus grid with overlaps, gaps", () => {
     // NOTE: overlaps are ignored, row/col based solely on top/left position.
-    const f_0_0 = newFocusable({id: "f_0_0", x: 10, y: 10, w: 40, h: 30});
-    const f_0_2 = newFocusable({id: "f_0_2", x: 60, y: 10, w: 40, h: 30});
-    const f_1_2 = newFocusable({id: "f_1_2", x: 55, y: 40, w: 55, h: 40}); // overlaps
-    const f_2_4 = newFocusable({id: "f_2_4", x: 110, y: 70, w: 40, h: 40});  // overlaps
-    const f_3_0 = newFocusable({id: "f_3_0", x: 10, y: 80, w: 50, h: 40});
-    const f_3_1 = newFocusable({id: "f_3_1", x: 20, y: 80, w: 50, h: 40});
-    const f_3_3 = newFocusable({id: "f_3_3", x: 80, y: 80, w: 40, h: 40});
-    const f_4_5 = newFocusable({id: "f_4_5", x: 200, y: 400, w: 40, h: 40});
+    const f_0_0 = newFocusable("f_0_0", {x: 10, y: 10, w: 40, h: 30});
+    const f_0_2 = newFocusable("f_0_2", {x: 60, y: 10, w: 40, h: 30});
+    const f_1_2 = newFocusable("f_1_2", {x: 55, y: 40, w: 55, h: 40}); // overlaps
+    const f_2_4 = newFocusable("f_2_4", {x: 110, y: 70, w: 40, h: 40});  // overlaps
+    const f_3_0 = newFocusable("f_3_0", {x: 10, y: 80, w: 50, h: 40});
+    const f_3_1 = newFocusable("f_3_1", {x: 20, y: 80, w: 50, h: 40});
+    const f_3_3 = newFocusable("f_3_3", {x: 80, y: 80, w: 40, h: 40});
+    const f_4_5 = newFocusable("f_4_5", {x: 200, y: 400, w: 40, h: 40});
 
     // Note: all focus navigation is done according to the implicit sort into rows by increasing y, each row into columns by increasing x,
     focusManager.setContentFocusables([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
@@ -68,12 +72,12 @@ describe("focus navigation tests", () => {
   });
 
   test("test simple focus grid", () => {
-    const A = newFocusable({id: "A", x: 10, y: 10, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 30, y: 10, w: 10, h: 10});
-    const C = newFocusable({id: "C", x: 50, y: 10, w: 10, h: 10});
-    const D = newFocusable({id: "D", x: 10, y: 30, w: 10, h: 10});
-    const E = newFocusable({id: "E", x: 30, y: 30, w: 10, h: 10});
-    const F = newFocusable({id: "F", x: 50, y: 30, w: 10, h: 10});
+    const A = newFocusable("A", {x: 10, y: 10, w: 10, h: 10});
+    const B = newFocusable("B", {x: 30, y: 10, w: 10, h: 10});
+    const C = newFocusable("C", {x: 50, y: 10, w: 10, h: 10});
+    const D = newFocusable("D", {x: 10, y: 30, w: 10, h: 10});
+    const E = newFocusable("E", {x: 30, y: 30, w: 10, h: 10});
+    const F = newFocusable("F", {x: 50, y: 30, w: 10, h: 10});
 
     focusManager.setContentFocusables([
       A, B, C,
@@ -93,8 +97,8 @@ describe("focus navigation tests", () => {
   });
 
   test("test A kitty corner B", () => {
-    const A = newFocusable({id: "A", x: 10, y: 10, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 30, y: 30, w: 10, h: 10});
+    const A = newFocusable("A", {x: 10, y: 10, w: 10, h: 10});
+    const B = newFocusable("B", {x: 30, y: 30, w: 10, h: 10});
 
     focusManager.setContentFocusables([
       A,
@@ -110,9 +114,9 @@ describe("focus navigation tests", () => {
   });
 
   test("test stepping down", () => {
-    const A = newFocusable({id: "A", x: 10, y: 10, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 30, y: 30, w: 10, h: 10});
-    const C = newFocusable({id: "C", x: 90, y: 90, w: 10, h: 10});
+    const A = newFocusable("A", {x: 10, y: 10, w: 10, h: 10});
+    const B = newFocusable("B", {x: 30, y: 30, w: 10, h: 10});
+    const C = newFocusable("C", {x: 90, y: 90, w: 10, h: 10});
 
     focusManager.setContentFocusables([
       A,
@@ -133,9 +137,9 @@ describe("focus navigation tests", () => {
   });
 
   test("test stepping up", () => {
-    const A = newFocusable({id: "A", x: 10, y: 90, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 30, y: 30, w: 10, h: 10});
-    const C = newFocusable({id: "C", x: 90, y: 10, w: 10, h: 10});
+    const A = newFocusable("A", {x: 10, y: 90, w: 10, h: 10});
+    const B = newFocusable("B", {x: 30, y: 30, w: 10, h: 10});
+    const C = newFocusable("C", {x: 90, y: 10, w: 10, h: 10});
 
     focusManager.setContentFocusables([
             A,
@@ -156,9 +160,9 @@ describe("focus navigation tests", () => {
   });
 
   test("test stepping up and down", () => {
-    const A = newFocusable({id: "A", x: 30, y: 10, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 10, y: 30, w: 10, h: 10});
-    const C = newFocusable({id: "C", x: 90, y: 90, w: 10, h: 10});
+    const A = newFocusable("A", {x: 30, y: 10, w: 10, h: 10});
+    const B = newFocusable("B", {x: 10, y: 30, w: 10, h: 10});
+    const C = newFocusable("C", {x: 90, y: 90, w: 10, h: 10});
 
     focusManager.setContentFocusables([
          A,
@@ -177,11 +181,11 @@ describe("focus navigation tests", () => {
   });
 
   test("test button square with center", () => {
-    const A = newFocusable({id: "A", x: 10, y: 10, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 100, y: 10, w: 10, h: 10});
-    const C = newFocusable({id: "C", x: 50, y: 50, w: 10, h: 10});
-    const D = newFocusable({id: "D", x: 10, y: 100, w: 10, h: 10});
-    const E = newFocusable({id: "E", x: 100, y: 100, w: 10, h: 10});
+    const A = newFocusable("A", {x: 10, y: 10, w: 10, h: 10});
+    const B = newFocusable("B", {x: 100, y: 10, w: 10, h: 10});
+    const C = newFocusable("C", {x: 50, y: 50, w: 10, h: 10});
+    const D = newFocusable("D", {x: 10, y: 100, w: 10, h: 10});
+    const E = newFocusable("E", {x: 100, y: 100, w: 10, h: 10});
 
     focusManager.setContentFocusables([
       A,  B,
@@ -204,10 +208,10 @@ describe("focus navigation tests", () => {
   });
 
   test("test right to closest row", () => {
-    const A = newFocusable({id: "A", x: 10, y: 10, w: 40, h: 5});
-    const B = newFocusable({id: "B", x: 100, y: 10, w: 40, h: 5});
-    const C = newFocusable({id: "C", x: 10, y: 30, w: 40, h: 5});
-    const D = newFocusable({id: "D", x: 10, y: 90, w: 40, h: 5});
+    const A = newFocusable("A", {x: 10, y: 10, w: 40, h: 5});
+    const B = newFocusable("B", {x: 100, y: 10, w: 40, h: 5});
+    const C = newFocusable("C", {x: 10, y: 30, w: 40, h: 5});
+    const D = newFocusable("D", {x: 10, y: 90, w: 40, h: 5});
 
     focusManager.setContentFocusables([
       A, B,
@@ -222,27 +226,27 @@ describe("focus navigation tests", () => {
   });
 
   test("test closest buttons from center", () => {
-    const A1 = newFocusable({id: "A1", x: 0, y: 0, w: 5, h: 5});
-    const A2 = newFocusable({id: "A2", x: 10, y: 0, w: 5, h: 5});
-    const A3 = newFocusable({id: "A3", x: 0, y: 10, w: 5, h: 5});
-    const A4 = newFocusable({id: "A4", x: 10, y: 10, w: 5, h: 5});
+    const A1 = newFocusable("A1", {x: 0, y: 0, w: 5, h: 5});
+    const A2 = newFocusable("A2", {x: 10, y: 0, w: 5, h: 5});
+    const A3 = newFocusable("A3", {x: 0, y: 10, w: 5, h: 5});
+    const A4 = newFocusable("A4", {x: 10, y: 10, w: 5, h: 5});
 
-    const B1 = newFocusable({id: "B1", x: 100, y: 0, w: 5, h: 5});
-    const B2 = newFocusable({id: "B2", x: 110, y: 0, w: 5, h: 5});
-    const B3 = newFocusable({id: "B3", x: 100, y: 10, w: 5, h: 5});
-    const B4 = newFocusable({id: "B4", x: 110, y: 10, w: 5, h: 5});
+    const B1 = newFocusable("B1", {x: 100, y: 0, w: 5, h: 5});
+    const B2 = newFocusable("B2", {x: 110, y: 0, w: 5, h: 5});
+    const B3 = newFocusable("B3", {x: 100, y: 10, w: 5, h: 5});
+    const B4 = newFocusable("B4", {x: 110, y: 10, w: 5, h: 5});
 
-    const C = newFocusable({id: "C", x: 50, y: 50, w: 5, h: 5});
+    const C = newFocusable("C", {x: 50, y: 50, w: 5, h: 5});
 
-    const D1 = newFocusable({id: "D1", x: 0, y: 100, w: 5, h: 5});
-    const D2 = newFocusable({id: "D2", x: 10, y: 100, w: 5, h: 5});
-    const D3 = newFocusable({id: "D3", x: 0, y: 110, w: 5, h: 5});
-    const D4 = newFocusable({id: "D4", x: 10, y: 110, w: 5, h: 5});
+    const D1 = newFocusable("D1", {x: 0, y: 100, w: 5, h: 5});
+    const D2 = newFocusable("D2", {x: 10, y: 100, w: 5, h: 5});
+    const D3 = newFocusable("D3", {x: 0, y: 110, w: 5, h: 5});
+    const D4 = newFocusable("D4", {x: 10, y: 110, w: 5, h: 5});
 
-    const E1 = newFocusable({id: "E1", x: 100, y: 100, w: 5, h: 5});
-    const E2 = newFocusable({id: "E2", x: 110, y: 100, w: 5, h: 5});
-    const E3 = newFocusable({id: "E3", x: 100, y: 110, w: 5, h: 5});
-    const E4 = newFocusable({id: "E4", x: 110, y: 110, w: 5, h: 5});
+    const E1 = newFocusable("E1", {x: 100, y: 100, w: 5, h: 5});
+    const E2 = newFocusable("E2", {x: 110, y: 100, w: 5, h: 5});
+    const E3 = newFocusable("E3", {x: 100, y: 110, w: 5, h: 5});
+    const E4 = newFocusable("E4", {x: 110, y: 110, w: 5, h: 5});
 
     focusManager.setContentFocusables([
       A1, A2,    B1, B2,
@@ -282,9 +286,9 @@ describe("focus navigation tests", () => {
   });
 
   test("test misaligned button column", () => {
-    const AAA = newFocusable({id: "AAA", x: 10, y: 10, w: 5, h: 10});
-    const BBB = newFocusable({id: "BBB", x: 12, y: 20, w: 5, h: 5});
-    const CCC = newFocusable({id: "CCC", x: 10, y: 30, w: 5, h: 5});
+    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 5, h: 10});
+    const BBB = newFocusable("BBB", {x: 12, y: 20, w: 5, h: 5});
+    const CCC = newFocusable("CCC", {x: 10, y: 30, w: 5, h: 5});
 
     focusManager.setContentFocusables([
       AAA,
@@ -300,8 +304,8 @@ describe("focus navigation tests", () => {
   });
 
   test("test button completely covering another", () => {
-    const AAA = newFocusable({id: "AAA", x: 10, y: 10, w: 100, h: 100});
-    const BBB = newFocusable({id: "BBB", x: 50, y: 50, w: 10, h: 10});
+    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
+    const BBB = newFocusable("BBB", {x: 50, y: 50, w: 10, h: 10});
 
     // AAAAAAAAAAAAAAAA
     // A              A
@@ -325,11 +329,11 @@ describe("focus navigation tests", () => {
   });
 
   test("test multiple matches in focus column", () => {
-    const AAA = newFocusable({id: "AAA", x: 30, y: 10, w: 10, h: 10});
-    const BBB = newFocusable({id: "BBB", x: 80, y: 10, w: 10, h: 10});
-    const ZZZZZZZZZZZZ = newFocusable({id: "ZZZZZZZZZZZZ", x: 10, y: 30, w: 100, h: 10});
-    const DDDD = newFocusable({id: "DDDD", x: 5, y: 60, w: 30, h: 10});
-    const EEE = newFocusable({id: "EEE", x: 50, y: 60, w: 20, h: 10});
+    const AAA = newFocusable("AAA", {x: 30, y: 10, w: 10, h: 10});
+    const BBB = newFocusable("BBB", {x: 80, y: 10, w: 10, h: 10});
+    const ZZZZZZZZZZZZ = newFocusable("ZZZZZZZZZZZZ", {x: 10, y: 30, w: 100, h: 10});
+    const DDDD = newFocusable("DDDD", {x: 5, y: 60, w: 30, h: 10});
+    const EEE = newFocusable("EEE", {x: 50, y: 60, w: 20, h: 10});
 
     focusManager.setContentFocusables([
          AAA, BBB,
@@ -347,34 +351,34 @@ describe("focus navigation tests", () => {
 
     // align B is exactly with Z's right edge, which makes it a closer match
     const origBx = BBB.element.x;
-    BBB.element.setX(ZZZZZZZZZZZZ.element.right - BBB.element.width);
+    BBB.element.setBounds({x: ZZZZZZZZZZZZ.element.right - BBB.element.width});
     testInput(ZZZZZZZZZZZZ, up, BBB);
 
-    BBB.element.setX(origBx);
-    AAA.element.setX(ZZZZZZZZZZZZ.element.x - AAA.element.width + 2); // overlap just a bit with Z's left edge
+    BBB.element.setBounds({x: origBx});
+    AAA.element.setBounds({x: ZZZZZZZZZZZZ.element.x - AAA.element.width + 2}); // overlap just a bit with Z's left edge
     testInput(ZZZZZZZZZZZZ, up, AAA);
 
-    // Competing equal distance defer to the left most
-    AAA.element.setX(ZZZZZZZZZZZZ.element.x - AAA.element.width);
-    BBB.element.setX(ZZZZZZZZZZZZ.element.right - BBB.element.width);
+    // Competing equal distances, defer to the left most
+    AAA.element.setBounds({x: ZZZZZZZZZZZZ.element.x});
+    BBB.element.setBounds({x: ZZZZZZZZZZZZ.element.right - BBB.element.width});
     testInput(ZZZZZZZZZZZZ, up, AAA);
 
     // Make B hang off of Z' right edge a bit, should not be reached moving right.
-    BBB.element.setX(ZZZZZZZZZZZZ.element.right - 2);
+    BBB.element.setBounds({x: ZZZZZZZZZZZZ.element.right - 2});
     testInput(ZZZZZZZZZZZZ, right, ZZZZZZZZZZZZ);
 
     testInput(ZZZZZZZZZZZZ, down, EEE);
-    EEE.element.setX(EEE.element.x + 10); // move a bit more off center
+    EEE.element.setBounds({x: EEE.element.x + 10}); // move a bit more off center
     testInput(ZZZZZZZZZZZZ, down, DDDD); // D is now closer to Z's left edge
   });
 
   // I.e, like above but rotated.
   test("test multiple matches in focus row", () => {
-    const A = newFocusable({id: "A", x: 10, y: 30, w: 10, h: 10});
-    const B = newFocusable({id: "B", x: 10, y: 80, w: 10, h: 10});
-    const Z = newFocusable({id: "Z", x: 30, y: 10, w: 10, h: 100});
-    const D = newFocusable({id: "D", x: 60, y: 5, w: 10, h: 30});
-    const E = newFocusable({id: "E", x: 60, y: 50, w: 10, h: 20});
+    const A = newFocusable("A", {x: 10, y: 30, w: 10, h: 10});
+    const B = newFocusable("B", {x: 10, y: 80, w: 10, h: 10});
+    const Z = newFocusable("Z", {x: 30, y: 10, w: 10, h: 100});
+    const D = newFocusable("D", {x: 60, y: 5, w: 10, h: 30});
+    const E = newFocusable("E", {x: 60, y: 50, w: 10, h: 20});
 
     focusManager.setContentFocusables([
             Z,
@@ -394,24 +398,24 @@ describe("focus navigation tests", () => {
 
     // align B is exactly with Z's bottom edge, which makes it a closer match
     const origBy = B.element.y;
-    B.element.setY(Z.element.bottom - B.element.height);
+    B.element.setBounds({y: Z.element.bottom - B.element.height});
     testInput(Z, left, B);
 
-    B.element.setY(origBy);
-    A.element.setY(Z.element.y - A.element.height + 2); // overlap just a bit with Z's left edge
+    B.element.setBounds({y: origBy});
+    A.element.setBounds({y: Z.element.y - A.element.height + 2}); // overlap just a bit with Z's left edge
     testInput(Z, left, A);
 
-    // Competing equal distance defer to the left most
-    A.element.setY(Z.element.y - A.element.height);
-    B.element.setY(Z.element.bottom - B.element.height);
-    testInput(Z, up, A);
+    // Competing equal distance defer to the top most
+    A.element.setBounds({y: Z.element.y});
+    B.element.setBounds({y: Z.element.bottom - B.element.height});
+    testInput(Z, left, A);
 
     // Make B hang off of Z' bottom edge a bit, should not be reached moving down.
-    B.element.setY(Z.element.bottom - 2);
+    B.element.setBounds({y: Z.element.bottom - 2});
     testInput(Z, down, Z);
 
     testInput(Z, right, E);
-    E.element.setY(E.element.y + 10); // move a bit more off center
+    E.element.setBounds({y: E.element.y + 10}); // move a bit more off center
     testInput(Z, right, D); // D is now closer to Z's top edge
   });
 });
