@@ -44,7 +44,6 @@ describe("complex navigation tests", () => {
   }
 
   test("test focus grid with overlaps, gaps", () => {
-    // NOTE: overlaps are ignored, row/col based solely on top/left position.
     const f_0_0 = newFocusable("f_0_0", {x: 10, y: 10, w: 40, h: 30});
     const f_0_2 = newFocusable("f_0_2", {x: 60, y: 10, w: 40, h: 30});
     const f_1_2 = newFocusable("f_1_2", {x: 55, y: 40, w: 55, h: 40}); // overlaps
@@ -54,7 +53,8 @@ describe("complex navigation tests", () => {
     const f_3_3 = newFocusable("f_3_3", {x: 80, y: 80, w: 40, h: 40});
     const f_4_5 = newFocusable("f_4_5", {x: 200, y: 400, w: 40, h: 40});
 
-    // Note: all focus navigation is done according to the implicit sort into rows by increasing y, each row into columns by increasing x,
+    // Note: all focus navigation is done by finding the visually closest match, first in the implied focus row/col
+    // falling back to the next leftmost/topmost item in the following row/col.
     focusManager.setContentFocusables([f_4_5, f_0_0, f_3_1, f_2_4, f_3_3, f_1_2, f_0_2, f_3_0]);
 
     // Moving along the same row or column takes precedence.
