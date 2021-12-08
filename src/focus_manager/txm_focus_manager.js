@@ -597,6 +597,10 @@ export class TXMFocusManager {
         return this._bottomChromeFocusables.indexOf(focusable) >= 0;
     }
 
+    hasFocusable(focusable) {
+        return this.isInTopChrome(focusable) || this.isInContent(focusable) || this.isInBottomChrome(focusable);
+    }
+
     findNextFocus(fromFocus, forAction, inFocusables) {
         if (!fromFocus) return;
 
