@@ -405,6 +405,9 @@ describe("TXMFocusManager", () => {
             expect(fm.currentFocus).toBe(focuses[3]);
 
             fm.setContentFocusables([focuses[2], focuses[1]]);
+            expect(fm.currentFocus).toBe(focuses[1]); // defaults to first visual focus
+
+            fm.setContentFocusables([focuses[2], focuses[1]], focuses[2]);
             expect(fm.currentFocus).toBe(focuses[2]);
 
             fm.setTopChromeFocusables([focuses[1], focuses[2]]);

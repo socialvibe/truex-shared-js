@@ -509,7 +509,7 @@ export class TXMFocusManager {
      */
     setTopChromeFocusables(focusables) {
         this._lastTopFocus = undefined;
-        this._topChromeFocusables = this.flattenArray(focusables);
+        this._topChromeFocusables = this.sortVisually(this.flattenArray(focusables));
     }
 
     /**
@@ -518,7 +518,7 @@ export class TXMFocusManager {
      */
     setBottomChromeFocusables(focusables) {
         this._lastBottomFocus = undefined;
-        this._bottomChromeFocusables = this.flattenArray(focusables);
+        this._bottomChromeFocusables = this.sortVisually(this.flattenArray(focusables));
     }
 
     /**
@@ -536,7 +536,7 @@ export class TXMFocusManager {
         const isInBottomChrome = this.isInBottomChrome(current);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
-        this._contentFocusables = this.flattenArray(focusables);
+        this._contentFocusables = this.sortVisually(this.flattenArray(focusables));
 
         // Mark the default content focus, but only if it is actually a valid content focusable.
         this._lastContentFocus = this.isInContent(defaultFocus) && defaultFocus;
@@ -698,6 +698,29 @@ export class TXMFocusManager {
             if (newLane.start <= focusLane.start && focusLane.start < newLane.end) return true;
             return false;
         }
+    }
+
+    sortVisually(focusables) {
+        focusables.sort((f1, f2) => {
+            const bounds1 = f1.element && f1.element.getBoundingClientRect();
+            const bounds2 = f2.element && f2.element.getBoundingClientRect();
+
+            // Can encounter null bounds during testing with stubbed focusables.
+            if (!bounds1 && !bounds2) {
+                return 0;
+            } else if (!bounds1) {
+                return -1;
+            } else if (!bounds2) {
+                return 1;
+            }
+
+            var cmp = bounds1.top - bounds2.top;
+            if (cmp == 0) {
+                cmp = bounds1.left - bounds2.left;
+            }
+            return cmp;
+        });
+        return focusables;
     }
 
     flattenArray(array) {
