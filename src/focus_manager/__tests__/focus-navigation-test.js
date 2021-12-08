@@ -137,9 +137,9 @@ describe("complex navigation tests", () => {
   });
 
   test("test stepping up", () => {
-    const A = newFocusable("A", {x: 10, y: 90, w: 10, h: 10});
+    const A = newFocusable("A", {x: 90, y: 10, w: 10, h: 10});
     const B = newFocusable("B", {x: 30, y: 30, w: 10, h: 10});
-    const C = newFocusable("C", {x: 90, y: 10, w: 10, h: 10});
+    const C = newFocusable("C", {x: 10, y: 90, w: 10, h: 10});
 
     focusManager.setContentFocusables([
             A,
@@ -147,16 +147,16 @@ describe("complex navigation tests", () => {
       C
     ]);
 
-    testInput(A, up, B);
-    testInput(A, right, B);
-    testInput(B, up, C);
-    testInput(B, right, C);
-    testInput(C, up, C);
-    testInput(C, right, C);
-    testInput(C, down, B);
-    testInput(C, left, B);
-    testInput(B, down, A);
-    testInput(B, left, A);
+    testInput(A, up, A);
+    testInput(A, down, B);
+    testInput(B, up, A);
+    testInput(B, right, A);
+    testInput(B, down, C);
+    testInput(B, left, C);
+    testInput(C, up, B);
+    testInput(C, right, B);
+    testInput(C, down, C);
+    testInput(C, left, C);
   });
 
   test("test stepping up and down", () => {
