@@ -225,6 +225,58 @@ describe("complex navigation tests", () => {
     testInput(B, down, C);
   });
 
+  test("test row along then column up", () => {
+    const A = newFocusable("A", {x: 90, y: 10, w: 10, h: 10});
+    const B = newFocusable("B", {x: 90, y: 30, w: 10, h: 10});
+    const C = newFocusable("C", {x: 90, y: 60, w: 10, h: 10});
+    const D = newFocusable("D", {x: 10, y: 90, w: 10, h: 10});
+    const E = newFocusable("E", {x: 30, y: 90, w: 10, h: 10});
+    const F = newFocusable("F", {x: 60, y: 90, w: 10, h: 10});
+    const G = newFocusable("G", {x: 90, y: 90, w: 10, h: 10});
+
+    focusManager.setContentFocusables([
+               A,
+               B,
+               C,
+      D, E, F, G
+    ]);
+
+    testInput(A, right, A);
+    testInput(A, left, F);
+    testInput(A, down, B);
+    testInput(A, up, A);
+
+    testInput(B, right, B);
+    testInput(B, left, F);
+    testInput(B, down, C);
+    testInput(B, up, A);
+
+    testInput(C, right, C);
+    testInput(C, left, F);
+    testInput(C, down, G);
+    testInput(C, up, B);
+
+    testInput(D, left, D);
+    testInput(D, right, E);
+    testInput(D, down, D);
+    testInput(D, up, C);
+
+    testInput(E, left, D);
+    testInput(E, right, F);
+    testInput(E, down, E);
+    testInput(E, up, C);
+
+    testInput(F, left, E);
+    testInput(F, right, G);
+    testInput(F, down, F);
+    testInput(F, up, C);
+
+    testInput(G, left, F);
+    testInput(G, right, G);
+    testInput(G, down, G);
+    testInput(G, up, C);
+  });
+
   test("test closest buttons from center", () => {
     const A1 = newFocusable("A1", {x: 0, y: 0, w: 5, h: 5});
     const A2 = newFocusable("A2", {x: 10, y: 0, w: 5, h: 5});
