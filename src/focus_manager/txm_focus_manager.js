@@ -605,26 +605,31 @@ export class TXMFocusManager {
         var getLaneRange;
         var getDistanceBeyondFocus;
         var getBoundsCenter;
+        var getCenterDistance;
         switch (forAction) {
             case inputActions.moveRight:
                 getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
                 getDistanceBeyondFocus = newBounds => newBounds.left - focusBounds.right;
                 getBoundsCenter = bounds => getCenter(bounds.left, bounds.right);
+                getCenterDistance = (newCenter, focusCenter) => newCenter - focusCenter;
                 break;
             case inputActions.moveLeft:
                 getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
                 getDistanceBeyondFocus = newBounds => focusBounds.left - newBounds.right;
                 getBoundsCenter = bounds => getCenter(bounds.left, bounds.right);
+                getCenterDistance = (newCenter, focusCenter) => focusCenter - newCenter;
                 break;
             case inputActions.moveDown:
                 getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
                 getDistanceBeyondFocus = newBounds => newBounds.top - focusBounds.bottom;
                 getBoundsCenter = bounds => getCenter(bounds.top, bounds.bottom);
+                getCenterDistance = (newCenter, focusCenter) => newCenter - focusCenter;
                 break;
             case inputActions.moveUp:
                 getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
                 getDistanceBeyondFocus = newBounds => focusBounds.top - newBounds.bottom;
                 getBoundsCenter = bounds => getCenter(bounds.top, bounds.bottom);
+                getCenterDistance = (newCenter, focusCenter) => focusCenter - newCenter;
                 break;
             default:
                 // Not a movement action.
@@ -662,9 +667,12 @@ export class TXMFocusManager {
                     //
                     // In this case, we measure between the two item center points instead of the leading edge that is beyond
                     // the current focus.
-                    newFocusDistance = getBoundsCenter(newBounds) - getBoundsCenter(focusBounds);
+                    newFocusDistance = getCenterDistance(getBoundsCenter(newBounds), getBoundsCenter(focusBounds));
+                    if (newFocusDistance <= 0) return; // center must be beyond the current focus
+
+                } else if (newFocusDistance < 0) {
+                    return; // new focus edge must be adjacent or beyond
                 }
-                if (newFocusDistance < 0) return;
 
                 const newLane = getLaneRange(newBounds);
                 if (mustBeInVisualLane && !overlapsLane(newLane)) return;

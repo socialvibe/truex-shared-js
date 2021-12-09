@@ -328,6 +328,26 @@ describe("complex navigation tests", () => {
     testInput(BBB, left, BBB);
   });
 
+  test("test button overlaps another", () => {
+    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
+    const BBB = newFocusable("BBB", {x: 80, y: 10, w: 100, h: 100});
+
+    // AAAAAABBBBBBBBBB
+    // A     B  A     B
+    // A     B  A     B
+    // AAAAAABBBBBBBBBB
+    focusManager.setContentFocusables([
+      AAA, BBB
+    ]);
+
+    testInput(AAA, right, BBB);
+    testInput(AAA, down, AAA);
+    testInput(AAA, up, AAA);
+    testInput(BBB, left, AAA);
+    testInput(BBB, down, BBB);
+    testInput(BBB, up, BBB);
+  });
+
   test("test multiple matches in focus column", () => {
     const AAA = newFocusable("AAA", {x: 30, y: 10, w: 10, h: 10});
     const BBB = newFocusable("BBB", {x: 80, y: 10, w: 10, h: 10});
