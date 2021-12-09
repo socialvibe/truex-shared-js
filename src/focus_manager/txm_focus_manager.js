@@ -604,22 +604,27 @@ export class TXMFocusManager {
 
         var getLaneRange;
         var getDistanceBeyondFocus;
+        var getBoundsCenter;
         switch (forAction) {
             case inputActions.moveRight:
                 getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
                 getDistanceBeyondFocus = newBounds => newBounds.left - focusBounds.right;
+                getBoundsCenter = bounds => getCenter(bounds.left, bounds.right);
                 break;
             case inputActions.moveLeft:
                 getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
                 getDistanceBeyondFocus = newBounds => focusBounds.left - newBounds.right;
+                getBoundsCenter = bounds => getCenter(bounds.left, bounds.right);
                 break;
             case inputActions.moveDown:
                 getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
                 getDistanceBeyondFocus = newBounds => newBounds.top - focusBounds.bottom;
+                getBoundsCenter = bounds => getCenter(bounds.top, bounds.bottom);
                 break;
             case inputActions.moveUp:
                 getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
                 getDistanceBeyondFocus = newBounds => focusBounds.top - newBounds.bottom;
+                getBoundsCenter = bounds => getCenter(bounds.top, bounds.bottom);
                 break;
             default:
                 // Not a movement action.
@@ -647,8 +652,18 @@ export class TXMFocusManager {
                 const newBounds = getBoundsOf(newF);
                 if (newBounds.width <= 0 || newBounds.height <= 0) return;
 
-                const newFocusDistance = getDistanceBeyondFocus(newBounds);
                 // only look at focusables that are actually visually beyond the current focus edge
+                var newFocusDistance = getDistanceBeyondFocus(newBounds);
+                if (fromFocus !== newF && intersects(newBounds, focusBounds)) {
+                    // However, if two focusables actually visually intersect, we assume the develop knows this
+                    // and that things look visually ok. E.g. this happens with production choice cards, where
+                    // the Yes/No buttons technically have overlapping images, although the core visible content
+                    // does not overlap.
+                    //
+                    // In this case, we measure between the two item center points instead of the leading edge that is beyond
+                    // the current focus.
+                    newFocusDistance = getBoundsCenter(newBounds) - getBoundsCenter(focusBounds);
+                }
                 if (newFocusDistance < 0) return;
 
                 const newLane = getLaneRange(newBounds);
@@ -669,7 +684,11 @@ export class TXMFocusManager {
         }
 
         function getLaneCenter(laneRange) {
-            return (laneRange.start + laneRange.end) / 2;
+            return getCenter(laneRange.start, laneRange.end);
+        }
+
+        function getCenter(start, end) {
+            return (start + end) / 2;
         }
 
         function getDistanceFromFocusLane(laneRange) {
@@ -697,6 +716,18 @@ export class TXMFocusManager {
             if (focusLane.start <= newLane.start && newLane.start < focusLane.end) return true;
             if (newLane.start <= focusLane.start && focusLane.start < newLane.end) return true;
             return false;
+        }
+
+        function intersects(bounds1, bounds2) {
+            const intersection = {
+              top: Math.max(bounds1.top, bounds2.top),
+              left: Math.max(bounds1.left, bounds2.left),
+              bottom: Math.min(bounds1.bottom, bounds2.bottom),
+              right: Math.min(bounds1.right, bounds2.right)
+            };
+            const w = intersection.right - intersection.left;
+            const h = intersection.bottom - intersection.top;
+            return w > 0 && h > 0;
         }
     }
 

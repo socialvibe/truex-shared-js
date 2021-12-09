@@ -48,9 +48,9 @@ describe("complex navigation tests", () => {
     const f_0_2 = newFocusable("f_0_2", {x: 60, y: 10, w: 40, h: 30});
     const f_1_2 = newFocusable("f_1_2", {x: 55, y: 40, w: 55, h: 40}); // overlaps
     const f_2_4 = newFocusable("f_2_4", {x: 110, y: 70, w: 40, h: 40});  // overlaps
-    const f_3_0 = newFocusable("f_3_0", {x: 10, y: 80, w: 50, h: 40});
-    const f_3_1 = newFocusable("f_3_1", {x: 20, y: 80, w: 50, h: 40});
-    const f_3_3 = newFocusable("f_3_3", {x: 80, y: 80, w: 40, h: 40});
+    const f_3_0 = newFocusable("f_3_0", {x: 10, y: 115, w: 50, h: 40});
+    const f_3_1 = newFocusable("f_3_1", {x: 60, y: 115, w: 50, h: 40});
+    const f_3_3 = newFocusable("f_3_3", {x: 115, y: 115, w: 40, h: 40});
     const f_4_5 = newFocusable("f_4_5", {x: 200, y: 400, w: 40, h: 40});
 
     // Note: all focus navigation is done by finding the visually closest match, first in the implied focus row/col
@@ -63,7 +63,7 @@ describe("complex navigation tests", () => {
     testInput(f_0_0, right, f_0_2);
     testInput(f_0_2, down, f_1_2);
     testInput(f_1_2, up, f_0_2);
-    testInput(f_1_2, down, f_3_0);
+    testInput(f_1_2, down, f_3_1);
     testInput(f_2_4, left, f_1_2);
     testInput(f_2_4, up, f_0_2);
     testInput(f_2_4, right, f_4_5);
