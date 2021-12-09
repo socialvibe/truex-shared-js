@@ -603,33 +603,28 @@ export class TXMFocusManager {
         const focusBounds = getBoundsOf(fromFocus);
 
         var getLaneRange;
-        var getDistanceBeyondFocus;
-        var getBoundsCenter;
-        var getCenterDistance;
+        var getNearEdgeDistance;
+        var getFarEdgeDistance;
         switch (forAction) {
             case inputActions.moveRight:
                 getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
-                getDistanceBeyondFocus = newBounds => newBounds.left - focusBounds.right;
-                getBoundsCenter = bounds => getCenter(bounds.left, bounds.right);
-                getCenterDistance = (newCenter, focusCenter) => newCenter - focusCenter;
+                getNearEdgeDistance = newBounds => newBounds.left - focusBounds.right;
+                getFarEdgeDistance = newBounds => newBounds.right - focusBounds.right;
                 break;
             case inputActions.moveLeft:
                 getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
-                getDistanceBeyondFocus = newBounds => focusBounds.left - newBounds.right;
-                getBoundsCenter = bounds => getCenter(bounds.left, bounds.right);
-                getCenterDistance = (newCenter, focusCenter) => focusCenter - newCenter;
+                getNearEdgeDistance = newBounds => focusBounds.left - newBounds.right;
+                getFarEdgeDistance = newBounds => focusBounds.left - newBounds.left;
                 break;
             case inputActions.moveDown:
                 getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
-                getDistanceBeyondFocus = newBounds => newBounds.top - focusBounds.bottom;
-                getBoundsCenter = bounds => getCenter(bounds.top, bounds.bottom);
-                getCenterDistance = (newCenter, focusCenter) => newCenter - focusCenter;
+                getNearEdgeDistance = newBounds => newBounds.top - focusBounds.bottom;
+                getFarEdgeDistance = newBounds => newBounds.bottom - focusBounds.bottom;
                 break;
             case inputActions.moveUp:
                 getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
-                getDistanceBeyondFocus = newBounds => focusBounds.top - newBounds.bottom;
-                getBoundsCenter = bounds => getCenter(bounds.top, bounds.bottom);
-                getCenterDistance = (newCenter, focusCenter) => focusCenter - newCenter;
+                getNearEdgeDistance = newBounds => focusBounds.top - newBounds.bottom;
+                getFarEdgeDistance = newBounds => focusBounds.top - newBounds.top;
                 break;
             default:
                 // Not a movement action.
@@ -658,9 +653,9 @@ export class TXMFocusManager {
                 if (newBounds.width <= 0 || newBounds.height <= 0) return;
 
                 // only look at focusables that are actually visually beyond the current focus edge
-                var newFocusDistance = getDistanceBeyondFocus(newBounds);
-                const focusIntersection = intersection(newBounds, focusBounds);
-                if (fromFocus !== newF && focusIntersection && !equals(focusIntersection, newBounds)) {
+                var newFocusDistance;
+                const focusIntersection = getBoundsIntersection(newBounds, focusBounds);
+                if (fromFocus !== newF && focusIntersection && !equalBounds(focusIntersection, newBounds)) {
                     // However, if two focusables actually visually intersect but not completely covers,
                     // we assume the develop knows this and that things look visually ok. E.g. this happens
                     // with production choice cards, where the Yes/No buttons technically have overlapping
@@ -668,11 +663,17 @@ export class TXMFocusManager {
                     //
                     // In this case, we measure between the two item center points instead of the leading edge
                     // that is beyond the current focus.
-                    newFocusDistance = getCenterDistance(getBoundsCenter(newBounds), getBoundsCenter(focusBounds));
-                    if (newFocusDistance <= 0) return; // center must be beyond the current focus
+                    newFocusDistance = getFarEdgeDistance(newBounds);
+                    if (newFocusDistance <= 0) {
+                        // new focus' far edge must be beyond the current focus's far edge
+                        return;
+                    }
 
-                } else if (newFocusDistance < 0) {
-                    return; // new focus edge must be adjacent or beyond
+                } else {
+                    newFocusDistance = getNearEdgeDistance(newBounds);
+                    if (newFocusDistance < 0) {
+                        return; // new focus' near edge must be adjacent or beyond the current focus's far edge
+                    }
                 }
 
                 const newLane = getLaneRange(newBounds);
@@ -693,11 +694,7 @@ export class TXMFocusManager {
         }
 
         function getLaneCenter(laneRange) {
-            return getCenter(laneRange.start, laneRange.end);
-        }
-
-        function getCenter(start, end) {
-            return (start + end) / 2;
+            return (laneRange.start + laneRange.end) / 2;
         }
 
         function getDistanceFromFocusLane(laneRange) {
@@ -727,7 +724,7 @@ export class TXMFocusManager {
             return false;
         }
 
-        function intersection(bounds1, bounds2) {
+        function getBoundsIntersection(bounds1, bounds2) {
             const intersection = {
               top: Math.max(bounds1.top, bounds2.top),
               left: Math.max(bounds1.left, bounds2.left),
@@ -739,7 +736,7 @@ export class TXMFocusManager {
             return w > 0 && h > 0 && intersection;
         }
 
-        function equals(bounds1, bounds2) {
+        function equalBounds(bounds1, bounds2) {
             return bounds1.top == bounds2.top
                 && bounds1.left == bounds2.left
                 && bounds1.bottom == bounds2.bottom
