@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.6.0
+## v1.6.2
 * [CTV-3307](https://truextech.atlassian.net/browse/CTV-3307): HTML5: ensure consistent focus navigation rules for bluescript
 
 ## v1.5.7
