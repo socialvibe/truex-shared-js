@@ -659,14 +659,15 @@ export class TXMFocusManager {
 
                 // only look at focusables that are actually visually beyond the current focus edge
                 var newFocusDistance = getDistanceBeyondFocus(newBounds);
-                if (fromFocus !== newF && intersects(newBounds, focusBounds)) {
-                    // However, if two focusables actually visually intersect, we assume the develop knows this
-                    // and that things look visually ok. E.g. this happens with production choice cards, where
-                    // the Yes/No buttons technically have overlapping images, although the core visible content
-                    // does not overlap.
+                const focusIntersection = intersection(newBounds, focusBounds);
+                if (fromFocus !== newF && focusIntersection && !equals(focusIntersection, newBounds)) {
+                    // However, if two focusables actually visually intersect but not completely covers,
+                    // we assume the develop knows this and that things look visually ok. E.g. this happens
+                    // with production choice cards, where the Yes/No buttons technically have overlapping
+                    // images, although the core visible content does not overlap.
                     //
-                    // In this case, we measure between the two item center points instead of the leading edge that is beyond
-                    // the current focus.
+                    // In this case, we measure between the two item center points instead of the leading edge
+                    // that is beyond the current focus.
                     newFocusDistance = getCenterDistance(getBoundsCenter(newBounds), getBoundsCenter(focusBounds));
                     if (newFocusDistance <= 0) return; // center must be beyond the current focus
 
@@ -726,7 +727,7 @@ export class TXMFocusManager {
             return false;
         }
 
-        function intersects(bounds1, bounds2) {
+        function intersection(bounds1, bounds2) {
             const intersection = {
               top: Math.max(bounds1.top, bounds2.top),
               left: Math.max(bounds1.left, bounds2.left),
@@ -735,7 +736,14 @@ export class TXMFocusManager {
             };
             const w = intersection.right - intersection.left;
             const h = intersection.bottom - intersection.top;
-            return w > 0 && h > 0;
+            return w > 0 && h > 0 && intersection;
+        }
+
+        function equals(bounds1, bounds2) {
+            return bounds1.top == bounds2.top
+                && bounds1.left == bounds2.left
+                && bounds1.bottom == bounds2.bottom
+                && bounds1.right == bounds2.right;
         }
     }
 

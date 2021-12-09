@@ -322,10 +322,10 @@ describe("complex navigation tests", () => {
     testInput(AAA, left, AAA);
 
     // Should not be possible to get to BBB, but if it happened, perhaps with autofocus:
-    testInput(BBB, right, BBB);
-    testInput(BBB, down, BBB);
-    testInput(BBB, up, BBB);
-    testInput(BBB, left, BBB);
+    testInput(BBB, right, AAA);
+    testInput(BBB, down, AAA);
+    testInput(BBB, up, AAA);
+    testInput(BBB, left, AAA);
   });
 
   test("test button overlaps another", () => {
