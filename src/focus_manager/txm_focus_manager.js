@@ -656,8 +656,8 @@ export class TXMFocusManager {
                 var newFocusDistance;
                 const focusIntersection = getBoundsIntersection(newBounds, focusBounds);
                 if (fromFocus !== newF && focusIntersection && !equalBounds(focusIntersection, newBounds)) {
-                    // However, if two focusables actually visually intersect but not completely covers,
-                    // we assume the develop knows this and that things look visually ok. E.g. this happens
+                    // However, if two focusables actually visually intersect but not completely cover the other,
+                    // we assume the developer knows this and that things look visually ok. E.g. this happens
                     // with production choice cards, where the Yes/No buttons technically have overlapping
                     // images, although the core visible content does not overlap.
                     //
