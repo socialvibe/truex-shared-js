@@ -303,78 +303,6 @@ describe("complex navigation tests", () => {
     testInput(BBB,left, BBB);
   });
 
-  test("test button completely covering another", () => {
-    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
-    const BBB = newFocusable("BBB", {x: 50, y: 50, w: 10, h: 10});
-
-    // AAAAAAAAAAAAAAAA
-    // A              A
-    // A     BBBB     A
-    // A              A
-    // AAAAAAAAAAAAAAAA
-    focusManager.setContentFocusables([
-       AAA, BBB
-    ]);
-
-    testInput(AAA, right, AAA);
-    testInput(AAA, down, AAA);
-    testInput(AAA, up, AAA);
-    testInput(AAA, left, AAA);
-
-    // Should not be possible to get to BBB, but if it happened, perhaps with autofocus:
-    testInput(BBB, right, AAA);
-    testInput(BBB, down, AAA);
-    testInput(BBB, up, AAA);
-    testInput(BBB, left, AAA);
-  });
-
-  test("test button overlaps another", () => {
-    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
-    const BBB = newFocusable("BBB", {x: 80, y: 10, w: 100, h: 100});
-
-    // AAAAAABBBBBBBBBB
-    // A     B  A     B
-    // A     B  A     B
-    // AAAAAABBBBBBBBBB
-    focusManager.setContentFocusables([
-      AAA, BBB
-    ]);
-
-    testInput(AAA, left, AAA);
-    testInput(AAA, right, BBB);
-    testInput(AAA, down, AAA);
-    testInput(AAA, up, AAA);
-    testInput(BBB, left, AAA);
-    testInput(BBB, down, BBB);
-    testInput(BBB, up, BBB);
-    testInput(BBB, right, BBB);
-  });
-
-  test("test button overlaps another both right and down", () => {
-    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
-    const BBB = newFocusable("BBB", {x: 80, y: 30, w: 100, h: 100});
-
-    // AAAAAAAAAAA
-    // A         A
-    // A     BBBBBBBBBBBBBB
-    // A     B   A        B
-    // AAAAAABAAAA        B
-    //       B            B
-    //       BBBBBBBBBBBBBB
-    focusManager.setContentFocusables([
-      AAA, BBB
-    ]);
-
-    testInput(AAA, left, AAA);
-    testInput(AAA, right, BBB);
-    testInput(AAA, down, AAA);
-    testInput(AAA, up, AAA);
-    testInput(BBB, left, AAA);
-    testInput(BBB, down, AAA);
-    testInput(BBB, up, BBB);
-    testInput(BBB, right, BBB);
-  });
-
   test("test multiple matches in focus column", () => {
     const AAA = newFocusable("AAA", {x: 30, y: 10, w: 10, h: 10});
     const BBB = newFocusable("BBB", {x: 80, y: 10, w: 10, h: 10});
@@ -464,5 +392,102 @@ describe("complex navigation tests", () => {
     testInput(Z, right, E);
     E.element.setBounds({y: E.element.y + 10}); // move a bit more off center
     testInput(Z, right, D); // D is now closer to Z's top edge
+  });
+
+  test("test button completely covering another", () => {
+    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
+    const BBB = newFocusable("BBB", {x: 50, y: 50, w: 10, h: 10});
+
+    // AAAAAAAAAAAAAAAA
+    // A              A
+    // A     BBBB     A
+    // A              A
+    // AAAAAAAAAAAAAAAA
+    focusManager.setContentFocusables([
+      AAA, BBB
+    ]);
+
+    testInput(AAA, right, AAA);
+    testInput(AAA, down, AAA);
+    testInput(AAA, up, AAA);
+    testInput(AAA, left, AAA);
+
+    // Should not be possible to get to BBB, but if it happened, perhaps with autofocus:
+    testInput(BBB, right, AAA);
+    testInput(BBB, down, AAA);
+    testInput(BBB, up, AAA);
+    testInput(BBB, left, AAA);
+  });
+
+  test("test button overlaps another", () => {
+    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
+    const BBB = newFocusable("BBB", {x: 80, y: 10, w: 100, h: 100});
+
+    // AAAAAABBBBBBBBBB
+    // A     B  A     B
+    // A     B  A     B
+    // AAAAAABBBBBBBBBB
+    focusManager.setContentFocusables([
+      AAA, BBB
+    ]);
+
+    testInput(AAA, left, AAA);
+    testInput(AAA, right, BBB);
+    testInput(AAA, down, AAA);
+    testInput(AAA, up, AAA);
+    testInput(BBB, left, AAA);
+    testInput(BBB, down, BBB);
+    testInput(BBB, up, BBB);
+    testInput(BBB, right, BBB);
+  });
+
+  test("test button overlaps another both right and down", () => {
+    const AAA = newFocusable("AAA", {x: 10, y: 10, w: 100, h: 100});
+    const BBB = newFocusable("BBB", {x: 80, y: 30, w: 100, h: 100});
+
+    // AAAAAAAAAAA
+    // A         A
+    // A     BBBBBBBBBBBBBB
+    // A     B   A        B
+    // AAAAAABAAAA        B
+    //       B            B
+    //       BBBBBBBBBBBBBB
+    focusManager.setContentFocusables([
+      AAA, BBB
+    ]);
+
+    testInput(AAA, left, AAA);
+    testInput(AAA, right, BBB);
+    testInput(AAA, down, BBB);
+    testInput(AAA, up, AAA);
+    testInput(BBB, left, AAA);
+    testInput(BBB, down, BBB);
+    testInput(BBB, up, AAA);
+    testInput(BBB, right, BBB);
+  });
+
+  test("test button overlaps another both right and up", () => {
+    const AAA = newFocusable("AAA", {x: 80, y: 10, w: 100, h: 100});
+    const BBB = newFocusable("BBB", {x: 10, y: 30, w: 100, h: 100});
+
+    //       AAAAAAAAAAAAAA
+    //       A            A
+    // BBBBBBABBBB        A
+    // B     A   B        A
+    // B     AAAAAAAAAAAAAA
+    // B         B
+    // BBBBBBBBBBB
+    focusManager.setContentFocusables([
+      AAA, BBB
+    ]);
+
+    testInput(AAA, left, BBB);
+    testInput(AAA, right, AAA);
+    testInput(AAA, down, BBB);
+    testInput(AAA, up, AAA);
+    testInput(BBB, left, BBB);
+    testInput(BBB, right, AAA);
+    testInput(BBB, down, BBB);
+    testInput(BBB, up, AAA);
   });
 });
