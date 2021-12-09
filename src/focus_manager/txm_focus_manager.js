@@ -632,30 +632,75 @@ export class TXMFocusManager {
         }
 
         const focusLane = getLaneRange(focusBounds);
-        const focusLaneCenter = getLaneCenter(focusLane);
 
-        // First try to find the best match in the same visual row or column.
-        var result = findNextClosestFocus(true);
+        // First try to find the best match in the same visual row or column long the direction of movement,
+        // i.e. within the same focus lane.
+        var result = findNextClosestFocus((newRange, currState) => {
+            if (!contains(newRange, focusLane)) return; // only consider items fully within the focus lane
+
+            // Just pick the one closest to the focus lane's starting "left most" or "top most" edge.
+            var betterMatch = false;
+            const newDistance = newRange.start - focusLane.start;
+            if (currState.bestDistance === undefined || newDistance < currState.bestDistance) {
+                betterMatch = true;
+                currState.bestDistance = newDistance;
+            }
+            return betterMatch;
+        });
+
         if (!result) {
-            // Nothing in the same visual lane. Fallback to the first one beyond the current focus edge at all.
-            result = findNextClosestFocus(false);
+            // Next try the best match of any overlaps with the focus lane.
+            result = findNextClosestFocus((newRange, currState) => {
+                if (!overlaps(focusLane, newRange)) return;  // only consider items overlapping the focus lane
+
+                // Pick the one with the largest overlap, then left/top most
+                var betterMatch = false;
+                const overlapRange = {
+                    start: Math.max(newRange.start, focusLane.start),
+                    end: Math.min(newRange.end, focusLane.end)
+                };
+                const newOverlap = overlapRange.end - overlapRange.start;
+                const newDistance = newRange.start - focusLane.start; // i.e. distance to left/top edge of focus lane
+                if (currState.bestOverlap === undefined
+                    || newOverlap > currState.bestOverlap
+                    || newOverlap == currState.bestOverlap && newDistance < currState.bestDistance) {
+                    betterMatch = true;
+                    currState.bestOverlap = newOverlap;
+                    currState.bestDistance = newDistance;
+                }
+                return betterMatch;
+            });
+        }
+        if (!result) {
+            // Finally look for the remaining outside items closest to the focus lane.
+            result = findNextClosestFocus((newRange, currState) => {
+                var betterMatch = false;
+                const newDistance = (newRange.end <= focusLane.end)
+                    ? focusLane.end - newRange.end // i.e. to the left/top of the focus lane
+                    :  newRange.start - focusLane.start; // to the right/bottom of the focus lane
+                if (currState.bestDistance === undefined || newDistance < currState.bestDistance) {
+                    betterMatch = true;
+                    currState.bestDistance = newDistance;
+                }
+                return betterMatch;
+            });
         }
         return result;
 
-        function findNextClosestFocus(mustBeInVisualLane) {
+        function findNextClosestFocus(testFocusMatch) {
             var currResult;
             var currFocusDistance;
-            var currLaneDistance;
-            inFocusables.forEach(newF => {
-                if (!newF) return;
+            var currState = {};
+            inFocusables.forEach(newFocus => {
+                if (!newFocus || newFocus === fromFocus) return;
 
-                const newBounds = getBoundsOf(newF);
-                if (newBounds.width <= 0 || newBounds.height <= 0) return;
+                const newBounds = getBoundsOf(newFocus);
+                if (newBounds.width <= 0 || newBounds.height <= 0) return; // ignore zero-sized items
 
                 // only look at focusables that are actually visually beyond the current focus edge
                 var newFocusDistance;
-                const focusIntersection = getBoundsIntersection(newBounds, focusBounds);
-                if (fromFocus !== newF && focusIntersection && !equalBounds(focusIntersection, newBounds)) {
+                const focusIntersection = getIntersection(newBounds, focusBounds);
+                if (focusIntersection && !equalBounds(focusIntersection, newBounds)) {
                     // However, if two focusables actually visually intersect but not completely cover the other,
                     // we assume the developer knows this and that things look visually ok. E.g. this happens
                     // with production choice cards, where the Yes/No buttons technically have overlapping
@@ -676,41 +721,15 @@ export class TXMFocusManager {
                     }
                 }
 
-                const newLane = getLaneRange(newBounds);
-                if (mustBeInVisualLane && !overlapsLane(newLane)) return;
-
-                const newLaneDistance = getDistanceFromFocusLane(newLane);
-
-                if (currResult === undefined
-                    || newFocusDistance < currFocusDistance
-                    || newFocusDistance == currFocusDistance && newLaneDistance < currLaneDistance) {
-                    // This focusable is closer to the current focus, or is the first one.
-                    currResult = newF;
+                const newRange = getLaneRange(newBounds);
+                const betterMatch = testFocusMatch(newRange, currState);
+                if (betterMatch === undefined) return; // ignoring item
+                if (newFocusDistance < currFocusDistance || betterMatch) {
+                    currResult = newFocus;
                     currFocusDistance = newFocusDistance;
-                    currLaneDistance = newLaneDistance;
                 }
             });
             return currResult;
-        }
-
-        function getLaneCenter(laneRange) {
-            return (laneRange.start + laneRange.end) / 2;
-        }
-
-        function getDistanceFromFocusLane(laneRange) {
-            // Returns the smallest distance from the start vs end vs center points.
-            const laneCenter = getLaneCenter(laneRange);
-            return [
-                getDistance(laneRange.start, focusLane.start),
-                getDistance(laneRange.start, focusLane.end),
-                getDistance(laneCenter, focusLaneCenter),
-                getDistance(laneRange.end, focusLane.start),
-                getDistance(laneRange.end, focusLane.end)
-            ].reduce((prev, curr) => Math.min(prev, curr));
-        }
-
-        function getDistance(pos1, pos2) {
-            return Math.abs(pos1 - pos2);
         }
 
         function getBoundsOf(focusable) {
@@ -718,13 +737,19 @@ export class TXMFocusManager {
               || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
         }
 
-        function overlapsLane(newLane) {
+        function overlaps(newLane) {
             if (focusLane.start <= newLane.start && newLane.start < focusLane.end) return true;
             if (newLane.start <= focusLane.start && focusLane.start < newLane.end) return true;
             return false;
         }
 
-        function getBoundsIntersection(bounds1, bounds2) {
+        function contains(testRange, inRange) {
+            return inRange.start <= testRange.start
+              && testRange.start <= testRange.end
+              && testRange.end <= inRange.end;
+        }
+
+        function getIntersection(bounds1, bounds2) {
             const intersection = {
               top: Math.max(bounds1.top, bounds2.top),
               left: Math.max(bounds1.left, bounds2.left),
