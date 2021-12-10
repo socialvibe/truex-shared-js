@@ -635,7 +635,7 @@ export class TXMFocusManager {
 
         // First try to find the best match in the same visual row or column long the direction of movement,
         // i.e. anything overlapping the same focus lane.
-        var result = findNextClosestFocus((newRange, currState) => {
+        var result = findNextClosestFocus(newRange => {
             const overlapRange = {
                 start: Math.max(newRange.start, focusLane.start),
                 end: Math.min(newRange.end, focusLane.end)
@@ -650,7 +650,7 @@ export class TXMFocusManager {
 
         if (!result) {
             // Finally look for the remaining outside items closest to the focus lane.
-            result = findNextClosestFocus((newRange, currState) => {
+            result = findNextClosestFocus(newRange => {
                 const newDistance = (newRange.end <= focusLane.end)
                     ? focusLane.end - newRange.end // i.e. to the left/top of the focus lane
                     :  newRange.start - focusLane.start; // to the right/bottom of the focus lane
