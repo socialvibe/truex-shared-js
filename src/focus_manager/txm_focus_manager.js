@@ -678,8 +678,7 @@ export class TXMFocusManager {
                     // with production choice cards, where the Yes/No buttons technically have overlapping
                     // images, although the core visible content does not overlap.
                     //
-                    // In this case, we measure between the two item center points instead of the leading edge
-                    // that is beyond the current focus.
+                    // In this case, we measure from the opposite edge of the new focus item.
                     newBeyondDistance = getFarEdgeDistance(newBounds);
                     if (newBeyondDistance <= 0) {
                         // new focus' far edge must be beyond the current focus's far edge
