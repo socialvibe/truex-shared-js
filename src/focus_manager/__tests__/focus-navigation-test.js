@@ -63,7 +63,7 @@ describe("complex navigation tests", () => {
     testInput(f_0_0, right, f_0_2);
     testInput(f_0_2, down, f_1_2);
     testInput(f_1_2, up, f_0_2);
-    testInput(f_1_2, down, f_3_1);
+    testInput(f_1_2, down, f_3_0);
     testInput(f_2_4, left, f_1_2);
     testInput(f_2_4, up, f_0_2);
     testInput(f_2_4, right, f_4_5);
