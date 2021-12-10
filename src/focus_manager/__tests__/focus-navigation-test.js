@@ -375,28 +375,7 @@ describe("complex navigation tests", () => {
     testInput(AAA, right, BBB);
 
     testInput(ZZZZZZZZZZZZ, up, AAA);
-
-    // align B is exactly with Z's right edge, which makes it a closer match
-    const origBx = BBB.element.x;
-    BBB.element.setBounds({x: ZZZZZZZZZZZZ.element.right - BBB.element.width});
-    testInput(ZZZZZZZZZZZZ, up, BBB);
-
-    BBB.element.setBounds({x: origBx});
-    AAA.element.setBounds({x: ZZZZZZZZZZZZ.element.x - AAA.element.width + 2}); // overlap just a bit with Z's left edge
-    testInput(ZZZZZZZZZZZZ, up, AAA);
-
-    // Competing equal distances, defer to the left most
-    AAA.element.setBounds({x: ZZZZZZZZZZZZ.element.x});
-    BBB.element.setBounds({x: ZZZZZZZZZZZZ.element.right - BBB.element.width});
-    testInput(ZZZZZZZZZZZZ, up, AAA);
-
-    // Make B hang off of Z' right edge a bit, should not be reached moving right.
-    BBB.element.setBounds({x: ZZZZZZZZZZZZ.element.right - 2});
-    testInput(ZZZZZZZZZZZZ, right, ZZZZZZZZZZZZ);
-
-    testInput(ZZZZZZZZZZZZ, down, EEE);
-    EEE.element.setBounds({x: EEE.element.x + 10}); // move a bit more off center
-    testInput(ZZZZZZZZZZZZ, down, DDDD); // D is now closer to Z's left edge
+    testInput(ZZZZZZZZZZZZ, down, DDDD);
   });
 
   // I.e, like above but rotated.
@@ -422,28 +401,8 @@ describe("complex navigation tests", () => {
     testInput(A, down, B);
 
     testInput(Z, left, A);
-
-    // align B is exactly with Z's bottom edge, which makes it a closer match
-    const origBy = B.element.y;
-    B.element.setBounds({y: Z.element.bottom - B.element.height});
-    testInput(Z, left, B);
-
-    B.element.setBounds({y: origBy});
-    A.element.setBounds({y: Z.element.y - A.element.height + 2}); // overlap just a bit with Z's left edge
-    testInput(Z, left, A);
-
-    // Competing equal distance defer to the top most
-    A.element.setBounds({y: Z.element.y});
-    B.element.setBounds({y: Z.element.bottom - B.element.height});
-    testInput(Z, left, A);
-
-    // Make B hang off of Z' bottom edge a bit, should not be reached moving down.
-    B.element.setBounds({y: Z.element.bottom - 2});
     testInput(Z, down, Z);
-
-    testInput(Z, right, E);
-    E.element.setBounds({y: E.element.y + 10}); // move a bit more off center
-    testInput(Z, right, D); // D is now closer to Z's top edge
+    testInput(Z, right, D);
   });
 
   test("test button completely covering another", () => {
