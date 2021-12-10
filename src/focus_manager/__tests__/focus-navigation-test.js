@@ -368,14 +368,22 @@ describe("complex navigation tests", () => {
       DDDD, EEE
     ]);
 
-    testInput(AAA, down, ZZZZZZZZZZZZ);
-    testInput(BBB, down, ZZZZZZZZZZZZ);
-
     testInput(AAA, left, AAA);
     testInput(AAA, right, BBB);
 
+    testInput(AAA, down, ZZZZZZZZZZZZ);
+    testInput(BBB, down, ZZZZZZZZZZZZ);
+
     testInput(ZZZZZZZZZZZZ, up, AAA);
     testInput(ZZZZZZZZZZZZ, down, DDDD);
+    testInput(ZZZZZZZZZZZZ, left, ZZZZZZZZZZZZ);
+    testInput(ZZZZZZZZZZZZ, right, ZZZZZZZZZZZZ);
+
+    // Move A and D outside of focus lane.
+    AAA.element.setBounds({x: ZZZZZZZZZZZZ.element.x - AAA.element.width});
+    DDDD.element.setBounds({x: ZZZZZZZZZZZZ.element.x - DDDD.element.width});
+    testInput(ZZZZZZZZZZZZ, up, BBB);
+    testInput(ZZZZZZZZZZZZ, down, EEE);
   });
 
   // I.e, like above but rotated.
@@ -401,8 +409,15 @@ describe("complex navigation tests", () => {
     testInput(A, down, B);
 
     testInput(Z, left, A);
-    testInput(Z, down, Z);
     testInput(Z, right, D);
+    testInput(Z, up, Z);
+    testInput(Z, down, Z);
+
+    // Move A and D outside of focus lane.
+    A.element.setBounds({y: Z.element.y - A.element.height});
+    D.element.setBounds({y: Z.element.y - D.element.height});
+    testInput(Z, left, B);
+    testInput(Z, right, E);
   });
 
   test("test button completely covering another", () => {
