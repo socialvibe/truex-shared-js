@@ -410,10 +410,9 @@ export class TXMFocusManager {
         }
 
         let newFocus;
-        let pos = this.findFocusPosition(focus, this._topChromeFocusables);
-        if (pos) {
+        if (this.isInTopChrome(focus)) {
             // Focus is in the top chrome.
-            newFocus = this.getNewFocus(pos, action, this._topChromeFocusables);
+            newFocus = this.findNextFocus(focus, action, this._topChromeFocusables);
             if (!newFocus && action == inputActions.moveDown) {
                 newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
                 if (!newFocus) {
@@ -421,9 +420,9 @@ export class TXMFocusManager {
                 }
             }
 
-        } else if (pos = this.findFocusPosition(focus, this._contentFocusables)) {
+        } else if (this.isInContent(focus)) {
             // Focus is in the content area.
-            newFocus = this.getNewFocus(pos, action, this._contentFocusables);
+            newFocus = this.findNextFocus(focus, action, this._contentFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
                     newFocus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
@@ -432,9 +431,9 @@ export class TXMFocusManager {
                 }
             }
 
-        } else if (pos = this.findFocusPosition(focus, this._bottomChromeFocusables)) {
+        } else if (this.isInBottomChrome(focus)) {
             // Focus is in the bottom chrome.
-            newFocus = this.getNewFocus(pos, action, this._bottomChromeFocusables);
+            newFocus = this.findNextFocus(focus, action, this._bottomChromeFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
                     newFocus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
@@ -510,7 +509,7 @@ export class TXMFocusManager {
      */
     setTopChromeFocusables(focusables) {
         this._lastTopFocus = undefined;
-        this._topChromeFocusables = this.ensure2DArray(focusables);
+        this._topChromeFocusables = this.sortVisually(this.flattenArray(focusables));
     }
 
     /**
@@ -519,7 +518,7 @@ export class TXMFocusManager {
      */
     setBottomChromeFocusables(focusables) {
         this._lastBottomFocus = undefined;
-        this._bottomChromeFocusables = this.ensure2DArray(focusables);
+        this._bottomChromeFocusables = this.sortVisually(this.flattenArray(focusables));
     }
 
     /**
@@ -537,7 +536,7 @@ export class TXMFocusManager {
         const isInBottomChrome = this.isInBottomChrome(current);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
-        this._contentFocusables = this.ensure2DArray(focusables);
+        this._contentFocusables = this.sortVisually(this.flattenArray(focusables));
 
         // Mark the default content focus, but only if it is actually a valid content focusable.
         this._lastContentFocus = this.isInContent(defaultFocus) && defaultFocus;
@@ -560,18 +559,13 @@ export class TXMFocusManager {
     }
 
     getFirstFocusIn(focusables) {
-        if (!Array.isArray(focusables)) return;
-        for (let rowIndex in focusables) {
-            let row = focusables[rowIndex];
-            if (!row) continue;
-            if (!Array.isArray(row)) return row; // Treat as an element.
-            for (let colIndex in row) {
-                let component = row[colIndex];
-                if (!component) continue;
-                if (Array.isArray(component)) continue; // shouldn't happen
-                return component;
+        if (Array.isArray(focusables)) {
+            for (let index in focusables) {
+                const f = focusables[index];
+                if (f) return f;
             }
         }
+        return undefined;
     }
 
     getLastFocus() {
@@ -582,169 +576,197 @@ export class TXMFocusManager {
     }
 
     getLastFocusIn(focusables) {
-        if (!Array.isArray(focusables)) return;
-        for (let rowIndex = focusables.length - 1; rowIndex >= 0; rowIndex--) {
-            let row = focusables[rowIndex];
-            if (!row) continue;
-            if (!Array.isArray(row)) return row; // Treat as an element.
-            for (let colIndex = row.length - 1; colIndex >= 0; colIndex--) {
-                let component = row[colIndex];
-                if (!component) continue;
-                if (Array.isArray(component)) continue; // shouldn't happen
-                return component;
+        if (Array.isArray(focusables)) {
+            for (let index = focusables.length - 1; index >= 0; index--) {
+                const f = focusables[index];
+                if (f) return f;
             }
         }
+        return undefined;
     }
 
     isInTopChrome(focusable) {
-        return !!this.findFocusPosition(focusable, this._topChromeFocusables);
+        return this._topChromeFocusables.indexOf(focusable) >= 0;
     }
 
     isInContent(focusable) {
-        return !!this.findFocusPosition(focusable, this._contentFocusables);
+        return this._contentFocusables.indexOf(focusable) >= 0;
     }
 
     isInBottomChrome(focusable) {
-        return !!this.findFocusPosition(focusable, this._bottomChromeFocusables);
+        return this._bottomChromeFocusables.indexOf(focusable) >= 0;
     }
 
-    findFocusPosition(focus, inFocusables) {
-        if (!focus) return;
-        for (let rowIndex in inFocusables) {
-            let row = inFocusables[rowIndex];
-            if (!row || !Array.isArray(row)) continue; // shouldn't happen in practice
-            for (let colIndex in row) {
-                let component = row[colIndex];
-                if (!component) continue; // skip over holes
-                if (component === focus) return {row: parseInt(rowIndex), col: parseInt(colIndex)};
-            }
+    findNextFocus(fromFocus, forAction, inFocusables) {
+        if (!fromFocus) return;
+
+        const focusBounds = getBoundsOf(fromFocus);
+
+        var getLaneRange;
+        var getNearEdgeDistance;
+        var getFarEdgeDistance;
+        switch (forAction) {
+            case inputActions.moveRight:
+                getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
+                getNearEdgeDistance = newBounds => newBounds.left - focusBounds.right;
+                getFarEdgeDistance = newBounds => newBounds.right - focusBounds.right;
+                break;
+            case inputActions.moveLeft:
+                getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
+                getNearEdgeDistance = newBounds => focusBounds.left - newBounds.right;
+                getFarEdgeDistance = newBounds => focusBounds.left - newBounds.left;
+                break;
+            case inputActions.moveDown:
+                getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
+                getNearEdgeDistance = newBounds => newBounds.top - focusBounds.bottom;
+                getFarEdgeDistance = newBounds => newBounds.bottom - focusBounds.bottom;
+                break;
+            case inputActions.moveUp:
+                getLaneRange = bounds => { return {start: bounds.left, end: bounds.right} };
+                getNearEdgeDistance = newBounds => focusBounds.top - newBounds.bottom;
+                getFarEdgeDistance = newBounds => focusBounds.top - newBounds.top;
+                break;
+            default:
+                // Not a movement action.
+                return;
         }
-    }
 
-    getNewFocus(atPosition, forAction, inFocusables) {
-        if (!atPosition) return;
+        const focusLane = getLaneRange(focusBounds);
 
-        if (inputActions.isUpDownAction(forAction)) {
-            let rowStep = forAction == inputActions.moveUp ? -1 : 1;
+        // First try to find the best match in the same visual row or column long the direction of movement,
+        // i.e. anything overlapping the same focus lane.
+        var result = findNextClosestFocus(newRange => {
+            const overlapRange = {
+                start: Math.max(newRange.start, focusLane.start),
+                end: Math.min(newRange.end, focusLane.end)
+            };
 
-            // Skip over "holes" in the implied column
-            for (let rowIndex = atPosition.row + rowStep;
-                 0 <= rowIndex && rowIndex < inFocusables.length; rowIndex += rowStep) {
-                let row = inFocusables[rowIndex];
-                if (!row) continue;
-                if (!Array.isArray(row)) continue; // shouldn't happen as per ensure2DArray
-                let component = row[atPosition.col];
-                if (!component) continue; // skip over empty holes
-                return component;
-            }
+            const newOverlap = overlapRange.end - overlapRange.start;
+            if (newOverlap <= 0) return; // only consider items actually overlapping the focus lane
 
-        } else if (inputActions.isLeftRightAction(forAction)) {
-            let colStep = forAction == inputActions.moveLeft ? -1 : 1;
-
-            // Skip over "holes" in the implied row.
-            let row = inFocusables[atPosition.row];
-            if (!row) return; // shouldn't happen as per findFocusPosition()
-            for (let colIndex = atPosition.col + colStep; 0 <= colIndex && colIndex < row.length; colIndex += colStep) {
-                let component = row[colIndex];
-                if (!component) continue; // skip over empty holes
-                return component;
-            }
-        }
-    }
-
-    ensure2DArray(array) {
-        if (!array) return []; // i.e. empty, no focusables
-        if (!Array.isArray(array)) return [[array]]; // treat as a single element matrix
-        let hasSubArrays = array.find(e => Array.isArray(e));
-        if (hasSubArrays) {
-            // Already a 2D array.
-            // - ensure single top-level elements become rows
-            // - ensure shorter rows are extend their last element to the max row length.
-            let maxRowLen = array.reduce((maxLen, e) => {
-                return Math.max(maxLen, Array.isArray(e) ? e.length : 1)
-            }, 0);
-            let result = [];
-            for (let rowIndex in array) {
-                let row = array[rowIndex];
-                if (!Array.isArray(row)) row = [row];
-                else row = row.concat(); // avoid anti-aliasing
-                if (row.length < maxRowLen) {
-                    // Extend shorter rows out.
-                    let lastElmnt = row[rowIndex.length - 1];
-                    for (let i = row.length; i < maxRowLen; i++) {
-                        row.push(lastElmnt);
-                    }
-                }
-                result.push(row);
-            }
-            return result;
-
-        } else {
-            // Interpret as 2D matrix with a single row.
-            return [array];
-        }
-    }
-
-    /**
-     * Returns the 2D navigation array from the elements visual positions. E.g. move left/right among
-     * elements along the same vertical band, move up/down for elements above and below.
-     */
-    derive2DNavigationArray(focusables) {
-        if (!focusables || focusables.length <= 0) return [];
-
-        const focusablesAndBounds = focusables.map(f => {
-            const e = f.element;
-            const bounds = e && e.getBoundingClientRect() || {left: 0, right: 0, top: 0, bottom: 0};
-            return {focusable: f, bounds};
+            const newDistance = newRange.start - focusLane.start; // i.e. distance to left/top edge of focus lane
+            return newDistance;
         });
 
-        // Sort first by x-position, then y-position.
-        focusablesAndBounds.sort((item1, item2) => {
-            var cmp = item1.bounds.left - item2.bounds.left;
+        if (!result) {
+            // Finally look for the remaining outside items closest to the focus lane.
+            result = findNextClosestFocus(newRange => {
+                const newDistance = (newRange.end <= focusLane.end)
+                    ? focusLane.end - newRange.end // i.e. to the left/top of the focus lane
+                    :  newRange.start - focusLane.start; // to the right/bottom of the focus lane
+                return newDistance;
+            });
+        }
+        return result;
+
+        function findNextClosestFocus(getFocusMatchDistance) {
+            var currResult;
+            var currDistanceBeyondFocus;
+            var currMatchDistance;
+            inFocusables.forEach(newFocus => {
+                if (!newFocus || newFocus === fromFocus) return;
+
+                const newBounds = getBoundsOf(newFocus);
+                if (newBounds.width <= 0 || newBounds.height <= 0) return; // ignore zero-sized items
+
+                // only look at focusables that are actually visually beyond the current focus edge
+                var newBeyondDistance;
+                const focusIntersection = getIntersection(newBounds, focusBounds);
+                if (focusIntersection && !equalBounds(focusIntersection, newBounds)) {
+                    // However, if two focusables actually visually intersect but not completely cover the other,
+                    // we assume the developer knows this and that things look visually ok. E.g. this happens
+                    // with production choice cards, where the Yes/No buttons technically have overlapping
+                    // images, although the core visible content does not overlap.
+                    //
+                    // In this case, we measure from the opposite edge of the new focus item.
+                    newBeyondDistance = getFarEdgeDistance(newBounds);
+                    if (newBeyondDistance <= 0) {
+                        // new focus' far edge must be beyond the current focus's far edge
+                        return;
+                    }
+
+                } else {
+                    newBeyondDistance = getNearEdgeDistance(newBounds);
+                    if (newBeyondDistance < 0) {
+                        return; // new focus' near edge must be adjacent or beyond the current focus's far edge
+                    }
+                }
+
+                const newRange = getLaneRange(newBounds);
+                const newMatchDistance = getFocusMatchDistance(newRange);
+                if (newMatchDistance === undefined) return; // ignoring item
+
+                if (currResult === undefined // first match
+                    || newBeyondDistance < currDistanceBeyondFocus // closer to focus along lane
+                    || newBeyondDistance == currDistanceBeyondFocus && newMatchDistance < currMatchDistance) { // a better match
+                    currResult = newFocus;
+                    currDistanceBeyondFocus = newBeyondDistance;
+                    currMatchDistance = newMatchDistance;
+                }
+            });
+            return currResult;
+        }
+
+        function getBoundsOf(focusable) {
+            return focusable && focusable.element && focusable.element.getBoundingClientRect()
+              || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
+        }
+
+        function getIntersection(bounds1, bounds2) {
+            const intersection = {
+              top: Math.max(bounds1.top, bounds2.top),
+              left: Math.max(bounds1.left, bounds2.left),
+              bottom: Math.min(bounds1.bottom, bounds2.bottom),
+              right: Math.min(bounds1.right, bounds2.right)
+            };
+            const w = intersection.right - intersection.left;
+            const h = intersection.bottom - intersection.top;
+            return w > 0 && h > 0 && intersection;
+        }
+
+        function equalBounds(bounds1, bounds2) {
+            return bounds1.top == bounds2.top
+                && bounds1.left == bounds2.left
+                && bounds1.bottom == bounds2.bottom
+                && bounds1.right == bounds2.right;
+        }
+    }
+
+    sortVisually(focusables) {
+        focusables.sort((f1, f2) => {
+            const bounds1 = f1.element && f1.element.getBoundingClientRect();
+            const bounds2 = f2.element && f2.element.getBoundingClientRect();
+
+            // Can encounter null bounds during testing with stubbed focusables.
+            if (!bounds1 && !bounds2) {
+                return 0;
+            } else if (!bounds1) {
+                return -1;
+            } else if (!bounds2) {
+                return 1;
+            }
+
+            var cmp = bounds1.top - bounds2.top;
             if (cmp == 0) {
-                cmp = item1.bounds.top - item2.bounds.top;
+                cmp = bounds1.left - bounds2.left;
             }
             return cmp;
         });
+        return focusables;
+    }
 
-        const result = deriveRows(focusablesAndBounds);
+    flattenArray(array) {
+        const result = [];
+        traverse(array);
+        return result;
 
-        // Now give the 2D array of just the focusables.
-        return result.map(row => row.map(item => item.focusable));
-
-        function deriveRows(items) {
-            if (!items || items.length <= 0) return [];
-
-            const itemsAbove = [];
-            const itemsBelow = [];
-            const itemsInRow = [];
-
-            let lastBounds;
-            items.forEach(item => {
-                const bounds = item.bounds;
-                if (lastBounds && bounds.bottom <= lastBounds.top) {
-                    itemsAbove.push(item);
-                } else if (lastBounds && bounds.top >= lastBounds.bottom) {
-                    itemsBelow.push(item);
-                } else {
-                    lastBounds = bounds;
-                    itemsInRow.push(item);
-                }
-            });
-
-            const resultsAbove = deriveRows(itemsAbove);
-
-            let results = resultsAbove;
-            if (itemsInRow.length > 0) {
-                results.push(itemsInRow);
+        function traverse(value) {
+            if (!value) return;
+            if (Array.isArray(value)) {
+                value.forEach(traverse);
+            } else {
+                result.push(value); // found an element
             }
-
-            const resultsBelow = deriveRows(itemsBelow);
-            if (resultsBelow.length > 0) {
-                results = results.concat(resultsBelow);
-            }
-
-            return results;
         }
     }
 }

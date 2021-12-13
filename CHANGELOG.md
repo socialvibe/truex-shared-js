@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.2
+* [CTV-3307](https://truextech.atlassian.net/browse/CTV-3307): HTML5: ensure consistent focus navigation rules for bluescript
+
 ## v1.5.7
 * [CTV-2685](https://truextech.atlassian.net/browse/CTV-2685): HTML5 - focus should not be reset during focus lost on button opacity changes
 

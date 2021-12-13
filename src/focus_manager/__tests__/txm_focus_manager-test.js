@@ -321,13 +321,48 @@ describe("TXMFocusManager", () => {
         expect(video.pause).toHaveBeenCalled();
     });
 
-    describe("focus manager navigation", () => {
-        let focuses = [];
-        for (let i = 0; i <= 10; i++) {
-            let f = new Focusable();
-            f.id = `focuses${i}`;
-            focuses.push(f);
+    describe("basic navigation", () => {
+        // Creates a focusable element stub that has a specified position and size.
+        function newFocusable(id, x, y, w, h) {
+            const element = {
+                id,
+                classList: {
+                    add: () => {},
+                    remove: () => {}
+                },
+                getBoundingClientRect: () => {
+                    return {x, y, width: w, height: h, top: y, left: x, right: x + w, bottom: y + h};
+                }
+            };
+            return new Focusable(element);
         }
+
+        function newFocusRows(...rowBounds) {
+            const focuses = [];
+            rowBounds.forEach(row => {
+                const count = row.count || 1;
+                var x = row.x || 0;
+                const y = row.y || 0;
+                const w = row.w || row.width || 10;
+                const h = row.h || row.height || 10;
+                const gap = row.gap || 10;
+                const prefix = row.prefix || 'focuses';
+                for(var i = 0; i < count; i++) {
+                    const index = focuses.length;
+                    const id = prefix + '[' + index + ']';
+                    focuses.push(newFocusable(id, x, y, w, h));
+                    x += w + gap;
+                }
+            })
+            return focuses;
+        }
+
+        const focuses = newFocusRows(
+          {}, // placeholder
+          {x: 10, y: 10, count: 3},
+          {x: 10, y: 30, gap: 30, count: 2}, // make larger gap between the two
+          {x: 10, y: 50, w: 100, count: 2} // span the above columns with the first item
+        );
 
         test("test default focus", () => {
             const fm = new TXMFocusManager();
@@ -370,6 +405,9 @@ describe("TXMFocusManager", () => {
             expect(fm.currentFocus).toBe(focuses[3]);
 
             fm.setContentFocusables([focuses[2], focuses[1]]);
+            expect(fm.currentFocus).toBe(focuses[1]); // defaults to top left visual focus regardless of input order
+
+            fm.setContentFocusables([focuses[2], focuses[1]], focuses[2]);
             expect(fm.currentFocus).toBe(focuses[2]);
 
             fm.setTopChromeFocusables([focuses[1], focuses[2]]);
@@ -392,9 +430,9 @@ describe("TXMFocusManager", () => {
 
         describe("simple left/right focus navigation", () => {
             const fm = new TXMFocusManager();
+            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
 
             test("No loss of focus moving down off row", () => {
-                fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
                 fm.onInputAction(inputActions.moveDown);
                 expect(fm.currentFocus).toBe(focuses[1]);
             });
@@ -496,14 +534,9 @@ describe("TXMFocusManager", () => {
         describe("chrome to content navigation", () => {
             const fm = new TXMFocusManager();
 
-            let topChrome = [];
-            let bottomChrome = [];
-            for (let i = 1; i <= 3; i++) {
-                topChrome[i] = new Focusable();
-                topChrome[i].id = `topChrome${i}`;
-                bottomChrome[i] = new Focusable();
-                bottomChrome[i].id = `bottomChrome${i}`;
-            }
+            const topChrome = newFocusRows({x: 0, y: 0, prefix: 'topChrome', count: 4});
+            const bottomChrome = newFocusRows({x: 0, y: 100, prefix: 'bottomChrome', count: 4});
+
             fm.setTopChromeFocusables([topChrome[1], topChrome[2], topChrome[3]]);
             fm.setBottomChromeFocusables([bottomChrome[1], bottomChrome[2]]);
             fm.setContentFocusables([
@@ -619,40 +652,6 @@ describe("TXMFocusManager", () => {
                 fm.navigateToNewFocus(inputActions.moveDown);
                 expect(fm.currentFocus).toBe(focuses[2]);
             });
-        });
-
-        describe("derived 2D focus navigation", () => {
-            const fm = new TXMFocusManager();
-
-            function newStub({id, top, left, bottom, right}) {
-                const element = {id, top, left, bottom, right, width: right - left, height: bottom - top};
-                element.getBoundingClientRect = () => element;
-                element.classList = {
-                    add: () => {},
-                    remove: () => {}
-                };
-                return new Focusable(element);
-            }
-
-            const f_0_0 = newStub({id: "f_0_0", top: 10, left: 10, bottom: 50, right: 50});
-            const f_0_1 = newStub({id: "f_0_1", top: 20, left: 60, bottom: 60, right: 100}); // overlaps, still in same row
-            const f_1_0 = newStub({id: "f_1_0", top: 80, left: 20, bottom: 120, right: 60});
-            const f_1_1 = newStub({id: "f_1_1", top: 80, left: 80, bottom: 120, right: 120});
-            const f_1_2 = newStub({id: "f_1_2", top: 70, left: 140, bottom: 110, right: 180});  // overlaps, still in same row
-            const f_2_0 = newStub({id: "f_2_0", top: 400, left: 200, bottom: 440, right: 240});
-
-            const focusablesInOrder = fm.derive2DNavigationArray([f_2_0, f_0_0, f_1_2, f_1_1, f_0_1, f_1_0]);
-            expect(focusablesInOrder.length).toBe(3);
-            expect(focusablesInOrder[0]).toEqual([f_0_0, f_0_1]);
-            expect(focusablesInOrder[1]).toEqual([f_1_0, f_1_1, f_1_2]);
-            expect(focusablesInOrder[2]).toEqual([f_2_0]);
-
-            fm.setContentFocusables(focusablesInOrder);
-            expect(fm.currentFocus).toBe(focusablesInOrder[0][0]);
-            fm.onInputAction(inputActions.moveDown);
-            expect(fm.currentFocus).toBe(focusablesInOrder[1][0]);
-            fm.onInputAction(inputActions.moveDown);
-            expect(fm.currentFocus).toBe(focusablesInOrder[2][0]);
         });
     });
 });
