@@ -112,7 +112,7 @@ describe("TXMFocusManager", () => {
         expect(inputAction).not.toHaveBeenCalled();
     });
 
-    describe("test focus mouse events enabled/disable", () => {
+    describe("test focus mouse events enabled/disabled", () => {
         const fm = new TXMFocusManager();
 
         const selectAction = jest.fn();
