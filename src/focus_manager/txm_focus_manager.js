@@ -347,7 +347,7 @@ export class TXMFocusManager {
         let focus = this.currentFocus;
         // if no element is currently focused, and the user is attempting to navigate or select, set default focus
         if (!focus && (inputActions.isMovementAction(action) || action == inputActions.select)) {
-            focus = this.getFirstFocus();
+            focus = this.getDefaultFocus();
             this.setFocus(focus);
             return true;
         }
@@ -405,7 +405,7 @@ export class TXMFocusManager {
         let focus = this.currentFocus;
         if (!focus) {
             // No focus yet, establish it.
-            this.setFocus(this.getFirstFocus());
+            this.setFocus(this.getDefaultFocus());
             return;
         }
 
@@ -444,7 +444,7 @@ export class TXMFocusManager {
             }
         } else {
             // Current focus not found, fallback.
-            newFocus = this.getFirstFocus();
+            newFocus = this.getDefaultFocus();
         }
 
         if (newFocus) {
@@ -555,8 +555,8 @@ export class TXMFocusManager {
         }
     }
 
-    getFirstFocus() {
-        let focus = this.getFirstFocusIn(this._contentFocusables);
+    getDefaultFocus() {
+        let focus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
         if (!focus) focus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
         if (!focus) focus = this._lastBottomFocus || this.getFirstFocusIn(this._bottomChromeFocusables);
         return focus;
