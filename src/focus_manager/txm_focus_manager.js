@@ -557,8 +557,8 @@ export class TXMFocusManager {
 
     getFirstFocus() {
         let focus = this.getFirstFocusIn(this._contentFocusables);
-        if (!focus) focus = this._topChromeFocusables || this.getFirstFocusIn(this._topChromeFocusables);
-        if (!focus) focus = this._bottomChromeFocusables || this.getFirstFocusIn(this._bottomChromeFocusables);
+        if (!focus) focus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
+        if (!focus) focus = this._lastBottomFocus || this.getFirstFocusIn(this._bottomChromeFocusables);
         return focus;
     }
 

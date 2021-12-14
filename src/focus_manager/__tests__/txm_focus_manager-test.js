@@ -697,6 +697,23 @@ describe("TXMFocusManager", () => {
                 fm.navigateToNewFocus(inputActions.moveDown);
                 expect(fm.currentFocus).toBe(focuses[2]);
             });
+
+            describe("custom default chrome focusables", () => {
+                fm.setTopChromeFocusables([topChrome[1], topChrome[2], topChrome[3]], topChrome[2]);
+                fm.setBottomChromeFocusables([bottomChrome[1], bottomChrome[2]], bottomChrome[2]);
+                fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[2]);
+
+                test("overall default focus and use customized chrome focusables", () => {
+                    fm.setFocus(undefined);
+                    expect(fm.getFirstFocus()).toBe(focuses[1]);
+
+                    fm.setContentFocusables(undefined);
+                    expect(fm.getFirstFocus()).toBe(topChrome[2]);
+
+                    fm.setTopChromeFocusables(undefined);
+                    expect(fm.getFirstFocus()).toBe(bottomChrome[2]);
+                });
+            });
         });
     });
 });
