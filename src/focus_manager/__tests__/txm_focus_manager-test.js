@@ -112,6 +112,51 @@ describe("TXMFocusManager", () => {
         expect(inputAction).not.toHaveBeenCalled();
     });
 
+    describe("test focus mouse events enabled/disable", () => {
+        const fm = new TXMFocusManager();
+
+        const selectAction = jest.fn();
+
+        var mouseEnabled = true;
+
+        function testMouseEnabled() {
+            return mouseEnabled;
+        }
+
+        let testDiv = document.createElement("div");
+        testDiv.id = "clickableFocus";
+        testDiv.className = "coolButton";
+        document.body.appendChild(testDiv);
+
+        let clickableFocus = new Focusable(testDiv, selectAction);
+        clickableFocus.addMouseEventListeners(fm, testMouseEnabled);
+
+        const mouseEnter = document.createEvent('Event');
+        mouseEnter.initEvent("mouseenter", true, true);
+
+        clickableFocus.element.dispatchEvent(mouseEnter);
+        expect(fm.currentFocus).toBe(clickableFocus);
+
+        const mouseClick = document.createEvent('Event');
+        mouseClick.initEvent("click", true, true);
+
+        clickableFocus.element.dispatchEvent(mouseClick);
+        expect(selectAction).toHaveBeenCalled();
+
+        // Mouse events should not be ignored:
+        mouseEnabled = false;
+        selectAction.mockClear();
+
+        clickableFocus.element.dispatchEvent(mouseClick);
+        expect(fm.currentFocus).toBe(clickableFocus);
+        expect(selectAction).not.toHaveBeenCalled();
+
+        fm.setFocus(undefined);
+
+        clickableFocus.element.dispatchEvent(mouseEnter);
+        expect(fm.currentFocus).toBe(undefined);
+    });
+
     describe("focus manager optional onSelectAction callback", () => {
         const fm = new TXMFocusManager();
         fm.keyThrottleDelay = 0; // disable throttling for this test
