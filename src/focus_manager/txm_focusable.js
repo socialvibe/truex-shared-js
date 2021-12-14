@@ -47,17 +47,19 @@ export class Focusable {
      * set the focus (for mouseEnter event), or invoke the select action (for click event).
      * @param focusManager the focus manager to use for setting the current focus in the mouseEnter listener.
      */
-    addMouseEventListeners(focusManager) {
+    addMouseEventListeners(focusManager, testMouseEnabled) {
         const elmt = this.element;
         if (elmt && elmt.addEventListener) {
             // Add mouse support if possible.
             if (focusManager) {
                 elmt.addEventListener('mouseenter', () => {
+                    if (testMouseEnabled && !testMouseEnabled()) return;
                     focusManager.setFocus(this);
                 });
             }
 
             elmt.addEventListener('click', event => {
+                if (testMouseEnabled && !testMouseEnabled()) return;
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
