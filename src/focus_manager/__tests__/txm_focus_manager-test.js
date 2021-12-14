@@ -143,7 +143,7 @@ describe("TXMFocusManager", () => {
         clickableFocus.element.dispatchEvent(mouseClick);
         expect(selectAction).toHaveBeenCalled();
 
-        // Mouse events should not be ignored:
+        // Mouse events should now be ignored:
         mouseEnabled = false;
         selectAction.mockClear();
 
