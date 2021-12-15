@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.3
+* [CTV-2698](https://truextech.atlassian.net/browse/CTV-3307): HTML5 - mouse click on hidden button still trigger it's actions
+
 ## v1.6.2
 * [CTV-3307](https://truextech.atlassian.net/browse/CTV-3307): HTML5: ensure consistent focus navigation rules for bluescript
 
