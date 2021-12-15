@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.4
+* [CTV-3321](https://truextech.atlassian.net/browse/CTV-3321): HTML5 - Clicking down focus on upvote button instead of return to content
+
 ## v1.6.3
 * [CTV-2698](https://truextech.atlassian.net/browse/CTV-3307): HTML5 - mouse click on hidden button still trigger it's actions
 

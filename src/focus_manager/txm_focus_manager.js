@@ -347,7 +347,7 @@ export class TXMFocusManager {
         let focus = this.currentFocus;
         // if no element is currently focused, and the user is attempting to navigate or select, set default focus
         if (!focus && (inputActions.isMovementAction(action) || action == inputActions.select)) {
-            focus = this.getFirstFocus();
+            focus = this.getDefaultFocus();
             this.setFocus(focus);
             return true;
         }
@@ -405,7 +405,7 @@ export class TXMFocusManager {
         let focus = this.currentFocus;
         if (!focus) {
             // No focus yet, establish it.
-            this.setFocus(this.getFirstFocus());
+            this.setFocus(this.getDefaultFocus());
             return;
         }
 
@@ -444,7 +444,7 @@ export class TXMFocusManager {
             }
         } else {
             // Current focus not found, fallback.
-            newFocus = this.getFirstFocus();
+            newFocus = this.getDefaultFocus();
         }
 
         if (newFocus) {
@@ -506,19 +506,23 @@ export class TXMFocusManager {
     /**
      * Used by the true[X] framework to specify the focusable control buttons along the top of the current page.
      * @param focusables array of focusable components, typically extending the {Focusable} class
+     * @param defaultTopFocus optional, if present, it indicates which top chrome focusable to move to when
+     *   moving up from the content area.
      */
-    setTopChromeFocusables(focusables) {
-        this._lastTopFocus = undefined;
+    setTopChromeFocusables(focusables, defaultTopFocus) {
         this._topChromeFocusables = this.sortVisually(this.flattenArray(focusables));
+        this._lastTopFocus =  this.isInTopChrome(defaultTopFocus) ? defaultTopFocus : undefined;
     }
 
     /**
      * Used by the true[X] framework to specify the focusable control buttons along the bottom of the current page.
      * @param focusables array of focusable components, typically extending the {Focusable} class
+     * @param defaultBottomFocus optional, if present, it indicates which bottom chrome focusable to move to when
+     *   moving down from the content area.
      */
-    setBottomChromeFocusables(focusables) {
-        this._lastBottomFocus = undefined;
+    setBottomChromeFocusables(focusables, defaultBottomFocus) {
         this._bottomChromeFocusables = this.sortVisually(this.flattenArray(focusables));
+        this._lastBottomFocus = this.isInBottomChrome(defaultBottomFocus) ? defaultBottomFocus : undefined;
     }
 
     /**
@@ -539,7 +543,7 @@ export class TXMFocusManager {
         this._contentFocusables = this.sortVisually(this.flattenArray(focusables));
 
         // Mark the default content focus, but only if it is actually a valid content focusable.
-        this._lastContentFocus = this.isInContent(defaultFocus) && defaultFocus;
+        this._lastContentFocus = this.isInContent(defaultFocus) ? defaultFocus : undefined;
 
         if (resetFocus) {
             if (!defaultFocus) {
@@ -551,10 +555,10 @@ export class TXMFocusManager {
         }
     }
 
-    getFirstFocus() {
-        let focus = this.getFirstFocusIn(this._contentFocusables);
-        if (!focus) focus = this.getFirstFocusIn(this._topChromeFocusables);
-        if (!focus) focus = this.getFirstFocusIn(this._bottomChromeFocusables);
+    getDefaultFocus() {
+        let focus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
+        if (!focus) focus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
+        if (!focus) focus = this._lastBottomFocus || this.getFirstFocusIn(this._bottomChromeFocusables);
         return focus;
     }
 

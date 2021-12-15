@@ -578,7 +578,6 @@ describe("TXMFocusManager", () => {
 
         describe("chrome to content navigation", () => {
             const fm = new TXMFocusManager();
-
             const topChrome = newFocusRows({x: 0, y: 0, prefix: 'topChrome', count: 4});
             const bottomChrome = newFocusRows({x: 0, y: 100, prefix: 'bottomChrome', count: 4});
 
@@ -696,6 +695,46 @@ describe("TXMFocusManager", () => {
                 fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[2]);
                 fm.navigateToNewFocus(inputActions.moveDown);
                 expect(fm.currentFocus).toBe(focuses[2]);
+            });
+        });
+
+        describe("custom default chrome focusables", () => {
+            const fm = new TXMFocusManager();
+            const topChrome = newFocusRows({x: 0, y: 0, prefix: 'topChrome', count: 4});
+            const bottomChrome = newFocusRows({x: 0, y: 100, prefix: 'bottomChrome', count: 4});
+            fm.setTopChromeFocusables([topChrome[1], topChrome[2], topChrome[3]], topChrome[2]);
+            fm.setBottomChromeFocusables([bottomChrome[1], bottomChrome[2]], bottomChrome[2]);
+            fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[2]);
+
+            test("move from content to default top chrome focus", () => {
+                fm.setFocus(focuses[1]);
+
+                fm.navigateToNewFocus(inputActions.moveUp);
+                expect(fm.currentFocus).toBe(topChrome[2]);
+
+                fm.navigateToNewFocus(inputActions.moveDown);
+                expect(fm.currentFocus).toBe(focuses[1]);
+            });
+
+            test("move from content to default bottom chrome focus", () => {
+                fm.setFocus(focuses[1]);
+
+                fm.navigateToNewFocus(inputActions.moveDown);
+                expect(fm.currentFocus).toBe(bottomChrome[2]);
+
+                fm.navigateToNewFocus(inputActions.moveUp);
+                expect(fm.currentFocus).toBe(focuses[1]);
+            });
+
+            test("overall default focus and use customized chrome focusables", () => {
+                fm.setFocus(focuses[3]);
+                expect(fm.getDefaultFocus()).toBe(focuses[3]);
+
+                fm.setContentFocusables(undefined);
+                expect(fm.getDefaultFocus()).toBe(topChrome[2]);
+
+                fm.setTopChromeFocusables(undefined);
+                expect(fm.getDefaultFocus()).toBe(bottomChrome[2]);
             });
         });
     });
