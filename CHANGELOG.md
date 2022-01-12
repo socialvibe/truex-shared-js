@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.5
+* [CTV-2446](https://truextech.atlassian.net/browse/CTV-2446): Clean Up Skyline Ad Tags
+
 ## v1.6.4
 * [CTV-3321](https://truextech.atlassian.net/browse/CTV-3321): HTML5 - Clicking down focus on upvote button instead of return to content
 
