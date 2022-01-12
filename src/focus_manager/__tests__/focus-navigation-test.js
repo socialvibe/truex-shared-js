@@ -355,6 +355,30 @@ describe("complex navigation tests", () => {
     testInput(BBB,left, BBB);
   });
 
+  test("test misaligned button row", () => {
+    const AA = newFocusable("AA", {x: 10, y: 0, w: 5, h: 20});
+    const BB = newFocusable("BB", {x: 0, y: 10, w: 5, h: 20});
+    const CC = newFocusable("CC", {x: 20, y: 10, w: 5, h: 20});
+
+    //   A
+    // B A C
+    // B   C
+    focusManager.setContentFocusables([BB, AA, CC]);
+
+    testInput(AA, left, BB);
+    testInput(AA, right, CC);
+    testInput(AA, up, AA);
+    testInput(AA, down, AA);
+    testInput(BB, up, BB);
+    testInput(BB, down, BB);
+    testInput(BB, left, BB);
+    testInput(BB, right, AA);
+    testInput(CC, up, CC);
+    testInput(CC, down, CC);
+    testInput(CC, left, AA);
+    testInput(CC, right, CC);
+  });
+
   test("test multiple matches in focus column", () => {
     const AAA = newFocusable("AAA", {x: 30, y: 10, w: 10, h: 10});
     const BBB = newFocusable("BBB", {x: 80, y: 10, w: 10, h: 10});
@@ -418,6 +442,33 @@ describe("complex navigation tests", () => {
     D.element.setBounds({y: Z.element.y - D.element.height});
     testInput(Z, left, B);
     testInput(Z, right, E);
+  });
+
+  test("test closes outside focus column", () => {
+    const A = newFocusable("A", {x: 10, y: 0, w: 5, h: 5});
+    const B = newFocusable("B", {x: 0, y: 10, w: 5, h: 5});
+    const C = newFocusable("C", {x: 20, y: 10, w: 5, h: 5});
+
+    //   A
+    // B   C
+    focusManager.setContentFocusables([A, B, C]);
+
+    testInput(A, left, B);
+    testInput(A, right, C);
+    testInput(A, up, A);
+    testInput(A, down, B);
+    testInput(B, up, A);
+    testInput(B, down, B);
+    testInput(B, left, B);
+    testInput(B, right, C);
+    testInput(C, up, A);
+    testInput(C, down, C);
+    testInput(C, left, B);
+    testInput(C, right, C);
+
+    // Move C closer to A's column. It should then take priority vs B.
+    C.element.setBounds({x: A.element.right + 1});
+    testInput(A, down, C);
   });
 
   test("test button completely covering another", () => {
