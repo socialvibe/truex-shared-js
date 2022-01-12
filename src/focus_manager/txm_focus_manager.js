@@ -55,14 +55,19 @@ export class TXMFocusManager {
         return this._focus;
     }
 
-    setFocus(newFocus) {
+    /**
+     * Sets the current focus, invoking onFocusSet(false) on the old focus, onFocusSet(true) on the new focus.
+     * @param newFocus the new focusable item
+     * @param fromMouseEvent optional, indicates the focus is set from a mouse event, passed to onFocusSet if present.
+     */
+    setFocus(newFocus, fromMouseEvent) {
         let oldFocus = this.currentFocus;
         if (oldFocus === newFocus) return;
         this._focus = newFocus || undefined;
-        if (oldFocus && oldFocus.onFocusSet) oldFocus.onFocusSet(false);
+        if (oldFocus && oldFocus.onFocusSet) oldFocus.onFocusSet(false, fromMouseEvent);
         if (newFocus) {
             this._saveLastFocus(newFocus, newFocus);
-            if (newFocus.onFocusSet) newFocus.onFocusSet(true);
+            if (newFocus.onFocusSet) newFocus.onFocusSet(true, fromMouseEvent);
         } else {
             // We are clearing the focus completely.
             this._saveLastFocus(undefined, oldFocus);
