@@ -444,7 +444,7 @@ describe("complex navigation tests", () => {
     testInput(Z, right, E);
   });
 
-  test("test closes outside focus column", () => {
+  test("test closest outside focus column", () => {
     const A = newFocusable("A", {x: 10, y: 0, w: 5, h: 5});
     const B = newFocusable("B", {x: 0, y: 10, w: 5, h: 5});
     const C = newFocusable("C", {x: 20, y: 10, w: 5, h: 5});
