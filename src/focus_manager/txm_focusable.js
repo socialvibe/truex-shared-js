@@ -1,9 +1,6 @@
 import { inputActions } from './txm_input_actions';
 import { FocusChange } from './txm_focus_change';
 
-var lastMouseX;
-var lastMouseY;
-
 /**
  * Describes the method signatures that should be supported for a component to
  * participate with the notion of having/being the current focus.
@@ -62,10 +59,10 @@ export class Focusable {
                 // actually moved by the user (as opposed to the view scrolling underneath the mouse).
                 elmt.addEventListener('mouseenter', event => {
                     if (testMouseEnabled && !testMouseEnabled()) return;
-                    if (lastMouseX == event.screenX && lastMouseY == event.screenY) return;
+                    if (focusManager.lastMouseX == event.screenX && focusManager.lastMouseY == event.screenY) return;
                     focusManager.setFocus(this, event);
-                    lastMouseX = event.screenX;
-                    lastMouseY = event.screenY;
+                    focusManager.lastMouseX = event.screenX;
+                    focusManager.lastMouseY = event.screenY;
                 });
             }
 

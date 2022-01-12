@@ -81,6 +81,8 @@ describe("TXMFocusManager", () => {
 
         const mouseEnter = document.createEvent('Event');
         mouseEnter.initEvent("mouseenter", true, true);
+        mouseEnter.screenX = 2;
+        mouseEnter.screenY = 2;
 
         focus3.element.dispatchEvent(mouseEnter);
         expect(fm.currentFocus).toBe(focus3);
@@ -133,6 +135,8 @@ describe("TXMFocusManager", () => {
 
         const mouseEnter = document.createEvent('Event');
         mouseEnter.initEvent("mouseenter", true, true);
+        mouseEnter.screenX = 1;
+        mouseEnter.screenY = 1;
 
         clickableFocus.element.dispatchEvent(mouseEnter);
         expect(fm.currentFocus).toBe(clickableFocus);

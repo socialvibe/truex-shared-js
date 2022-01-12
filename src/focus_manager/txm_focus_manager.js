@@ -36,6 +36,10 @@ export class TXMFocusManager {
         this._lastKeyCode = undefined;
         this._lastKeyEventTimestamp = 0;
 
+        // Used to filter out spurious mouseenter events.
+        this.lastMouseX = undefined;
+        this.lastMouseY = undefined;
+
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
