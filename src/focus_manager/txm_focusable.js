@@ -1,4 +1,5 @@
 import { inputActions } from './txm_input_actions';
+import { FocusChange } from './txm_focus_change';
 
 var lastMouseX;
 var lastMouseY;
@@ -101,11 +102,12 @@ export class Focusable {
      * DOM element.
      *
      * @param hasFocus has focus if true, false if otherwise.
-     * @param fromMouseEvent optional, indicates the focus is set from a mouse event, allowing for mouse vs keyboard
-     *   specific processing. E.g. auto-scrolling new focuses is usually desirable with keyboard navigation, but
-     *   not with mouse hovering causing focus changes.
+     * @param {FocusChange} focusChange describe the detailed context of the focus change,
+     *   e.g. old vs new focusables, the input action or event. This allows for mouse vs keyboard specific processing.
+     *   E.g. auto-scrolling new focuses is usually desirable with keyboard navigation, but not with mouse hovering
+     *   causing focus changes.
      */
-    onFocusSet(hasFocus, fromMouseEvent) {
+    onFocusSet(hasFocus, focusChange) {
         let e = this.element;
         if (!e) return;
         if (hasFocus) {
