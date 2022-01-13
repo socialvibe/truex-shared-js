@@ -405,7 +405,12 @@ describe("TXMFocusManager", () => {
                     return {x, y, width: w, height: h, top: y, left: x, right: x + w, bottom: y + h};
                 }
             };
-            return new Focusable(element);
+            const f = new Focusable(element);
+            f.onFocusSet = function(hasFocus, focusChange) {
+              f.hasFocus = hasFocus;
+              f.focusChange = focusChange;
+            };
+            return f;
         }
 
         function newFocusRows(...rowBounds) {
@@ -514,6 +519,15 @@ describe("TXMFocusManager", () => {
 
                 fm.onInputAction(inputActions.moveRight);
                 expect(fm.currentFocus).toBe(focuses[3]);
+
+                // Verify onFocusSet callback args.
+                expect(focuses[2].hasFocus).toBe(false);
+                expect(focuses[3].hasFocus).toBe(true);
+                expect(focuses[2].focusChange).toBe(focuses[3].focusChange);
+                expect(focuses[3].focusChange.oldFocus).toBe(focuses[2]);
+                expect(focuses[3].focusChange.newFocus).toBe(focuses[3]);
+                expect(focuses[3].focusChange.action).toBe(inputActions.moveRight);
+                expect(focuses[3].focusChange.event).toBe(undefined);
             });
 
             test("No loss of focus moving right off of right side", () => {
