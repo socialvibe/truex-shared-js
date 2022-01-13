@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.6.5
+## v1.6.6
 * [CTV-2446](https://truextech.atlassian.net/browse/CTV-2446): Clean Up Skyline Ad Tags
 
 ## v1.6.4
