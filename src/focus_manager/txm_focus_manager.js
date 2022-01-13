@@ -71,7 +71,7 @@ export class TXMFocusManager {
 
         const inputAction = typeof fromInputActionOrEvent == 'string' ? fromInputActionOrEvent : undefined;
         const inputEvent = fromInputActionOrEvent instanceof Event ? fromInputActionOrEvent : undefined;
-        const focusChange = new FocusChange(oldFocus, newFocus, inputAction, inputAction);
+        const focusChange = new FocusChange(oldFocus, newFocus, inputAction, inputEvent);
 
         if (oldFocus && oldFocus.onFocusSet) oldFocus.onFocusSet(false, focusChange);
 
