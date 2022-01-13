@@ -125,12 +125,20 @@ describe("TXMFocusManager", () => {
             return mouseEnabled;
         }
 
-        let testDiv = document.createElement("div");
+        const testDiv = document.createElement("div");
         testDiv.id = "clickableFocus";
         testDiv.className = "coolButton";
         document.body.appendChild(testDiv);
 
-        let clickableFocus = new Focusable(testDiv, selectAction);
+        const clickableFocus = new Focusable(testDiv, selectAction);
+
+        var lastHasFocus;
+        var lastFocusChange
+        clickableFocus.onFocusSet = function(hasFocus, focusChange) {
+            lastHasFocus = hasFocus;
+            lastFocusChange = focusChange;
+        }
+
         clickableFocus.addMouseEventListeners(fm, testMouseEnabled);
 
         const mouseEnter = document.createEvent('Event');
@@ -141,6 +149,12 @@ describe("TXMFocusManager", () => {
         clickableFocus.element.dispatchEvent(mouseEnter);
         expect(fm.currentFocus).toBe(clickableFocus);
 
+        expect(lastHasFocus).toBe(true);
+        expect(lastFocusChange && lastFocusChange.oldFocus).toBe(undefined);
+        expect(lastFocusChange && lastFocusChange.newFocus).toBe(clickableFocus);
+        expect(lastFocusChange && lastFocusChange.action).toBe(undefined);
+        expect(lastFocusChange && lastFocusChange.event && lastFocusChange.event.type).toBe('mouseenter');
+
         const mouseClick = document.createEvent('Event');
         mouseClick.initEvent("click", true, true);
 
@@ -150,12 +164,20 @@ describe("TXMFocusManager", () => {
         // Mouse events should now be ignored:
         mouseEnabled = false;
         selectAction.mockClear();
+        lastHasFocus = undefined;
+        lastFocusChange = undefined;
 
         clickableFocus.element.dispatchEvent(mouseClick);
         expect(fm.currentFocus).toBe(clickableFocus);
         expect(selectAction).not.toHaveBeenCalled();
 
-        fm.setFocus(undefined);
+        fm.setFocus(undefined, 'fake-action');
+
+        expect(lastHasFocus).toBe(false);
+        expect(lastFocusChange && lastFocusChange.oldFocus).toBe(clickableFocus);
+        expect(lastFocusChange && lastFocusChange.newFocus).toBe(undefined);
+        expect(lastFocusChange && lastFocusChange.action).toBe('fake-action');
+        expect(lastFocusChange && lastFocusChange.event).toBe(undefined);
 
         clickableFocus.element.dispatchEvent(mouseEnter);
         expect(fm.currentFocus).toBe(undefined);
