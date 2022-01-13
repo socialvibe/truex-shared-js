@@ -149,6 +149,7 @@ describe("TXMFocusManager", () => {
         clickableFocus.element.dispatchEvent(mouseEnter);
         expect(fm.currentFocus).toBe(clickableFocus);
 
+        // Verify onFocusSet callback args with mouse related focus changes.
         expect(lastHasFocus).toBe(true);
         expect(lastFocusChange && lastFocusChange.oldFocus).toBe(undefined);
         expect(lastFocusChange && lastFocusChange.newFocus).toBe(clickableFocus);
