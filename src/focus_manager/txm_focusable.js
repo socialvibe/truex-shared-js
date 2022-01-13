@@ -1,4 +1,5 @@
 import { inputActions } from './txm_input_actions';
+import { FocusChange } from './txm_focus_change';
 
 /**
  * Describes the method signatures that should be supported for a component to
@@ -54,9 +55,14 @@ export class Focusable {
         if (elmt && elmt.addEventListener) {
             // Add mouse support if possible.
             if (focusManager) {
-                elmt.addEventListener('mouseenter', () => {
+                // Mouse hovering over a focusable item should make it focused, but only if the mouse is
+                // actually moved by the user (as opposed to the view scrolling underneath the mouse).
+                elmt.addEventListener('mouseenter', event => {
                     if (testMouseEnabled && !testMouseEnabled()) return;
-                    focusManager.setFocus(this);
+                    if (focusManager.lastMouseX == event.screenX && focusManager.lastMouseY == event.screenY) return;
+                    focusManager.setFocus(this, event);
+                    focusManager.lastMouseX = event.screenX;
+                    focusManager.lastMouseY = event.screenY;
                 });
             }
 
@@ -93,8 +99,12 @@ export class Focusable {
      * DOM element.
      *
      * @param hasFocus has focus if true, false if otherwise.
+     * @param {FocusChange} focusChange describe the detailed context of the focus change, such as
+     *   old vs new focusables, the input action or event. This allows for mouse vs keyboard specific processing.
+     *   E.g. auto-scrolling new focuses is usually desirable with keyboard navigation, but not with mouse hovering
+     *   causing focus changes.
      */
-    onFocusSet(hasFocus) {
+    onFocusSet(hasFocus, focusChange) {
         let e = this.element;
         if (!e) return;
         if (hasFocus) {

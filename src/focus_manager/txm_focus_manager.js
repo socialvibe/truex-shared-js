@@ -1,7 +1,7 @@
-import { inputActions }          from './txm_input_actions';
+import { inputActions } from './txm_input_actions';
 import { keyCodes, TXMPlatform } from './txm_platform';
-import { Focusable }             from './txm_focusable';
-import { getElementPath }        from '../utils/get_element_path';
+import { FocusChange } from './txm_focus_change';
+import { getElementPath } from '../utils/get_element_path';
 
 import '../utils/uuid-polyfill';
 import { v4 as uuid } from 'uuid';
@@ -36,6 +36,10 @@ export class TXMFocusManager {
         this._lastKeyCode = undefined;
         this._lastKeyEventTimestamp = 0;
 
+        // Used to filter out spurious mouseenter events.
+        this.lastMouseX = undefined;
+        this.lastMouseY = undefined;
+
         // make convenient for direct callbacks
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onInputAction = this.onInputAction.bind(this);
@@ -55,14 +59,25 @@ export class TXMFocusManager {
         return this._focus;
     }
 
-    setFocus(newFocus) {
+    /**
+     * Sets the current focus, invoking onFocusSet(false) on the old focus, onFocusSet(true) on the new focus.
+     * @param newFocus the new focusable item
+     * @param fromInputActionOrEvent optional, indicates the focus is set from an input action string or mouse event.
+     */
+    setFocus(newFocus, fromInputActionOrEvent) {
         let oldFocus = this.currentFocus;
         if (oldFocus === newFocus) return;
         this._focus = newFocus || undefined;
-        if (oldFocus && oldFocus.onFocusSet) oldFocus.onFocusSet(false);
+
+        const inputAction = typeof fromInputActionOrEvent == 'string' ? fromInputActionOrEvent : undefined;
+        const inputEvent = fromInputActionOrEvent instanceof Event ? fromInputActionOrEvent : undefined;
+        const focusChange = new FocusChange(oldFocus, newFocus, inputAction, inputEvent);
+
+        if (oldFocus && oldFocus.onFocusSet) oldFocus.onFocusSet(false, focusChange);
+
         if (newFocus) {
             this._saveLastFocus(newFocus, newFocus);
-            if (newFocus.onFocusSet) newFocus.onFocusSet(true);
+            if (newFocus.onFocusSet) newFocus.onFocusSet(true, focusChange);
         } else {
             // We are clearing the focus completely.
             this._saveLastFocus(undefined, oldFocus);
@@ -348,7 +363,7 @@ export class TXMFocusManager {
         // if no element is currently focused, and the user is attempting to navigate or select, set default focus
         if (!focus && (inputActions.isMovementAction(action) || action == inputActions.select)) {
             focus = this.getDefaultFocus();
-            this.setFocus(focus);
+            this.setFocus(focus, action);
             return true;
         }
         if (!focus) return this._handlesAllInputs;
@@ -405,7 +420,7 @@ export class TXMFocusManager {
         let focus = this.currentFocus;
         if (!focus) {
             // No focus yet, establish it.
-            this.setFocus(this.getDefaultFocus());
+            this.setFocus(this.getDefaultFocus(), action);
             return;
         }
 
@@ -448,7 +463,7 @@ export class TXMFocusManager {
         }
 
         if (newFocus) {
-            this.setFocus(newFocus);
+            this.setFocus(newFocus, action);
         }
     }
 
