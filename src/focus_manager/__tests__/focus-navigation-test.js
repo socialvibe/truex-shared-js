@@ -40,7 +40,15 @@ describe("complex navigation tests", () => {
   function testInput(currFocus, action, newFocus) {
     focusManager.setFocus(currFocus);
     focusManager.onInputAction(action);
+    if (!newFocus) newFocus = currFocus; // unspecified means no change to focus
     expect(focusManager.currentFocus).toBe(newFocus);
+  }
+
+  function testAllInputs(currFocus, leftFocus, rightFocus, upFocus, downFocus) {
+    testInput(currFocus, left, leftFocus);
+    testInput(currFocus, right, rightFocus);
+    testInput(currFocus, up, upFocus);
+    testInput(currFocus, down, downFocus);
   }
 
   test("test focus grid with overlaps, gaps", () => {
@@ -84,16 +92,50 @@ describe("complex navigation tests", () => {
       D, E, F,
     ]);
 
-    testInput(A, down, D);
-    testInput(D, up, A);
-    testInput(A, right, B);
-    testInput(B, right, C);
-    testInput(C, right, C);
-    testInput(C, down, F);
-    testInput(F, left, E);
-    testInput(E, up, B);
-    testInput(B, down, E);
-    testInput(E, left, D);
+    testAllInputs(A, A, B, A, D);
+    testAllInputs(B, A, C, B, E);
+    testAllInputs(C, B, C, C, F);
+    testAllInputs(D, D, E, A, D);
+    testAllInputs(E, D, F, B, E);
+    testAllInputs(F, E, F, C, F);
+  });
+
+  test("test simple focus grid, adjacent buttons", () => {
+    const A = newFocusable("A", {x: 10, y: 10, w: 10, h: 10});
+    const B = newFocusable("B", {x: 20, y: 10, w: 10, h: 10});
+    const C = newFocusable("C", {x: 30, y: 10, w: 10, h: 10});
+    const D = newFocusable("D", {x: 10, y: 20, w: 10, h: 10});
+    const E = newFocusable("E", {x: 20, y: 20, w: 10, h: 10});
+    const F = newFocusable("F", {x: 30, y: 20, w: 10, h: 10});
+
+    focusManager.setContentFocusables([
+      A,B,C,
+      D,E,F,
+    ]);
+
+    testAllInputs(A, A, B, A, D);
+    testAllInputs(B, A, C, B, E);
+    testAllInputs(C, B, C, C, F);
+    testAllInputs(D, D, E, A, D);
+    testAllInputs(E, D, F, B, E);
+    testAllInputs(F, E, F, C, F);
+  });
+
+  test("test items are touching edges and all in focus lane", () => {
+    const AAAAAAA = newFocusable("AAAAAAA", {x: 10, y: 10, w: 50, h: 10});
+    const B = newFocusable("B", {x: 10, y: 20, w: 10, h: 10});
+    const C = newFocusable("C", {x: 30, y: 20, w: 10, h: 10});
+    const D = newFocusable("D", {x: 50, y: 20, w: 10, h: 10});
+
+    focusManager.setContentFocusables([
+      AAAAAAA,
+      B, C, D
+    ]);
+
+    testAllInputs(AAAAAAA, null, null, null, B);
+    testAllInputs(B, null, C, AAAAAAA, null);
+    testAllInputs(C, B, D, AAAAAAA, null);
+    testAllInputs(D, C, null, AAAAAAA, null);
   });
 
   test("test A kitty corner B", () => {
