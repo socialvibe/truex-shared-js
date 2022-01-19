@@ -203,11 +203,12 @@ describe("complex navigation tests", () => {
 
   test("test stepping up and down", () => {
     const A = newFocusable("A", {x: 30, y: 10, w: 10, h: 10});
-    const B = newFocusable("B", {x: 10, y: 30, w: 10, h: 10});
-    const C = newFocusable("C", {x: 90, y: 90, w: 10, h: 10});
+    const B = newFocusable("B", {x: 10, y: 900, w: 10, h: 10});
+    const C = newFocusable("C", {x: 90, y: 1000, w: 10, h: 10});
 
     focusManager.setContentFocusables([
          A,
+    // ... 880 pixels to top of B
       B,
             C
     ]);
@@ -218,7 +219,7 @@ describe("complex navigation tests", () => {
     testInput(B, right, A);
     testInput(B, down, C);
     testInput(C, up, B);
-    testInput(C, left, A);
+    testInput(C, left, B); // B is visually vertically closer to the focus lane moving left from C
     testInput(A, left, B);
   });
 
