@@ -644,8 +644,8 @@ describe("complex navigation tests", () => {
     testAllInputs(help, null, A, A, exitAd);
 
     // help is now the last content focus, and thus the return target moving off of the footer:
-    testAllInputs(exitAd, thumbsDown, help, null);
-    testAllInputs(thumbsDown, thumbsUp, help, exitAd);
+    testAllInputs(exitAd, thumbsDown, null, help, null);
+    testAllInputs(thumbsDown, thumbsUp, exitAd, help, null);
   });
 
 });

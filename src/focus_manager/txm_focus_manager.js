@@ -436,8 +436,16 @@ export class TXMFocusManager {
             }
 
         } else if (this.isInContent(focus)) {
-            // Focus is in the content area.
-            newFocus = this.findNextFocus(focus, action, this._contentFocusables);
+            // Focus is in the content area. If we are possibly moving to a footer, try allow a move to it via the
+            // the "natural" focus lane rules first.
+            var possibleFocusables = this._contentFocusables;
+            if (action == inputActions.moveUp && this._lastTopFocus) {
+                possibleFocusables = possibleFocusables.concat(this._lastTopFocus);
+            } else if (action == inputActions.moveDown && this._lastBottomFocus) {
+                possibleFocusables = possibleFocusables.concat(this._lastBottomFocus);
+            }
+
+            newFocus = this.findNextFocus(focus, action, possibleFocusables);
             if (!newFocus) {
                 if (action == inputActions.moveUp) {
                     newFocus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
