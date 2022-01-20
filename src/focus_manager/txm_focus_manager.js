@@ -711,6 +711,7 @@ export class TXMFocusManager {
                 } else {
                     // For items outside of the focus lane, distance to the focus lane matters first,
                     // then closest to focus after that.
+                    // I.e. we are deriving the minimum-width focus lane that includes a possible target.
                     isBetterMatch = newMatchDistance < currMatchDistance
                         || newMatchDistance == currMatchDistance && newBeyondDistance < currDistanceBeyondFocus;
                 }
