@@ -654,31 +654,39 @@ export class TXMFocusManager {
 
         // First try to find the best match in the same visual row or column long the direction of movement,
         // i.e. anything overlapping the same focus lane.
-        var result = findNextClosestFocus(newRange => {
-            const overlapRange = {
-                start: Math.max(newRange.start, focusLane.start),
-                end: Math.min(newRange.end, focusLane.end)
-            };
-
-            const newOverlap = overlapRange.end - overlapRange.start;
-            if (newOverlap <= 0) return; // only consider items actually overlapping the focus lane
-
-            const newDistance = newRange.start - focusLane.start; // i.e. distance to left/top edge of focus lane
-            return newDistance;
-        });
-
+        var result = findNextClosestFocus(true);
         if (!result) {
             // Finally look for the remaining outside items closest to the focus lane.
-            result = findNextClosestFocus(newRange => {
-                const newDistance = (newRange.end <= focusLane.end)
-                    ? focusLane.end - newRange.end // i.e. to the left/top of the focus lane
-                    :  newRange.start - focusLane.start; // to the right/bottom of the focus lane
-                return newDistance;
-            });
+            result = findNextClosestFocus(false);
         }
         return result;
 
-        function findNextClosestFocus(getFocusMatchDistance) {
+        function findNextClosestFocus(mustOverlapFocusLane) {
+            var getFocusMatchDistance;
+            if (mustOverlapFocusLane) {
+                // Use the distance to the left/top edge of the focus lane.
+                getFocusMatchDistance = newRange => {
+                    const overlapRange = {
+                        start: Math.max(newRange.start, focusLane.start),
+                        end: Math.min(newRange.end, focusLane.end)
+                    };
+
+                    const newOverlap = overlapRange.end - overlapRange.start;
+                    if (newOverlap <= 0) return; // only consider items actually overlapping the focus lane
+
+                    const newDistance = newRange.start - focusLane.start; // i.e. distance to left/top edge of focus lane
+                    return newDistance;
+                };
+            } else {
+                // Use the distance to the closest edge of the focus lane.
+                getFocusMatchDistance = newRange => {
+                    const newDistance = (newRange.end <= focusLane.end)
+                      ? focusLane.end - newRange.end // i.e. to the left/top of the focus lane
+                      : newRange.start - focusLane.start; // to the right/bottom of the focus lane
+                    return newDistance;
+                };
+            }
+
             var currResult;
             var currDistanceBeyondFocus;
             var currMatchDistance;
@@ -715,9 +723,24 @@ export class TXMFocusManager {
                 const newMatchDistance = getFocusMatchDistance(newRange);
                 if (newMatchDistance === undefined) return; // ignoring item
 
-                if (currResult === undefined // first match
-                    || newBeyondDistance < currDistanceBeyondFocus // closer to focus along lane
-                    || newBeyondDistance == currDistanceBeyondFocus && newMatchDistance < currMatchDistance) { // a better match
+                var isBetterMatch;
+                if (currResult === undefined) {
+                    isBetterMatch = true; // first match
+
+                } else if (mustOverlapFocusLane) {
+                    // For items within/overlapping the focus lane, closest to focus matters first,
+                    // then the left/top most after that.
+                    isBetterMatch = newBeyondDistance < currDistanceBeyondFocus
+                      || newBeyondDistance == currDistanceBeyondFocus && newMatchDistance < currMatchDistance;
+
+                } else {
+                    // For items outside of the focus lane, distance to the focus lane matters first,
+                    // then closest to focus after that.
+                    isBetterMatch = newMatchDistance < currMatchDistance
+                        || newMatchDistance == currMatchDistance && newBeyondDistance < currDistanceBeyondFocus;
+                }
+
+                if (isBetterMatch) {
                     currResult = newFocus;
                     currDistanceBeyondFocus = newBeyondDistance;
                     currMatchDistance = newMatchDistance;

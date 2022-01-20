@@ -216,10 +216,10 @@ describe("complex navigation tests", () => {
     testInput(A, down, B);
     testInput(A, left, B);
     testInput(B, up, A);
-    testInput(B, right, A);
+    testInput(B, right, C); // C is vertically closer to the focus lane moving right from B.
     testInput(B, down, C);
-    testInput(C, up, B);
-    testInput(C, left, B); // B is visually vertically closer to the focus lane moving left from C
+    testInput(C, up, A); // A is horizontally closer to the focus lane moving up from C
+    testInput(C, left, B); // B is vertically closer to the focus lane moving left from C
     testInput(A, left, B);
   });
 
