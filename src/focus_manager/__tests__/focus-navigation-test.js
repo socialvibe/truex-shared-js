@@ -203,11 +203,12 @@ describe("complex navigation tests", () => {
 
   test("test stepping up and down", () => {
     const A = newFocusable("A", {x: 30, y: 10, w: 10, h: 10});
-    const B = newFocusable("B", {x: 10, y: 30, w: 10, h: 10});
-    const C = newFocusable("C", {x: 90, y: 90, w: 10, h: 10});
+    const B = newFocusable("B", {x: 10, y: 900, w: 10, h: 10});
+    const C = newFocusable("C", {x: 90, y: 1000, w: 10, h: 10});
 
     focusManager.setContentFocusables([
          A,
+    // ... 880 pixels to top of B
       B,
             C
     ]);
@@ -215,10 +216,10 @@ describe("complex navigation tests", () => {
     testInput(A, down, B);
     testInput(A, left, B);
     testInput(B, up, A);
-    testInput(B, right, A);
+    testInput(B, right, C); // C is vertically closer to the focus lane moving right from B.
     testInput(B, down, C);
-    testInput(C, up, B);
-    testInput(C, left, A);
+    testInput(C, up, A); // A is horizontally closer to the focus lane moving up from C
+    testInput(C, left, B); // B is vertically closer to the focus lane moving left from C
     testInput(A, left, B);
   });
 
@@ -609,4 +610,40 @@ describe("complex navigation tests", () => {
     testInput(BBB, down, BBB);
     testInput(BBB, up, AAA);
   });
+
+  test("test survey with help vs exit ad in footer", () => {
+    const A = newFocusable("A", {x: 100, y: 10, w: 50, h: 50});
+    const B = newFocusable("B", {x: 200, y: 10, w: 50, h: 50});
+    const C = newFocusable("C", {x: 300, y: 10, w: 50, h: 50});
+
+    const help = newFocusable("Help", {x: 10, y: 100, w: 50, h: 20});
+
+    const exitAd = newFocusable("exitAd", {x: 300, y: 1000, w: 50, h: 20});
+    const thumbsUp = newFocusable("thumbsUp", {x: 260, y: 1000, w: 10, h: 10});
+    const thumbsDown = newFocusable("thumbsDown", {x: 280, y: 1000, w: 10, h: 10});
+
+    focusManager.setContentFocusables([
+            A, B, C,
+      help
+    ]);
+
+    testAllInputs(A, help, B, null, help);
+    testAllInputs(B, A, C, null, help);
+    testAllInputs(C, B, null, null, help);
+    testAllInputs(help, null, A, A, null);
+
+    // Now show the footer, navigation to exit button should be natural as per focus lane rules,
+    // but only on move down. thumbs up/down buttons should not be considered.
+    focusManager.setBottomChromeFocusables([thumbsUp, thumbsDown, exitAd], exitAd);
+
+    testAllInputs(A, help, B, null, help); // help is closer to the down focus lane of A
+    testAllInputs(B, A, C, null, exitAd);
+    testAllInputs(C, B, null, null, exitAd);
+    testAllInputs(help, null, A, A, exitAd);
+
+    // help is now the last content focus, and thus the return target moving off of the footer:
+    testAllInputs(exitAd, thumbsDown, null, help, null);
+    testAllInputs(thumbsDown, thumbsUp, exitAd, help, null);
+  });
+
 });

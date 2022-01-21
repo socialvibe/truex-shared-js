@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.7
+* [CTV-3393](https://truextech.atlassian.net/browse/CTV-3393): HTML5: navigation to "return to content" should be more direct
+
 ## v1.6.6
 * [CTV-2446](https://truextech.atlassian.net/browse/CTV-2446): Clean Up Skyline Ad Tags
 
