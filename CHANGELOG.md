@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.6.8
+* [CTV-3380](https://truextech.atlassian.net/browse/CTV-3380): HTML5 - Inconsistency in (and lack of definition for) Bluescript string replace operation
+    * Use latest babel, core-jss
+
 ## v1.6.7
 * [CTV-3393](https://truextech.atlassian.net/browse/CTV-3393): HTML5: navigation to "return to content" should be more direct
 
