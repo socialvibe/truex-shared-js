@@ -45,6 +45,12 @@ describe("truex_servers testing", () => {
         const demoConfig = {ads: [], "service_url": "measure.truex.com"};
         verifyServers(new TruexServers(demoConfig), true);
 
+        const vastSoloTagProdConfig = {AdParameters: JSON.stringify(prodConfig)};
+        verifyServers(new TruexServers(vastSoloTagProdConfig), true);
+
+        const vastSoloTagQAConfig = {AdParameters: JSON.stringify(qaConfig)};
+        verifyServers(new TruexServers(vastSoloTagQAConfig), false);
+
         function verifyServers(servers, isProd) {
             expect(servers.isProduction).toBe(isProd);
 

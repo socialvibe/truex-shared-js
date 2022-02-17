@@ -16,6 +16,9 @@ export function isTruexProductionUrl(url) {
 export class TruexServers {
     constructor(vastConfigOrUrlOrFlag) {
         var isProd = false; // by default
+        if (vastConfigOrUrlOrFlag && vastConfigOrUrlOrFlag.AdParameters) {
+            vastConfigOrUrlOrFlag = JSON.parse(vastConfigOrUrlOrFlag.AdParameters)
+        }
 
         if (typeof vastConfigOrUrlOrFlag == 'boolean') {
             isProd = vastConfigOrUrlOrFlag;
