@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+- "14.16.1"
+branches:
+  only:
+    - develop
+    - master
+before_script:
+  - yarn cache clean
+  - yarn install
+script:
+  - npm run test
+cache:
+  directories:
+  - node_modules
+git:
+  depth: 1
