@@ -241,9 +241,9 @@ describe("TXMFocusManager", () => {
         return new Promise((resolve, reject) => {
             // Eventually a new key event gets past the threshold and resets the timeouts.
             const keysTimesLeft = [
-                20, 20, 20, 20, 20, // here
-                100, // here
-                10, 10, 10, 10, 10, 10, 10, 10, 10, 10 // here
+                20, 20, 20, 20, 21, // here
+                101, // here
+                10, 10, 10, 10, 10, 10, 10, 10, 10, 11 // here
             ];
             waitForNextKey();
 
