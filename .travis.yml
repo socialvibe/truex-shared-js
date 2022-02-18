@@ -1,11 +1,10 @@
 language: node_js
 node_js:
 - "14.16.1"
-# TODO: uncomment these lines, want to validate config in CI before merging:
-# branches:
-#   only:
-#     - develop
-#     - master
+branches:
+  only:
+    - develop
+    - master
 before_script:
   - yarn cache clean
   - yarn install
