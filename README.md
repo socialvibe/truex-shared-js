@@ -31,22 +31,22 @@ yarn install
 
 As this is a reusable library of JS classes and functions, any building/running in this repo is primarily done in the context of unit tests.
 
-Please your tests in a __tests__ sub directory of your relevant files. The convention is to add a -test.js suffix for a given source files.
+Place your tests in a __tests__ sub directory of your relevant files. The convention is to add a -test.js suffix for a given source files.
 
 To run the test suite you can do: `npm test` or `jest`
 
 Or for a single test: `npm test -- platform`
 or: `jest focus_manager`
-i.e. use a test file name pattern that will match the 
+i.e. use a test file name pattern that will match the
 
 ## Deploying
 
 To make this library available to other repos, be sure to push any changes and follow the normal review process.
 
-Ensure the version number in package.json is updated to a newer value, and be sure to tag your branch in github with 
+Ensure the version number in package.json is updated to a newer value, and be sure to tag your branch in github with
 the same version, e.g. `v1.0.0` .
 
-In client repos, one should refer to this library using the package name, github repo url, and desired version 
+In client repos, one should refer to this library using the package name, github repo url, and desired version
 number, e.g.
 ```
     dependencies: {

@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.9
+* [SPLY-47](https://truextech.atlassian.net/browse/SPLY-47): Handle VPAID ad payload when determining TrueX URLs
+
 ## v1.6.8
 * [CTV-3380](https://truextech.atlassian.net/browse/CTV-3380): HTML5 - Inconsistency in (and lack of definition for) Bluescript string replace operation
     * Use latest babel, core-jss
