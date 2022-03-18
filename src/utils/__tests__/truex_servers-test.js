@@ -45,6 +45,12 @@ describe("truex_servers testing", () => {
         const demoConfig = {ads: [], "service_url": "measure.truex.com"};
         verifyServers(new TruexServers(demoConfig), true);
 
+        const prodVastConfigUrlConfig = {ads: [], "vast_config_url": "get.truex.com"};
+        verifyServers(new TruexServers(prodVastConfigUrlConfig), true);
+
+        const qaVastConfigUrlConfig = {ads: [], "vast_config_url": "qa-get.truex.com"};
+        verifyServers(new TruexServers(qaVastConfigUrlConfig), false);
+
         function verifyServers(servers, isProd) {
             expect(servers.isProduction).toBe(isProd);
 

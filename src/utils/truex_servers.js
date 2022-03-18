@@ -26,7 +26,7 @@ export class TruexServers {
         } else if (vastConfigOrUrlOrFlag) {
             const vc = vastConfigOrUrlOrFlag;
             const firstAd = vc && vc.ads && vc.ads[0];
-            isProd = isTruexProductionUrl(firstAd && firstAd.window_url || vc.card_creative_url || vc.service_url);
+            isProd = isTruexProductionUrl(firstAd && firstAd.window_url || vc.card_creative_url || vc.service_url || vc.vast_config_url);
         }
 
         this.isProduction = isProd;
