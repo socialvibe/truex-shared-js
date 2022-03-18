@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.9
+* [CTV-3438](https://truextech.atlassian.net/browse/CTV-3438): handle `/vast` tag payloads for VPAID choice card tracking
+
 ## v1.6.8
 * [CTV-3380](https://truextech.atlassian.net/browse/CTV-3380): HTML5 - Inconsistency in (and lack of definition for) Bluescript string replace operation
     * Use latest babel, core-jss
