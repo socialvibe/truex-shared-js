@@ -72,6 +72,9 @@ describe("TXMPlatform", () => {
             expect(platform.isUnknown).toBe(false);
             expect(platform.isFireTV).toBe(true);
             expect(platform.isAndroidTV).toBe(false);
+            expect(platform.isAndroidMobile).toBe(false);
+            // we don't consider FireTV to be Android, to avoid confusing it with mobile devices
+            expect(platform.isAndroid).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
@@ -83,6 +86,8 @@ describe("TXMPlatform", () => {
             expect(platform.version).toBe("5.1.1");
             expect(platform.isCTV).toBe(true);
             expect(platform.isConsole).toBe(false);
+            expect(platform.isHandheld).toBe(false);
+            expect(platform.isTablet).toBe(false);
         });
 
         test("FireTV key mapping", () => {
@@ -100,7 +105,7 @@ describe("TXMPlatform", () => {
             expect(platform.supportsUserAdvertisingId).toBe(true);
         });
 
-        test("test firetv edition modle", () => {
+        test("test firetv edition model", () => {
             const platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 7.1.2; AFTJMST12 Build/NS6271; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0");
             expect(platform.isFireTV).toBe(true);
             expect(platform.name).toBe("FireTV");
@@ -111,12 +116,15 @@ describe("TXMPlatform", () => {
     });
 
     describe("Android TV Tests", () => {
-        let platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 5.1.1) Build/LVY48F; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0");
+        // Shield TV:
+        let platform = new TXMPlatform("Mozilla/5.0 (Linux; U; Android 5.1; SHIELD Android TV Build/LMY47D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/10.5.2.582 U3/0.8.0 Mobile Safari/534.30");
 
         test("recognize the AndroidTV platform", () => {
             expect(platform.isUnknown).toBe(false);
             expect(platform.isFireTV).toBe(false);
             expect(platform.isAndroidTV).toBe(true);
+            expect(platform.isAndroid).toBe(true);
+            expect(platform.isAndroidMobile).toBe(false);
             expect(platform.isVizio).toBe(false);
             expect(platform.isLG).toBe(false);
             expect(platform.isTizen).toBe(false);
@@ -124,9 +132,11 @@ describe("TXMPlatform", () => {
             expect(platform.isXboxOne).toBe(false);
             expect(platform.name).toBe("AndroidTV");
             expect(platform.model).toBe(platform.name);
-            expect(platform.version).toBe("5.1.1");
+            expect(platform.version).toBe("5.1");
             expect(platform.isCTV).toBe(true);
             expect(platform.isConsole).toBe(false);
+            expect(platform.isHandheld).toBe(false);
+            expect(platform.isTablet).toBe(false);
         });
 
         test("AndroidTV key mapping", () => {
@@ -137,6 +147,61 @@ describe("TXMPlatform", () => {
             expect(platform.getInputAction(keyCodes.rightArrow)).toBe(inputActions.moveRight);
             expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
             expect(platform.getInputAction(4)).toBe(inputActions.back);
+        });
+    });
+
+    describe("Android Phone Tests", () => {
+        navigator.maxTouchPoints = 1; // touch support is the key to determine mobile vs TV
+
+        // Nokia example:
+        let platform = new TXMPlatform("Mozilla/5.0 (Linux; U; Android 4.2; ru-ru; Nokia_X Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.2 Mobile Safari/E7FBAF");
+
+        test("recognize the Android mobile platform", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
+            expect(platform.isAndroid).toBe(true);
+            expect(platform.isAndroidMobile).toBe(true);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.name).toBe("Android");
+            expect(platform.model).toBe(platform.name);
+            expect(platform.version).toBe("4.2");
+            expect(platform.isCTV).toBe(false);
+            expect(platform.isConsole).toBe(false);
+            expect(platform.isHandheld).toBe(true);
+            expect(platform.isTablet).toBe(false);
+        });
+    });
+
+
+    describe("Android Tablet Tests", () => {
+        navigator.maxTouchPoints = 1; // touch support is the key to determine mobile vs TV
+
+        // Samsung Galaxy Tablet:
+        let platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 7.1.1; SM-T555 Build/NMF26X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.96 Safari/537.36");
+
+        test("recognize the Android mobile platform", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
+            expect(platform.isAndroid).toBe(true);
+            expect(platform.isAndroidMobile).toBe(true);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.name).toBe("Android");
+            expect(platform.model).toBe(platform.name);
+            expect(platform.version).toBe("7.1.1");
+            expect(platform.isCTV).toBe(false);
+            expect(platform.isConsole).toBe(false);
+            expect(platform.isHandheld).toBe(false);
+            expect(platform.isTablet).toBe(true);
         });
     });
 
