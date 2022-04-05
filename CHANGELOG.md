@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.6.9
+## v1.6.10
 * [CTV-3575](https://truextech.atlassian.net/browse/CTV-3575): allow BS video-element to be created from JS code in ads
     * add android platform detection
 
