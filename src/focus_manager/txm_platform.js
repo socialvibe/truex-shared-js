@@ -70,7 +70,6 @@ export class TXMPlatform {
         this.isPS4 = false;
         this.isPS5 = false;
 
-        this.isAndroid = false; // true for both android mobile and android tv
         this.isAndroidMobile = false;
         this.isAndroidTV = false;
         this.isFireTV = false;
@@ -117,6 +116,7 @@ export class TXMPlatform {
         this._configure(userAgent);
     }
 
+    get isAndroid() { return this.isAndroidMobile || this.isAndroidTV }
     get isAndroidOrFireTV() { return this.isAndroidTV || this.isFireTV }
 
     get isHandheld() { return this.isIPhone || this.isAndroidMobile && /Mobile/.test(this.userAgent) }
@@ -585,7 +585,6 @@ export class TXMPlatform {
 
             // Android in the user agent is true for both Android mobile and AndroidTV
             // Note also that we don't consider FireTV to be Android, to avoid confusing it with mobile devices.
-            self.isAndroid = true;
             if (self.supportsTouch) {
                 self.isAndroidMobile = true;
                 self.name = "Android";
