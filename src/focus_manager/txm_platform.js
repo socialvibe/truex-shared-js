@@ -595,7 +595,7 @@ export class TXMPlatform {
                 self.name = "AndroidTV";
             }
 
-            self.model = self.name;
+            if (!self.model) self.model = self.name;
         }
 
         function configureForAndroidBase() {
