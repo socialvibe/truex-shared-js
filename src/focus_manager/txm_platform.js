@@ -579,6 +579,8 @@ export class TXMPlatform {
         }
 
         function configureForAndroid() {
+            self.model = null; // to be filled in below
+
             configureForAndroidBase();
 
             // Android in the user agent is true for both Android mobile and AndroidTV
