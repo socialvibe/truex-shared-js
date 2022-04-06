@@ -70,8 +70,9 @@ export class TXMPlatform {
         this.isPS4 = false;
         this.isPS5 = false;
 
-        this.isFireTV = false;
+        this.isAndroidMobile = false;
         this.isAndroidTV = false;
+        this.isFireTV = false;
 
         this.isXboxOne = false;
         this.isNintendoSwitch = false;
@@ -87,7 +88,7 @@ export class TXMPlatform {
         this.useWindowScroll = true;
 
         this.supportsMouse = false;
-        this.supportsTouch = false;
+        this.supportsTouch = (navigator.maxTouchPoints || 'ontouchstart' in document.documentElement);
 
         this.supportsGyro = false; // on all platforms except perhaps for the Switch?
 
@@ -115,10 +116,11 @@ export class TXMPlatform {
         this._configure(userAgent);
     }
 
+    get isAndroid() { return this.isAndroidMobile || this.isAndroidTV }
     get isAndroidOrFireTV() { return this.isAndroidTV || this.isFireTV }
 
-    get isHandheld() { return this.isIPhone || this.isAndroid && /Mobile/.test(this.userAgent) }
-    get isTablet() { return this.isIPad || this.isAndroid && !this.isHandheld }
+    get isHandheld() { return this.isIPhone || this.isAndroidMobile && /Mobile/.test(this.userAgent) }
+    get isTablet() { return this.isIPad || this.isAndroidMobile && !this.isHandheld }
 
     get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV || this.isComcast }
     get isConsole() { return this.isXboxOne || this.isPS4 || this.isPS5 || this.isNintendoSwitch }
@@ -261,11 +263,10 @@ export class TXMPlatform {
             configureForXboxOne();
 
         } else if (/Android/.test(userAgent)) {
-            // TODO: distinguish between Android mobile and Android TV
             if (/AFT/.test(userAgent)) {
                 configureForFireTV();
             } else {
-                configureForAndroidTV();
+                configureForAndroid();
             }
 
         } else if (/Linux/.test(userAgent) && (window.$badger || !window.localStorage)) {
@@ -577,14 +578,25 @@ export class TXMPlatform {
             }
         }
 
-        function configureForAndroidTV() {
-            configureForAndroidBase();
-            self.isAndroidTV = true;
-            self.name = "AndroidTV";
-            self.model = self.name;
+        function configureForAndroid() {
+            self.model = null; // to be filled in below
 
-            actionKeyCodes[inputActions.back] = 4;
-            actionKeyCodes[inputActions.menu] = 82;
+            configureForAndroidBase();
+
+            // Android in the user agent is true for both Android mobile and AndroidTV
+            // Note also that we don't consider FireTV to be Android, to avoid confusing it with mobile devices.
+            if (self.supportsTouch) {
+                self.isAndroidMobile = true;
+                self.name = "Android";
+
+            } else {
+                self.isAndroidTV = true;
+                actionKeyCodes[inputActions.back] = 4;
+                actionKeyCodes[inputActions.menu] = 82;
+                self.name = "AndroidTV";
+            }
+
+            if (!self.model) self.model = self.name;
         }
 
         function configureForAndroidBase() {
@@ -612,15 +624,9 @@ export class TXMPlatform {
                 self.model = details[1];
                 self.version = details[2];
             } else {
-                var groupStart = userAgent.indexOf("(");
-                if (groupStart >= 0) {
-                    var groupEnd = userAgent.indexOf(")", groupStart);
-                    if (groupEnd < 0) groupEnd = userAgent.length;
-                    var detailSubstring = userAgent.substring(groupStart+1, groupEnd);
-                    var detailSplit = detailSubstring.split(";");
-                    self.model = detailSplit[1].trim();
-                    const versionParts = detailSplit[1].split(" ");
-                    self.version = versionParts[versionParts.length - 1];
+                var match = userAgent.match(/Android ([0-9](\.[0-9])*)/);
+                if (match) {
+                    self.version = match[1];
                 }
             }
 
