@@ -40,7 +40,6 @@ module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}) => {
                     path.relative(path.resolve(distDir), d.filePath)
                 );
                 const contentType = getContentType(d.filePath);
-                console.log(`uploaded file: ${bucket}/${key}`);
                 return s3.uploadFile(
                     bucket,
                     key,

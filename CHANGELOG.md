@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.11
+* [CTV-3647](https://infillion.atlassian.net/browse/CTV-3647): improve accuracy of S3 upload logging
+
 ## v1.6.10
 * [CTV-3575](https://truextech.atlassian.net/browse/CTV-3575): allow BS video-element to be created from JS code in ads
     * add android platform detection
