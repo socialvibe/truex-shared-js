@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.12
+* [CTV-3647](https://infillion.atlassian.net/browse/CTV-3647): reduce verbosity  of S3 error logging
+
 ## v1.6.11
 * [CTV-3647](https://infillion.atlassian.net/browse/CTV-3647): improve accuracy of S3 upload logging
 

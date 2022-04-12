@@ -107,7 +107,8 @@ module.exports = {
 
         const callback = (err, data) => {
             if (err) {
-                console.error(`s3 upload of ${bucket}/${key} failed, error:`, err);
+                console.error(`s3 upload of ${bucket}/${key} failed, error: ${err}`);
+                throw err;
             } else {
                 console.log(`s3 upload of ${bucket}/${key} succeeded`, data);
             }
