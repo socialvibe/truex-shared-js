@@ -107,9 +107,8 @@ module.exports = {
 
         const callback = (err, data) => {
             if (err) {
-                console.error(`s3 upload of ${bucket}/${key} failed, error:`, err);
-            } else {
-                console.log(`s3 upload of ${bucket}/${key} succeeded`, data);
+                console.error(`s3 upload of ${bucket}/${key} failed, error: ${err}`);
+                throw err;
             }
         }
         return util.promisify(s3Client.putObject.bind(s3Client))(params, callback);
