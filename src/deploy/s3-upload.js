@@ -105,12 +105,10 @@ module.exports = {
             params.Expires = 0;
         }
 
-        const callback = (err, data) => {
-            if (err) {
+        return util.promisify(s3Client.putObject.bind(s3Client))(params)
+            .catch(err => {
                 console.error(`s3 upload of ${bucket}/${key} failed, error: ${err}`);
                 throw err;
-            }
-        }
-        return util.promisify(s3Client.putObject.bind(s3Client))(params, callback);
+            });
     },
 };
