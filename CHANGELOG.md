@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.13
+* [CTV-3650](https://infillion.atlassian.net/browse/CTV-3650): skyline deployment does not upload to skyline.truex.com
+
 ## v1.6.12
 * [CTV-3647](https://infillion.atlassian.net/browse/CTV-3647): reduce verbosity  of S3 error logging
 
