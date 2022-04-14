@@ -107,7 +107,7 @@ module.exports = {
 
         return util.promisify(s3Client.putObject.bind(s3Client))(params)
             .catch(err => {
-                console.error(`s3 upload of ${bucket}/${key} failed, error: ${err}`);
+                console.error(`s3 upload failed for ${bucket}/${key}\n  error: ${err}`);
                 throw err;
             });
     },
