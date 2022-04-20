@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.7.1
+* [CTV-3359](https://infillion.atlassian.net/browse/CTV-3359): Support Jenkins UAT automation
+
 ## v1.6.13
 * [CTV-3650](https://infillion.atlassian.net/browse/CTV-3650): skyline deployment does not upload to skyline.truex.com
 
