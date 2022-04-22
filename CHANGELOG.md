@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.7.2
+* [CTV-3131](https://infillion.atlassian.net/browse/CTV-3131): Skyline automation sometimes exits Test Control tab after running a test
+
 ## v1.6.13
 * [CTV-3650](https://infillion.atlassian.net/browse/CTV-3650): skyline deployment does not upload to skyline.truex.com
 
