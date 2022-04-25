@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.7.3
+## v1.7.7
 * [CTV-3359](https://infillion.atlassian.net/browse/CTV-3359): Support Jenkins UAT automation
 
 ## v1.7.2
