@@ -22,6 +22,4 @@ function invokeAutomationTest({ jenkinsUrl, devicePlatforms, skylineBranchName, 
     });
 };
 
-module.exports = {
-    invokeAutomationTest
-};
+module.exports = invokeAutomationTest;
