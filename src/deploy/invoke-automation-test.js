@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-function invokeAutomationTests({ jenkinsUrl, devicePlatforms, whakapapaBranchName, skylineBranchName, skylineS3BranchDirName, buildJobUrl, sourceRepo }) {
+function invokeAutomationTest({ jenkinsUrl, devicePlatforms, skylineBranchName, skylineS3BranchDirName, buildJobUrl, sourceRepo }) {
     const url = jenkinsUrl || "https://ctv-jenkins-02.truex.com/generic-webhook-trigger/invoke";
 
     return fetch(url, {
@@ -10,8 +10,8 @@ function invokeAutomationTests({ jenkinsUrl, devicePlatforms, whakapapaBranchNam
             "token": "TAR-HTML5_UAT",
         },
         body: JSON.stringify({
+            "whakapapaBranchName": "develop",
             "devicePlatforms": devicePlatforms || "Unknown,Tizen,LG,XboxOne,FireTV,AndroidTV,Vizio,Comcast",
-            "whakapapaBranchName": whakapapaBranchName,
             "skylineBranchName": skylineBranchName,
             "skylineS3BranchDirName": skylineS3BranchDirName,
             "fromBuildJobUrl": buildJobUrl,
@@ -22,4 +22,6 @@ function invokeAutomationTests({ jenkinsUrl, devicePlatforms, whakapapaBranchNam
     });
 };
 
-module.exports = invokeAutomationTests;
+module.exports = {
+    invokeAutomationTest
+};
