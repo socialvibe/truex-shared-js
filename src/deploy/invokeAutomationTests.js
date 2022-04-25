@@ -10,8 +10,8 @@ function invokeAutomationTests({ jenkinsUrl, devicePlatforms, whakapapaBranchNam
             "token": "TAR-HTML5_UAT",
         },
         body: JSON.stringify({
-            "whakapapaBranchName": whakapapaBranchName,
             "devicePlatforms": devicePlatforms || "Unknown,Tizen,LG,XboxOne,FireTV,AndroidTV,Vizio,Comcast",
+            "whakapapaBranchName": whakapapaBranchName,
             "skylineBranchName": skylineBranchName,
             "skylineS3BranchDirName": skylineS3BranchDirName,
             "fromBuildJobUrl": buildJobUrl,
