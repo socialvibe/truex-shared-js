@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.7.8
+## v1.7.9
 * [CTV-3655](https://infillion.atlassian.net/browse/CTV-3655): TAR HTML5: Incorrect platform "Android" on AndroidTV device
 
 ## v1.7.2
