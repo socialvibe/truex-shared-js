@@ -585,7 +585,12 @@ export class TXMPlatform {
 
             // Android in the user agent is true for both Android mobile and AndroidTV
             // Note also that we don't consider FireTV to be Android, to avoid confusing it with mobile devices.
-            if (self.supportsTouch) {
+
+            // The MIBOX is mobile hardware in a settop box! And so we need to hard code our knowledge that is
+            // actually supposed to be an android TV DEVICE.
+            const isMIBox = userAgent.indexOf('MIBOX') >= 0;
+
+            if (self.supportsTouch && !isMIBox) {
                 self.isAndroidMobile = true;
                 self.name = "Android";
 
