@@ -1,7 +1,10 @@
 # Changelog
 
-## v1.7.9
+## v1.7.10
 * [CTV-3359](https://infillion.atlassian.net/browse/CTV-3359): Support Jenkins UAT automation
+
+## v1.7.9
+* [CTV-3655](https://infillion.atlassian.net/browse/CTV-3655): TAR HTML5: Incorrect platform "Android" on AndroidTV device
 
 ## v1.7.2
 * [CTV-3131](https://infillion.atlassian.net/browse/CTV-3131): Skyline automation sometimes exits Test Control tab after running a test

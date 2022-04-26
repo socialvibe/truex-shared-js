@@ -117,7 +117,7 @@ describe("TXMPlatform", () => {
 
     describe("Android TV Tests", () => {
         // Shield TV:
-        let platform = new TXMPlatform("Mozilla/5.0 (Linux; U; Android 5.1; SHIELD Android TV Build/LMY47D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/10.5.2.582 U3/0.8.0 Mobile Safari/534.30");
+        const platform = new TXMPlatform("Mozilla/5.0 (Linux; U; Android 5.1; SHIELD Android TV Build/LMY47D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/10.5.2.582 U3/0.8.0 Mobile Safari/534.30");
 
         test("recognize the AndroidTV platform", () => {
             expect(platform.isUnknown).toBe(false);
@@ -140,7 +140,7 @@ describe("TXMPlatform", () => {
         });
 
         test("AndroidTV key mapping", () => {
-            let keyCodes = platform.keyCodes;
+            const keyCodes = platform.keyCodes;
             expect(platform.getInputAction(82)).toBe(inputActions.menu);
             expect(platform.getInputAction(keyCodes.downArrow)).toBe(inputActions.moveDown);
             expect(platform.getInputAction(keyCodes.leftArrow)).toBe(inputActions.moveLeft);
@@ -148,6 +148,16 @@ describe("TXMPlatform", () => {
             expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
             expect(platform.getInputAction(4)).toBe(inputActions.back);
         });
+
+        test("test MIBOX is an AndroidTV", () => {
+            // The MIBOX is mobile hardware! It supports touch, has "Mobile" in its user agent, and yet it is actually
+            // a set top box. Cheap hardware for the win!
+            const platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 9; MIBOX4 Build/PI; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/99.0.4844.73 Mobile Safari/537.36");
+            expect(platform.isAndroidTV).toBe(true);
+            expect(platform.isAndroid).toBe(true);
+            expect(platform.isAndroidMobile).toBe(false);
+        });
+
     });
 
     describe("Android Phone Tests", () => {
