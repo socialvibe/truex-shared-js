@@ -1,5 +1,4 @@
 const fetch = require('node-fetch');
-const { getS3BucketPath } = require("./deployHelper");
 
 function invokeAutomationTest({ jenkinsUrl, devicePlatforms, skylineBranchName, skylineS3BranchDirName, buildJobUrl, sourceRepo }) {
     const url = jenkinsUrl || "https://ctv-jenkins-02.truex.com/generic-webhook-trigger/invoke";
@@ -14,7 +13,7 @@ function invokeAutomationTest({ jenkinsUrl, devicePlatforms, skylineBranchName, 
             "whakapapaBranchName": "develop",
             "devicePlatforms": devicePlatforms || "All",
             "skylineBranchName": skylineBranchName,
-            "skylineS3BranchDirName": skylineS3BranchDirName || getS3BucketPath(skylineBranchName),
+            "skylineS3BranchDirName": skylineS3BranchDirName,
             "fromBuildJobUrl": buildJobUrl,
             "sourceRepo": sourceRepo
         })
