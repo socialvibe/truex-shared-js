@@ -12,6 +12,7 @@ const adEvents = {
     skipCardShown: 'skipCardShown',
     userCancel: 'userCancel',
     videoEvent: 'videoEvent',
+    xtendedViewStarted: 'xtendedViewStarted',
 };
 
 export { adEvents };
