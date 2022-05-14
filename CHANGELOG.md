@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.7.11
+* [XF-15](https://infillion.atlassian.net/browse/XF-15): Add ad event for xtended view
+
 ## v1.7.10
 * [CTV-3359](https://infillion.atlassian.net/browse/CTV-3359): Support Jenkins UAT automation
 
