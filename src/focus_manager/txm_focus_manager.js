@@ -263,8 +263,11 @@ export class TXMFocusManager {
             const now = Date.now();
             const elapsedTime = now - this._lastKeyEventTimestamp;
             if (keyCode == this._lastKeyCode && elapsedTime <= throttleDelay) {
-                // Swallow the excess key event.
-                return true; // handled
+                // Swallow the excess key event and prevent it from propagating to parent's focusManager
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return false; // handled
             }
             this._lastKeyCode = keyCode;
             this._lastKeyEventTimestamp = now;
