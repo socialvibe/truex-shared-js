@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.7.14
+## v1.7.15
 * [CTV-3233](https://infillion.atlassian.net/browse/CTV-3233): Stopping held buttons from propagating to parent focusmanagers
 
 ## v1.7.11

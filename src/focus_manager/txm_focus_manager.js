@@ -255,6 +255,7 @@ export class TXMFocusManager {
 
     onKeyDown(event) {
         let keyCode = event.keyCode;
+        let handled = false;
 
         const throttleDelay = this.keyThrottleDelay;
         if (throttleDelay > 0) {
@@ -264,48 +265,47 @@ export class TXMFocusManager {
             const elapsedTime = now - this._lastKeyEventTimestamp;
             if (keyCode == this._lastKeyCode && elapsedTime <= throttleDelay) {
                 // Swallow the excess key event and prevent it from propagating to parent's focusManager
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                return false; // handled
-            }
-            this._lastKeyCode = keyCode;
-            this._lastKeyEventTimestamp = now;
-        }
-
-        let handled = false;
-        let inputAction = this.platform.getInputAction(keyCode);
-
-        if (this.debug) {
-            const focusPath = this.getCurrentFocusPath();
-            const targetPath = getElementPath(event.target);
-            this.debugLog(`onKeyDown: action: ${inputAction} key: ${keyCode} focus: ${focusPath} target: ${targetPath}`);
-        }
-
-        if (keyCode === keyCodes.tab) {
-            // Swallow TAB presses, they cause blue outlines to show on many browsers.
-            handled = true;
-
-        } else if (inputAction == inputActions.back && this.platform.useHistoryBackActions) {
-            // Back action key events cannot be reliably overridden on the current platform.
-            // We use history.back/popstate processing instead.
-            return true; // let the browser continue its processing.
-
-        } else if (inputAction) {
-            // Map the key event to in input action, process it.
-            try {
-                handled = this.onInputAction(inputAction, event);
-            } catch (err) {
                 handled = true;
-                let errMsg = this.platform.describeErrorWithStack(err);
-                console.error(`${this.id} focusManager.onKeyDown: error handling action ${inputAction} for key code ${keyCode}:\n${errMsg}`);
+            } else {
+                this._lastKeyCode = keyCode;
+                this._lastKeyEventTimestamp = now;
             }
         }
 
-        if (!handled && !this.platform.isUnknown) {
-            // Swallow all keystrokes by default on TV/console platforms
-            // (for the desktop during development, we like refresh and debug keystrokes to still work)
-            handled = true;
+        if (!handled) {
+            let inputAction = this.platform.getInputAction(keyCode);
+
+            if (this.debug) {
+                const focusPath = this.getCurrentFocusPath();
+                const targetPath = getElementPath(event.target);
+                this.debugLog(`onKeyDown: action: ${inputAction} key: ${keyCode} focus: ${focusPath} target: ${targetPath}`);
+            }
+
+            if (keyCode === keyCodes.tab) {
+                // Swallow TAB presses, they cause blue outlines to show on many browsers.
+                handled = true;
+
+            } else if (inputAction == inputActions.back && this.platform.useHistoryBackActions) {
+                // Back action key events cannot be reliably overridden on the current platform.
+                // We use history.back/popstate processing instead.
+                return true; // let the browser continue its processing.
+
+            } else if (inputAction) {
+                // Map the key event to in input action, process it.
+                try {
+                    handled = this.onInputAction(inputAction, event);
+                } catch (err) {
+                    handled = true;
+                    let errMsg = this.platform.describeErrorWithStack(err);
+                    console.error(`${this.id} focusManager.onKeyDown: error handling action ${inputAction} for key code ${keyCode}:\n${errMsg}`);
+                }
+            }
+
+            if (!handled && !this.platform.isUnknown) {
+                // Swallow all keystrokes by default on TV/console platforms
+                // (for the desktop during development, we like refresh and debug keystrokes to still work)
+                handled = true;
+            }
         }
 
         if (handled) {
