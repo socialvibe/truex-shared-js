@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.7.16
+* [TGT-196](https://infillion.atlassian.net/browse/TGT-196): Introduce helper to flatten objects
+
 ## v1.7.15
 * [CTV-3233](https://infillion.atlassian.net/browse/CTV-3233): Stopping held buttons from propagating to parent focusmanagers
 
