@@ -16,7 +16,7 @@ const flattenDeep = (arr) => {
     );
 };
 
-module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}) => {
+module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}, postProcessFile) => {
     const distDir = path.resolve(sourcePath);
 
     console.log("uploading " + sourcePath);
@@ -40,8 +40,9 @@ module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}) => {
                     path.relative(path.resolve(distDir), d.filePath)
                 );
                 const contentType = getContentType(d.filePath);
-                console.log(`uploading file: ${bucket}/${key} ...`);
-                return s3.uploadFile(
+                const uploadedUrl = bucket + '/' + key;
+                console.log(`uploading file: ${uploadedUrl} ...`);
+                let uploadPromise = s3.uploadFile(
                     bucket,
                     key,
                     d.fileData,
@@ -49,8 +50,14 @@ module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}) => {
                     "public-read",
                     config
                 );
+                if (postProcessFile) {
+                    uploadPromise = uploadPromise.then(() => {
+                        return postProcessFile(d.filePath, uploadedUrl);
+                    })
+                }
+                return uploadPromise;
             });
 
             return Promise.all(uploadPromises);
-        });
+    });
 };
