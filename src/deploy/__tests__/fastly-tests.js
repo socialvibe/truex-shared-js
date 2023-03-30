@@ -10,9 +10,7 @@ describe("fastly tests", () => {
     }
 
     test('test purgeFastlyFile', () => {
-        return Promise.all([
-            purgeFastlyUrl('https://qa-media.truex.com/container/3.x/current/ctv.html', apiToken),
-            purgeFastlyUrl('https://media.truex.com/container/3.x/current/ctv.html', apiToken)
-            ]);
+        return purgeFastlyUrl('https://qa-media.truex.com/container/3.x/current/ctv.html', apiToken)
+            .then(() => purgeFastlyUrl('https://media.truex.com/container/3.x/current/ctv.html', apiToken));
     });
 });
