@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.7.16
+* [PI-2297](https://infillion.atlassian.net/browse/PI-2297): Update deployment scripts to flush Fastly CDN caches
+
 ## v1.7.15
 * [CTV-3233](https://infillion.atlassian.net/browse/CTV-3233): Stopping held buttons from propagating to parent focusmanagers
 
