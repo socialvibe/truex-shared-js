@@ -7,6 +7,12 @@ function invokeFastlyApi(path, apiToken) {
         headers: {
             "Fastly-Key": apiToken
         }
+    }).then(resp => {
+        if (resp.ok) return;
+        const statusMsg = resp.status + (resp.statusText ? ' - ' + resp.statusText : '');
+        const errMsg = `fastly action failed: ${statusMsg}\nfor ${path}`;
+        console.error(errMsg);
+        throw new Error(errMsg);
     });
 }
 
