@@ -8,6 +8,7 @@ branches:
 before_script:
   - yarn cache clean
   - yarn install
+  - npx browserslist@latest --update-db
 script:
   - npm run test
 cache:

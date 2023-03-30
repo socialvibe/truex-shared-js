@@ -8,8 +8,7 @@
   ],
   "main": "./src/",
   "scripts": {
-    "browserslist-update": "npx browserslist@latest --update-db",
-    "test": "npm run browserslist-update && jest",
+    "test": "jest",
     "watch": "jest --watch",
     "coverage": "jest --coverage"
   },
