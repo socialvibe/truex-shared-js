@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.7.16
+## v1.7.17
 * [PI-2297](https://infillion.atlassian.net/browse/PI-2297): Update deployment scripts to flush Fastly CDN caches
 
 ## v1.7.15
