@@ -1,6 +1,8 @@
 const fetch = require('node-fetch');
 
 function invokeFastlyApi(path, apiToken) {
+    if (!path) throw new Error('missing fastly api path: ' + path);
+    if (!apiToken) throw new Error('missing fastly api token for: ' + path);
     if (path.startsWith('/')) path = path.substring(1);
     return fetch(`https://api.fastly.com/${path}`, {
         method: 'POST',
@@ -17,8 +19,8 @@ function invokeFastlyApi(path, apiToken) {
 }
 
 function purgeFastlyUrl(url, apiToken) {
+    if (url) url = url.replaceAll(/^[a-zA-Z]+:/, ''); // strip protocol
     console.log('fastly cache purge: ' + url);
-    if (!apiToken) throw new Error('missing fastly api token');
     return invokeFastlyApi('/purge/' + url, apiToken);
 }
 
