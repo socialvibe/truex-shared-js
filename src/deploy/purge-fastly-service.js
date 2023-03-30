@@ -18,6 +18,7 @@ function invokeFastlyApi(path, apiToken) {
 
 function purgeFastlyUrl(url, apiToken) {
     console.log('fastly cache purge: ' + url);
+    if (!apiToken) throw new Error('missing fastly api token');
     return invokeFastlyApi('/purge/' + url, apiToken);
 }
 
