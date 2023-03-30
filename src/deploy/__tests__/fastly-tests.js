@@ -1,4 +1,4 @@
-const { purgeFastlyFile } = require('../purge-fastly-service');
+const { purgeFastlyUrl } = require('../purge-fastly-service');
 
 describe("fastly tests", () => {
     const apiToken = process.env.FASTLY_API_TOKEN;
@@ -11,8 +11,8 @@ describe("fastly tests", () => {
 
     test('test purgeFastlyFile', () => {
         return Promise.all([
-            purgeFastlyFile('https://qa-media.truex.com/container/3.x/current/ctv.html', apiToken),
-            purgeFastlyFile('https://media.truex.com/container/3.x/current/ctv.html', apiToken)
+            purgeFastlyUrl('https://qa-media.truex.com/container/3.x/current/ctv.html', apiToken),
+            purgeFastlyUrl('https://media.truex.com/container/3.x/current/ctv.html', apiToken)
             ]);
     });
 });

@@ -19,7 +19,7 @@ function invokeFastlyApi(path, apiToken) {
 }
 
 function purgeFastlyUrl(url, apiToken) {
-    if (url) url = url.replaceAll(/^[a-zA-Z]+:/, ''); // strip protocol
+    if (url) url = url.replace(/^[a-zA-Z]+:\/\//g, ''); // strip protocol
     console.log('fastly cache purge: ' + url);
     return invokeFastlyApi('/purge/' + url, apiToken);
 }
