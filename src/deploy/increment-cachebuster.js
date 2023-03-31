@@ -1,6 +1,10 @@
 const path = require("path");
 const fetch = require('node-fetch');
 
+// Helper to ensure that served ads have an incremented "cache buster" counter value in their urls.
+// This was put in place to work around unreliable cache purging previously encounted with Edgecast CDN.
+// NOTE: this helper is no longer needed in practice, remains here for reference purposes.
+
 module.exports = (env) => {
     const environment = env === "prod" ? "" : "qa-";
     const hostname = `${environment}dimsum.truex.com`;
