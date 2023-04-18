@@ -9,6 +9,9 @@ before_script:
   - yarn cache clean
   - yarn install
   - npx browserslist@latest --update-db
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
+  - eval $(aws ecr get-login --no-include-email --region us-east-1)
 script:
   - npm run test
 cache:
