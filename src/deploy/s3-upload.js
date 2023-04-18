@@ -123,10 +123,15 @@ module.exports = {
                 // Rarely changes.
                 localMaxAge = 7 * day;
                 serverMaxAge = 365 * day;
-            } else if (contentType.startsWith('audio/') || contentType.startsWith('video/')) {
+            } else if (contentType.startsWith('audio/')
+                || contentType.startsWith('video/')) {
                 // media assets are usually stable.
                 localMaxAge = 7 * day;
                 serverMaxAge = 120 * day;
+            } else if (contentType.startsWith('image/')) {
+                // images are reasonably stable.
+                localMaxAge = 1 * day;
+                serverMaxAge = 30 * day;
             }
             params.CacheControl = `max-age=${localMaxAge} s-maxage=${serverMaxAge} stale-while-revalidate=${5 * min}`;
         }
