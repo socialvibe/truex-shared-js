@@ -1,5 +1,6 @@
 const util = require('util');
 const AWS = require('aws-sdk');
+const getContentType = require("./content-type");
 
 /**
  * getClient
@@ -85,12 +86,18 @@ module.exports = {
      * @param {string} key
      * @param body
      * @param {string} contentType
-     * @param {string} acl (default='private')
-     * @param config
+     * @param {string} acl 'private' (default), 'public-read', etc.
+     * @param {Object} config options for S3 configuration for the file:
+     * @param {config.cacheControl} Defaults to modest caching based on the type that allows for CDN updates.
+     * @param {config.disableCache} Sets the cache-control to specify no caching should be done
      * @returns {promise}
      */
-    uploadFile: function(bucket, key, body, contentType, acl = 'private', config) {
+    uploadFile: function(bucket, key, body, contentType, acl = 'private', config = {}) {
         const s3Client = getClient();
+
+        if (!contentType) {
+            contentType = getContentType(key);
+        }
 
         const params = {
             Bucket: bucket,
@@ -100,9 +107,28 @@ module.exports = {
             ContentType: contentType
         };
 
-        if (config && config.disableCache === true) {
+        if (config.disableCache) {
             params.CacheControl = 'no-cache, no-store, must-revalidate';
             params.Expires = 0;
+        } else if (config.cacheControl) {
+            params.CacheControl = config.cacheControl;
+        } else {
+            const sec = 1;
+            const min = 60 * sec;
+            const hour = 60 * min;
+            const day = 24 * hour;
+            let localMaxAge = 2 * min;
+            let serverMaxAge = day;
+            if (contentType.startsWith('font/')) {
+                // Rarely changes.
+                localMaxAge = 7 * day;
+                serverMaxAge = 365 * day;
+            } else if (contentType.startsWith('audio/') || contentType.startsWith('video/')) {
+                // media assets are usually stable.
+                localMaxAge = 7 * day;
+                serverMaxAge = 120 * day;
+            }
+            params.CacheControl = `max-age=${localMaxAge} s-maxage=${serverMaxAge} stale-while-revalidate=${5 * min}`;
         }
 
         return util.promisify(s3Client.putObject.bind(s3Client))(params)
