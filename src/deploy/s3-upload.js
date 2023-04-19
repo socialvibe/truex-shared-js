@@ -1,6 +1,6 @@
 const util = require('util');
 const AWS = require('aws-sdk');
-const getContentType = require("./content-type");
+const { getContentType, getContentCacheControl } = require("./content-type");
 
 /**
  * getClient
@@ -113,27 +113,7 @@ module.exports = {
         } else if (config.cacheControl) {
             params.CacheControl = config.cacheControl;
         } else {
-            const sec = 1;
-            const min = 60 * sec;
-            const hour = 60 * min;
-            const day = 24 * hour;
-            let localMaxAge = 2 * min;
-            let serverMaxAge = day;
-            if (contentType.startsWith('font/')) {
-                // Rarely changes.
-                localMaxAge = 7 * day;
-                serverMaxAge = 365 * day;
-            } else if (contentType.startsWith('audio/')
-                || contentType.startsWith('video/')) {
-                // media assets are usually stable.
-                localMaxAge = 7 * day;
-                serverMaxAge = 120 * day;
-            } else if (contentType.startsWith('image/')) {
-                // images are reasonably stable.
-                localMaxAge = 1 * day;
-                serverMaxAge = 30 * day;
-            }
-            params.CacheControl = `max-age=${localMaxAge} s-maxage=${serverMaxAge} stale-while-revalidate=${5 * min}`;
+            params.CacheControl = getContentCacheControl(contentType);
         }
 
         return util.promisify(s3Client.putObject.bind(s3Client))(params)
@@ -141,5 +121,5 @@ module.exports = {
                 console.error(`s3 upload failed for ${bucket}/${key}\n  error: ${err}`);
                 throw err;
             });
-    },
+    }
 };
