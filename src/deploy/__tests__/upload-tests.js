@@ -7,7 +7,6 @@ require('whatwg-fetch');
 
 describe("s3 upload tests", () => {
     function expectedCacheControl(filePath) {
-        // @TODO: ensure the expected cache-control results are actually correct.
         switch (path.extname(filePath).toLowerCase()) {
             case '.html': return 'max-age=120 s-maxage=86400 stale-while-revalidate=300';
             case '.js': return 'max-age=120 s-maxage=86400 stale-while-revalidate=300';
