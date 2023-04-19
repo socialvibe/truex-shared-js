@@ -3,6 +3,7 @@ const s3 = require("../s3-upload");
 const { getContentType, getContentCacheControl } = require("../content-type");
 const uploadDist = require("../upload-dist");
 const path = require('path');
+require('whatwg-fetch');
 
 describe("s3 upload tests", () => {
     function expectedCacheControl(filePath) {
@@ -50,9 +51,11 @@ describe("s3 upload tests", () => {
         return s3.cleanFolder(bucket, bucketPath + '/').then(() => {
             return uploadDist(bucket, bucketPath, './src/deploy/__tests__/', {}, (filePath, fileUrl) => {
                 return purgeFastlyUrl(fileUrl, process.env.FASTLY_API_TOKEN).then(() => {
-                    return fetch(fileUrl).then(resp => {
+                    console.log('testing cache controls for ' + fileUrl);
+                    return fetch('https://' + fileUrl).then(resp => {
                         if (!resp.ok) throw new Error('could not fetch: ' + fileUrl);
-                        expect(resp.headers.cacheControl).toBe(expectedCacheControl(fileUrl));
+                        const fileCC = resp.headers.get('cache-control');
+                        expect(fileCC).toBe(expectedCacheControl(fileUrl));
                     });
                 });
             });
