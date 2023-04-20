@@ -5,7 +5,6 @@ const util = require('util');
 /**
  * Returns a list of all the files in the directory, along with their contents.
  * @param {string} dir
- * @param {array} [list=[]]
  * @returns {array}
  */
 function accumulateFiles(dir) {
