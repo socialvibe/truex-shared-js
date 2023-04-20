@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.7.18
+* [PI-2316](https://infillion.atlassian.net/browse/PI-2316): set cache-control header on all uploaded files
+
 ## v1.7.17
 * [PI-2297](https://infillion.atlassian.net/browse/PI-2297): Update deployment scripts to flush Fastly CDN caches
 
