@@ -21,7 +21,6 @@ function accumulateFiles(dir) {
             allFiles.push(filePath);
         }
     });
-    allFiles.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
     return allFiles;
 };
 
