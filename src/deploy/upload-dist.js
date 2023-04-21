@@ -21,43 +21,28 @@ module.exports = (bucket, keyPrefix, sourcePath = "./dist", config = {}, postPro
 
     console.log("uploading " + sourcePath);
 
-    return accumulateFiles(distDir)
-        .then((results) => {
-            return Promise.all(
-                flattenDeep(results).map((filePath) => {
-                    return util
-                        .promisify(fs.readFile)(filePath)
-                        .then((fileData) => {
-                            return { filePath, fileData };
-                        });
-                })
+    // Upload each file asynchronously for the best throughput.
+    const allFiles = accumulateFiles(distDir);
+    return Promise.all(allFiles.map(filePath => {
+        const key = path.join(keyPrefix, path.relative(path.resolve(distDir), filePath));
+        const contentType = getContentType(filePath);
+        const uploadedUrl = bucket + '/' + key;
+        console.log(`uploading file: ${uploadedUrl} ...`);
+        let uploadPromise = util.promisify(fs.readFile)(filePath).then(fileData => {
+            return s3.uploadFile(
+                bucket,
+                key,
+                fileData,
+                contentType,
+                "public-read",
+                config
             );
-        })
-        .then((data) => {
-            const uploadPromises = data.map((d) => {
-                const key = path.join(
-                    keyPrefix,
-                    path.relative(path.resolve(distDir), d.filePath)
-                );
-                const contentType = getContentType(d.filePath);
-                const uploadedUrl = bucket + '/' + key;
-                console.log(`uploading file: ${uploadedUrl} ...`);
-                let uploadPromise = s3.uploadFile(
-                    bucket,
-                    key,
-                    d.fileData,
-                    contentType,
-                    "public-read",
-                    config
-                );
-                if (postProcessFile) {
-                    uploadPromise = uploadPromise.then(() => {
-                        return postProcessFile(d.filePath, uploadedUrl);
-                    })
-                }
-                return uploadPromise;
-            });
-
-            return Promise.all(uploadPromises);
-    });
+        });
+        if (postProcessFile) {
+            uploadPromise = uploadPromise.then(() => {
+                return postProcessFile(filePath, uploadedUrl);
+            })
+        }
+        return uploadPromise;
+    }));
 };
