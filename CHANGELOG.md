@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.8.1
+* [PI-2338](https://infillion.atlassian.net/browse/PI-2338): purgeFastly fixes for C2, C3 cache invalidations
+
 ## v1.7.19
 * [PI-2316](https://infillion.atlassian.net/browse/PI-2316): set cache-control header on all uploaded files
 
