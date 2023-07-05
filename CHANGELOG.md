@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.9.0
+* [PI-2416](https://infillion.atlassian.net/browse/PI-2416): support POPUP_WEBSITE ad event on all platforms
+
 ## v1.8.1
 * [PI-2338](https://infillion.atlassian.net/browse/PI-2338): purgeFastly fixes for C2, C3 cache invalidations
 
