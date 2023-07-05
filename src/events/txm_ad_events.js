@@ -13,7 +13,7 @@ const adEvents = {
     userCancel: 'userCancel',
     videoEvent: 'videoEvent',
     xtendedViewStarted: 'xtendedViewStarted',
-    popUpWebSite: "popupWebsite"
+    popupWebsite: "popupWebsite"
 };
 
 export { adEvents };
