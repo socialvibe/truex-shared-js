@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.9.0 
+## v1.9.0
 * [PI-2416](https://infillion.atlassian.net/browse/PI-2416): support POPUP_WEBSITE ad event on all platforms
 
 ## v1.8.1
