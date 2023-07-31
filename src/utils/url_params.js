@@ -45,15 +45,38 @@ export function parseArgs(queryArgs, splitString) {
  * @param {object} - object of key and its corresponding values
  * @returns {string} - urlencoded query string
  */
-export function encodeUrlParams (params, prefix) {
-    const encodedParams = Object.keys(params).map(name => {
-        const value = params[name];
-        if (value === undefined) {
-            return undefined; // no value
-        }
-        const encodedName =  encodeURIComponent(prefix ? prefix + '[' + name + ']' : name);
-        const encodedValue = encodeURIComponent(value);
-        return encodedName + '=' + encodedValue;
-    }).filter(field => field != undefined).join('&');
-    return encodedParams;
-};
+export function encodeUrlParams(obj, keyPrefix) {
+  const pairs = [];
+
+  for (const key in obj) {
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
+
+    const value = obj[key];
+    let currentKey;
+
+    // If we have a keyPrefix, it means we're within a nested object.
+    // So we need to include it in our encoded key, in the form "keyPrefix[key]".
+    if (keyPrefix) {
+      currentKey = `${keyPrefix}${encodeURIComponent('['+key+']')}`;
+    }
+    else {
+      currentKey = encodeURIComponent(key);
+    }
+
+    if (value !== null && typeof value === 'object' && Object.keys(value).length > 0) {
+      // Recurse into non-scaler objects.
+      pairs.push(encodeUrlParams(value, currentKey));
+    }
+    else if (value !== null) {
+      // Encode scaler objects (e.g. Date) and everything else (e.g. boolean).
+      pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
+    }
+    else {
+      pairs.push(`${currentKey}=`);
+    }
+  }
+
+  return pairs.join('&');
+}
