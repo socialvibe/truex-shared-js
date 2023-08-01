@@ -65,16 +65,20 @@ export function encodeUrlParams(obj, keyPrefix) {
       currentKey = encodeURIComponent(key);
     }
 
-    if (value !== null && typeof value === 'object' && Object.keys(value).length > 0) {
-      // Recurse into non-scaler objects.
-      pairs.push(encodeUrlParams(value, currentKey));
-    }
-    else if (value !== null) {
-      // Encode scaler objects (e.g. Date) and everything else (e.g. boolean).
+    if (typeof value === 'object') {
+        const isArray = value.constructor == Array;
+        const isHash = value.constructor == Object;
+
+        if (!isArray && !isHash) {
+            // Encode scaler objects (e.g. Date)
+            pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
+        } else if (Object.keys(value).length > 0) {
+            // Recurse into non-empty, non-scaler objects
+            pairs.push(encodeUrlParams(value, currentKey));
+        }
+    } else if (value != null) {
+      // Encode everything else (e.g. string, number, boolean).
       pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
-    }
-    else {
-      pairs.push(`${currentKey}=`);
     }
   }
 
