@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.9.1
+* [ADX-237](https://infillion.atlassian.net/browse/ADX-237): make encodeUrlParams() recursive
+
 ## v1.9.0
 * [PI-2416](https://infillion.atlassian.net/browse/PI-2416): support POPUP_WEBSITE ad event on all platforms
 
