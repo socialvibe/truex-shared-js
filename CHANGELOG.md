@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.9.1
+* [PI-2407](https://infillion.atlassian.net/browse/PI-2407): Bug - C3 Container does not work with Hulu Desktop, specifically hulu.js
+  * add TruexServers.engageServerUrl 
+
 ## v1.9.0
 * [PI-2416](https://infillion.atlassian.net/browse/PI-2416): support POPUP_WEBSITE ad event on all platforms
 
