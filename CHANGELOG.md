@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.9.2
+* [PI-2407](https://infillion.atlassian.net/browse/PI-2407): Bug - C3 Container does not work with Hulu Desktop, specifically hulu.js
+  * add TruexServers.engageServerUrl 
+
 ## v1.9.1
 * [ADX-237](https://infillion.atlassian.net/browse/ADX-237): make encodeUrlParams() recursive
 

@@ -13,8 +13,12 @@ describe("truex_servers testing", () => {
         expect(isTruexProductionUrl("https://qa-media.truex.com")).toBe(false);
         expect(isTruexProductionUrl("https://qa-server.truex.com")).toBe(false);
         expect(isTruexProductionUrl("https://media.somewhere.else.com")).toBe(false);
+
         expect(isTruexProductionUrl("qa-media.truex.com")).toBe(false);
         expect(isTruexProductionUrl("media.truex.com")).toBe(true);
+
+        expect(isTruexProductionUrl("http://engage.truex.com")).toBe(true);
+        expect(isTruexProductionUrl("http://qa-engage.truex.com")).toBe(false);
     });
 
     test("truex servers", () => {
@@ -59,11 +63,13 @@ describe("truex_servers testing", () => {
                 expect(servers.truexServerUrl).toBe("https://serve.truex.com");
                 expect(servers.mediaServerUrl).toBe("https://media.truex.com");
                 expect(servers.measureServerUrl).toBe("https://measure.truex.com");
+                expect(servers.engageServerUrl).toBe("https://engage.truex.com");
                 expect(servers.serverUrlOf("something.truex.com")).toBe("https://something.truex.com");
             } else {
                 expect(servers.truexServerUrl).toBe("https://qa-serve.truex.com");
                 expect(servers.mediaServerUrl).toBe("https://qa-media.truex.com");
                 expect(servers.measureServerUrl).toBe("https://qa-measure.truex.com");
+                expect(servers.engageServerUrl).toBe("https://qa-engage.truex.com");
                 expect(servers.serverUrlOf("something.truex.com")).toBe("https://qa-something.truex.com");
             }
         }
