@@ -31,9 +31,14 @@ export class TruexServers {
 
         this.isProduction = isProd;
 
-        this.truexServerUrl = serverUrlOf('serve.truex.com');
+        this.engageServerUrl = serverUrlOf('engage.truex.com');
         this.mediaServerUrl = serverUrlOf('media.truex.com');
         this.measureServerUrl = serverUrlOf('measure.truex.com');
+
+        /**
+         * @deprecated use engage.truex.com instead. serve.truex.com is now just a redirect to it.
+         */
+        this.truexServerUrl = serverUrlOf('serve.truex.com');
 
         this.serverUrlOf = serverUrlOf;
 
