@@ -10,6 +10,11 @@ describe('encodeUrlParams', () => {
         const params = { a: 'foo&', 'b@': 'bar' };
         expect(encodeUrlParams(params)).toBe('a=foo%26&b%40=bar');
     });
+
+    it('should encode objects recursively', () => {
+        const params = { a: 1, b: 2, c: [1], d: {e: 0}, f: [], g: {} };
+        expect(encodeUrlParams(params)).toBe('a=1&b=2&c%5B0%5D=1&d%5Be%5D=0');
+    });
 });
 
 describe('parseQueryArgs', () => {
