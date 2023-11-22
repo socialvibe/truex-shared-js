@@ -65,7 +65,10 @@ export function encodeUrlParams(obj, keyPrefix) {
       currentKey = encodeURIComponent(key);
     }
 
-    if (typeof value === 'object') {
+    if (value === undefined || value === null || value === "") {
+        // Skip missing values.
+
+    } else if (typeof value === 'object') {
         const isArray = value.constructor == Array;
         const isHash = value.constructor == Object;
 
@@ -76,7 +79,7 @@ export function encodeUrlParams(obj, keyPrefix) {
             // Recurse into non-empty, non-scaler objects
             pairs.push(encodeUrlParams(value, currentKey));
         }
-    } else if (value != null) {
+    } else {
       // Encode everything else (e.g. string, number, boolean).
       pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
     }
