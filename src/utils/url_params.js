@@ -79,6 +79,7 @@ export function encodeUrlParams(obj, keyPrefix) {
             // Recurse into non-empty, non-scaler objects
             pairs.push(encodeUrlParams(value, currentKey));
         }
+
     } else {
       // Encode everything else (e.g. string, number, boolean).
       pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
