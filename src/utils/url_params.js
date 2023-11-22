@@ -65,15 +65,15 @@ export function encodeUrlParams(obj, keyPrefix) {
       currentKey = encodeURIComponent(key);
     }
 
-    if (value === undefined || value === null || value === "") {
+    if (value === undefined || value === null) {
         // Skip missing values.
 
-    } else if (typeof value === 'object') {
-        const isArray = value.constructor == Array;
-        const isHash = value.constructor == Object;
+    } else if (value instanceof Object) {
+        const isArray = Array.isArray(value);
+        const isObject = value.constructor == Object;
 
-        if (!isArray && !isHash) {
-            // Encode scaler objects (e.g. Date)
+        if (!isArray && !isObject) {
+            // Encode scalar objects (e.g. Date)
             pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
         } else if (Object.keys(value).length > 0) {
             // Recurse into non-empty, non-scaler objects

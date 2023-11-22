@@ -17,14 +17,14 @@ describe('encodeUrlParams', () => {
     });
 
     it('should skip empty values', () => {
-        const params = { zero: 0, "false": false, empty: "", "null": null, "undefined": undefined };
-        expect(encodeUrlParams(params)).toBe('zero=0&false=false');
+        const params = { zero: 0, "false": false, empty: "", "null": null, "undefined": undefined, something: "else" };
+        expect(encodeUrlParams(params)).toBe('zero=0&false=false&empty=&something=else');
     });
 });
 
 describe('parseQueryArgs', () => {
     it('should return the params of the url', () => {
-        const url = "www.test.com?a=1&b=2";
-        expect(parseQueryArgs(url, '&', '?')).toEqual({ a: '1', b: '2' });
+        const url = "www.test.com?a=1&b=2&empty=";
+        expect(parseQueryArgs(url, '&', '?')).toEqual({ a: '1', b: '2', empty: "" });
     });
 });
