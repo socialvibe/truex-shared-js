@@ -16,7 +16,7 @@ describe('encodeUrlParams', () => {
         expect(encodeUrlParams(params)).toBe('a=1&b=2&c%5B0%5D=1&d%5Be%5D=0');
     });
 
-    it('should skip empty values', () => {
+    it('should skip missing values', () => {
         const params = { zero: 0, "false": false, empty: "", "null": null, "undefined": undefined, something: "else" };
         expect(encodeUrlParams(params)).toBe('zero=0&false=false&empty=&something=else');
     });
