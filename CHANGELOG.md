@@ -2,7 +2,7 @@
 
 ## v1.10.0
 * [PI-2519](https://infillion.atlassian.net/browse/PI-2519): User Opt-Out Capping (Nephew Rule) is not actually stopping Choicecard from loading in
-* fix encodeUrlParams to not crash with null
+  * fix encodeUrlParams to not crash with null
 
 ## v1.9.2
 * [PI-2407](https://infillion.atlassian.net/browse/PI-2407): Bug - C3 Container does not work with Hulu Desktop, specifically hulu.js
