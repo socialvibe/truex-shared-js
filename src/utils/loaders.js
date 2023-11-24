@@ -1,7 +1,8 @@
 import { GetFileExtension } from './get_file_extension';
 import StripProtocol from './strip_protocol';
 
-const APP_PROTOCOL = window.location.protocol === 'https:' ? 'https:' : 'http:';
+// const APP_PROTOCOL = window.location.protocol === 'https:' ? 'https:' : 'http:';
+const APP_PROTOCOL = "https:";
 
 /**
  * BaseLoader - A generic loader class used to load external assets
