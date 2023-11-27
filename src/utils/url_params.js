@@ -55,7 +55,7 @@ export function encodeUrlParams(obj, keyPrefix) {
 
     const value = obj[key];
 
-    // Don't try to serialize actual functions members
+    // Don't try to serialize actual function members
     if (value instanceof Function) continue;
 
     let currentKey;
