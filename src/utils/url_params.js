@@ -73,11 +73,8 @@ export function encodeUrlParams(obj, keyPrefix) {
         // Skip missing values.
 
     } else if (value instanceof Object) {
-        const isArray = Array.isArray(value);
-        const isPlainObject = value.constructor == Object;
-
-        if (!isArray && !isPlainObject) {
-            // Encode scalar objects (e.g. Date)
+        if (value instanceof Date) {
+            // Encode dates as scalar values.
             pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
         } else if (Object.keys(value).length > 0) {
             // Recurse into non-empty, non-scaler objects

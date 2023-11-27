@@ -52,13 +52,13 @@ describe('encodeUrlParams', () => {
         }
         const params = {
             field: 123,
-            date: now,
             foo: new Foo('foo'),
+            date: now,
             method: function() {
                 return 1
             }
         }
-        expect(encodeUrlParams(params)).toBe('field=123&date=' + encodeURIComponent(now.toString()));
+        expect(encodeUrlParams(params)).toBe('field=123&foo%5Bvalue%5D=foo&date=' + encodeURIComponent(now.toString()));
     });
 });
 
