@@ -41,9 +41,19 @@ describe('encodeUrlParams', () => {
 
     it('should ignore function fields, handle dates', () => {
         const now = new Date();
+        class Foo {
+            constructor(value) {
+                this.value = value;
+            }
+
+            method() {
+                // should be ignored
+            }
+        }
         const params = {
             field: 123,
             date: now,
+            foo: new Foo('foo'),
             method: function() {
                 return 1
             }
