@@ -54,6 +54,10 @@ export function encodeUrlParams(obj, keyPrefix) {
     }
 
     const value = obj[key];
+
+    // Don't try to serialize actual function members
+    if (value instanceof Function) continue;
+
     let currentKey;
 
     // If we have a keyPrefix, it means we're within a nested object.
@@ -69,11 +73,8 @@ export function encodeUrlParams(obj, keyPrefix) {
         // Skip missing values.
 
     } else if (value instanceof Object) {
-        const isArray = Array.isArray(value);
-        const isObject = value.constructor == Object;
-
-        if (!isArray && !isObject) {
-            // Encode scalar objects (e.g. Date)
+        if (value instanceof Date) {
+            // Encode dates as scalar values.
             pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
         } else if (Object.keys(value).length > 0) {
             // Recurse into non-empty, non-scaler objects

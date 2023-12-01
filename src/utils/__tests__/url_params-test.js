@@ -20,6 +20,46 @@ describe('encodeUrlParams', () => {
         const params = { zero: 0, "false": false, empty: "", "null": null, "undefined": undefined, something: "else" };
         expect(encodeUrlParams(params)).toBe('zero=0&false=false&empty=&something=else');
     });
+
+    it('should tolerate functions, class instances', () => {
+        const f = function() {return 1};
+        f.a = 1;
+        expect(encodeUrlParams(f)).toBe('a=1');
+
+        class Foo {
+            constructor(value) {
+                this.value = value;
+            }
+
+            method() {
+                // should be ignored
+            }
+        }
+        const foo = new Foo(123);
+        expect(encodeUrlParams(foo)).toBe('value=123');
+    });
+
+    it('should ignore function fields, handle dates', () => {
+        const now = new Date();
+        class Foo {
+            constructor(value) {
+                this.value = value;
+            }
+
+            method() {
+                // should be ignored
+            }
+        }
+        const params = {
+            field: 123,
+            foo: new Foo('foo'),
+            date: now,
+            method: function() {
+                return 1
+            }
+        }
+        expect(encodeUrlParams(params)).toBe('field=123&foo%5Bvalue%5D=foo&date=' + encodeURIComponent(now.toString()));
+    });
 });
 
 describe('parseQueryArgs', () => {

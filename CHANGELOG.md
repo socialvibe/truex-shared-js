@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.10.0
+## v1.10.1
 * [PI-2519](https://infillion.atlassian.net/browse/PI-2519): User Opt-Out Capping (Nephew Rule) is not actually stopping Choicecard from loading in
   * fix encodeUrlParams to not crash with null
 
