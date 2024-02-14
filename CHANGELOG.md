@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.10.3
+* [PI-2658](https://infillion.atlassian.net/browse/PI-2658): Crunchyroll Desktop placement not including a network user id
+  * add setQueryArgs helper
+
 ## v1.10.1
 * [PI-2519](https://infillion.atlassian.net/browse/PI-2519): User Opt-Out Capping (Nephew Rule) is not actually stopping Choicecard from loading in
   * fix encodeUrlParams to not crash with null
