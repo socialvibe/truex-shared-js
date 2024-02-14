@@ -1,4 +1,4 @@
-import { parseQueryArgs, encodeUrlParams, setQueryArgs } from '../url_params';
+import { parseQueryArgs, encodeUrlParams, setQueryArgs, updateQueryArgs } from '../url_params';
 
 describe("url_params tests", () => {
     describe('encodeUrlParams', () => {
@@ -83,9 +83,18 @@ describe("url_params tests", () => {
     test("setQueryArgs", () => {
         expect(setQueryArgs("www.test.com", {arg1: 'value with spaces', shouldBeIgnored: null, arg2: false}))
             .toBe("www.test.com?arg1=value%20with%20spaces&arg2=false");
-        expect(setQueryArgs("www.test.com", {arg1: 'value with spaces', shouldBeIgnored: null, arg2: false}, '&', '#'))
-            .toBe("www.test.com#arg1=value%20with%20spaces&arg2=false");
-        expect(setQueryArgs("www.test.com", {arg1: 'value with spaces', shouldBeIgnored: null, arg2: false}, '&', '#', true))
-            .toBe("www.test.com#arg1=value%20with%20spaces&arg2=false");
+        expect(setQueryArgs("www.test.com?oldArg1=1&oldArg2=to-be-replaced", {arg1: 'new value', arg2: 'other-new-value'}))
+            .toBe("www.test.com?arg1=new%20value&arg2=other-new-value");
+        expect(setQueryArgs("www.test.com", {arg1: 'hash-value', arg2: 2}, '&', '#'))
+            .toBe("www.test.com#arg1=hash-value&arg2=2");
+    })
+
+    test("updateQueryArgs", () => {
+        expect(updateQueryArgs("www.test.com", {arg1: 'value with spaces', shouldBeIgnored: null, arg2: false}))
+            .toBe("www.test.com?arg1=value%20with%20spaces&arg2=false");
+        expect(updateQueryArgs("www.test.com?oldArg1=1&oldArg2=to-be-replaced", {arg1: 'new value', arg2: 'other-new-value', oldArg2: 'replaced-value'}))
+            .toBe("www.test.com?oldArg1=1&oldArg2=replaced-value&arg1=new%20value&arg2=other-new-value");
+        expect(updateQueryArgs("www.test.com", {arg1: 'hash-value', arg2: 2}, '&', '#'))
+            .toBe("www.test.com#arg1=hash-value&arg2=2");
     })
 });
