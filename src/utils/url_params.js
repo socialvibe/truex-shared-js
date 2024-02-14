@@ -23,14 +23,13 @@ export function parseQueryArgs(url, separatorString = "&", paramChar = "?", deco
  * @param url {string} - string of the url to parse the query args from
  * @param separatorString {string} - string to separate the query args by
  * @param paramChar {string} - string to split the url from the query args
- * @param encodeArgs if true, the final query args string is encoded when appended to the url (useful for encoded hash args)
  * @returns {string}
  */
-export function updateQueryArgs(url, params, separatorString = "&", paramChar = "?", encodeArgs = false) {
-    const existingArgs = parseQueryArgs(url, separatorString, paramChar, encodeArgs);
+export function updateQueryArgs(url, params, separatorString = "&", paramChar = "?") {
+    const existingArgs = parseQueryArgs(url, separatorString, paramChar);
     if (!params) params = {};
     const updatedArgs = {...existingArgs, ...params};
-    return setQueryArgs(url, updatedArgs, separatorString, paramChar, encodeArgs);
+    return setQueryArgs(url, updatedArgs, separatorString, paramChar);
 }
 
 /**
@@ -40,16 +39,14 @@ export function updateQueryArgs(url, params, separatorString = "&", paramChar = 
  * @param url {string} - string of the url to parse the query args from
  * @param separatorString {string} - string to separate the query args by
  * @param paramChar {string} - string to split the url from the query args
- * @param encodeArgs if true, the final query args string is encoded when appended to the url (useful for encoded hash args)
  * @returns {string}
  */
-export function setQueryArgs(url, params, separatorString = "&", paramChar = "?", encodeArgs = false) {
+export function setQueryArgs(url, params, separatorString = "&", paramChar = "?") {
     if (!params) params = {};
     const argsStart = url.indexOf(paramChar);
     const baseUrl = argsStart > 0 ? url.substring(0, argsStart) : url;
     if (Object.keys(params).length <= 0) return baseUrl; // no args present
     let queryArgsString = encodeUrlParams(params, undefined, separatorString);
-    if (encodeArgs) queryArgsString = encodeURIComponent(queryArgsString); // i.e. for # hash args updates
     return baseUrl + paramChar + queryArgsString;
 }
 
