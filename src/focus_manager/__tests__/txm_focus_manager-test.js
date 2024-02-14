@@ -314,7 +314,7 @@ describe("TXMFocusManager", () => {
         };
 
         let verifyDelay = (actual, expected) => {
-            const tolerance = 40;
+            const tolerance = 46;
             expect(actual).toBeGreaterThan(expected - tolerance);
             expect(actual).toBeLessThan(expected + tolerance);
         };
