@@ -1,19 +1,57 @@
 /**
- * parseQueryArgs - parses the query args from a given url
- * @url {string} - string of the url to parse the query args from
- * @separatorString {string} - string to separate the query args by
- * @paramChar {string} - string to split the url from the query args
- * @decodeArgs {boolean} - boolean to determine decoding the query args
+ * Parses the query args from a given url. Both #..&.. hash args as well as ?..&.. query args are supported.
+ * @param url {string} - string of the url to parse the query args from
+ * @param separatorString {string} - string to separate the query args by
+ * @param paramChar {string} - string to split the url from the query args
+ * @param decodeArgs {boolean} - if true, decodes the query arg string first (useful for encoded hash args)
  * @returns {object} - object of the query args
  */
 export function parseQueryArgs(url, separatorString = "&", paramChar = "?", decodeArgs = false) {
-    const hashAt = url.indexOf(paramChar);
-    let queryArgs = hashAt >= 0 && url.substr(hashAt+1);
+    const argsStart = url.indexOf(paramChar);
+    let queryArgs = argsStart >= 0 && url.substring(argsStart+1);
     if (decodeArgs) {
         queryArgs = decodeURIComponent(queryArgs);
     }
     return parseArgs(queryArgs, separatorString);
-};
+}
+
+/**
+ * Includes the specified parameters in the url's query args, replacing existing args as needed, adding them if missing.
+ * Both #..&.. hash args as well as ?..&.. query args are supported.
+ * @param url - the url to update
+ * @param params {Object} - key/value parameter map to include * @param separatorString
+ * @param url {string} - string of the url to parse the query args from
+ * @param separatorString {string} - string to separate the query args by
+ * @param paramChar {string} - string to split the url from the query args
+ * @param encodeArgs if true, the final query args string is encoded when appended to the url (useful for encoded hash args)
+ * @returns {string}
+ */
+export function updateQueryArgs(url, params, separatorString = "&", paramChar = "?", encodeArgs = false) {
+    const existingArgs = parseQueryArgs(url, separatorString, paramChar, encodeArgs);
+    if (!params) params = {};
+    const updatedArgs = {...existingArgs, ...params};
+    return setQueryArgs(url, updatedArgs, separatorString, paramChar, encodeArgs);
+}
+
+/**
+ * Sets the url's query args to the specified values. Both #..&.. hash args as well as ?..&.. query args are supported.
+ * @param url - the url to update
+ * @param params {Object} - key/value parameter map to include * @param separatorString
+ * @param url {string} - string of the url to parse the query args from
+ * @param separatorString {string} - string to separate the query args by
+ * @param paramChar {string} - string to split the url from the query args
+ * @param encodeArgs if true, the final query args string is encoded when appended to the url (useful for encoded hash args)
+ * @returns {string}
+ */
+export function setQueryArgs(url, params, separatorString = "&", paramChar = "?", encodeArgs = false) {
+    if (!params) params = {};
+    const argsStart = url.indexOf(paramChar);
+    const baseUrl = argsStart > 0 ? url.substring(0, argsStart) : url;
+    if (Object.keys(params).length <= 0) return baseUrl; // no args present
+    let queryArgsString = encodeUrlParams(params, undefined, separatorString);
+    if (encodeArgs) queryArgsString = encodeURIComponent(queryArgsString); // i.e. for # hash args updates
+    return baseUrl + paramChar + queryArgsString;
+}
 
 /**
  * parseArgs - converts a string of query args into an object
@@ -41,19 +79,19 @@ export function parseArgs(queryArgs, splitString) {
 };
 
 /**
- * encodeUrlParams - converts a keyvalue object into URLEncoded params
+ * encodeUrlParams - converts a key/value pairs into URLEncoded params
  * @param {object} - object of key and its corresponding values
  * @returns {string} - urlencoded query string
  */
-export function encodeUrlParams(obj, keyPrefix) {
+export function encodeUrlParams(params, keyPrefix, separatorString = "&") {
   const pairs = [];
 
-  for (const key in obj) {
-    if (!obj.hasOwnProperty(key)) {
+  for (const key in params) {
+    if (!params.hasOwnProperty(key)) {
       continue;
     }
 
-    const value = obj[key];
+    const value = params[key];
 
     // Don't try to serialize actual function members
     if (value instanceof Function) continue;
@@ -87,5 +125,5 @@ export function encodeUrlParams(obj, keyPrefix) {
     }
   }
 
-  return pairs.join('&');
+  return pairs.join(separatorString);
 }
