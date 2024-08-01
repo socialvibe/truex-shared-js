@@ -206,11 +206,6 @@ class SIMIDMessage {
         this.type = type;
         this.args = args;
     }
-
-    createRejectMessage(errorCode, message) {
-        const error = {errorCode, message};
-        return new SIMIDMessage(this.sessionId)
-    }
 }
 
 export class SIMIDPlayerConfig {
@@ -224,10 +219,91 @@ export class SIMIDPlayerConfig {
     }
 }
 
-export class SIMIDEnvironmentData {
-
-}
-
 export class SIMIDCreativeData {
+    adParameters;
+    clickThruUri;
 
+    constructor(creativeData) {
+        const { adParameters, clickThruUrl, clickThruUri} = creativeData;
+        this.adParameters = adParameters;
+        this.clickThruUri = clickThruUri || clickThruUrl;
+    }
 }
+
+export class SIMIDEnvironmentData {
+    videoDimensions;
+    creativeDimensions;
+    fullscreen;
+    fullscreenAllowed;
+    variableDurationAllowed;
+    skippableState;
+    skipoffset;
+    version;
+    siteUrl;
+    appId;
+    useragent;
+    deviceId;
+    muted;
+    volume;
+    navigationSupport;
+    closeButtonSupport;
+    nonlinearDuration;
+
+    constructor(envData) {
+        const {
+            videoDimensions,
+            creativeDimensions,
+            fullscreen,
+            fullscreenAllowed,
+            variableDurationAllowed,
+            skippableState,
+            skipoffset,
+            version,
+            siteUrl,
+            appId,
+            useragent,
+            deviceId,
+            muted,
+            volume,
+            navigationSupport,
+            closeButtonSupport,
+            nonlinearDuration
+        } = envData || {};
+
+        this.videoDimensions = new SIMIDDimensions(videoDimensions);
+        this.creativeDimensions = new SIMIDDimensions(creativeDimensions);
+        this.fullscreen = fullscreen || false;
+        this.fullscreenAllowed = fullscreenAllowed || false;
+        this.variableDurationAllowed = variableDurationAllowed || false;
+        this.skippableState = skippableState || 'notSkippable';
+        this.skipoffset = skipoffset;
+        this.version = version;
+        this.siteUrl = siteUrl;
+        this.appId = appId;
+        this.useragent = useragent;
+        this.deviceId = deviceId;
+        this.muted = muted || false;
+        this.volume = isNaN(volume) ? 1 : volume;
+        this.navigationSupport = navigationSupport || 'notSupported';
+        this.closeButtonSupport = closeButtonSupport || 'playerHandles';
+        this.nonlinearDuration = nonlinearDuration || 0;
+    }
+}
+
+export class SIMIDDimensions {
+    x;
+    y;
+    width;
+    height;
+
+    constructor(dimensions) {
+        const { x, y, width, height } = dimensions || {};
+        function toDimension(value) { isNaN(value) ? -1 : value }
+
+        this.x = toDimension(x);
+        this.y = toDimension(y);
+        this.width = toDimension(width);
+        this.height = toDimension(height);
+    }
+}
+
