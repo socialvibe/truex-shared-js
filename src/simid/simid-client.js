@@ -44,6 +44,20 @@ export class SIMIDClient {
         this._pendingMessages = {};
     }
 
+    fatalError(errorCode, errorOrMessage) {
+        const message = this.getErrorMessage(errorOrMessage);
+        console.error(`SIMID fatal client error: ${errorCode} - ${message}`);
+        this._sendMessage('SIMID:Creative:fatalError', { errorCode, message });
+        this.stop();
+    }
+
+    getMediaState() {
+        return this._sendMessage('SIMID:Creative:getMediaState')
+            .then(response => {
+                return new SIMIDMediaState(response);
+            });
+    }
+
     _onWindowMessage(event) {
         // Ignore non-SIMID messages, or those for other clients.
         if (!this.isActive) return;
@@ -53,18 +67,25 @@ export class SIMIDClient {
         if (!sessionId || !messageId || !type) return;
         if (sessionId != this._sessionId) return;
 
-        // Handle responses first.
-        switch (type) {
-            case 'resolve':
-                this._resolveClientMessage(args?.messageId, args?.value);
-                return;
-
-            case 'reject':
-                this._rejectClientMessage(args?.messageId, args?.value?.errorCode, args?.value?.message);
-                return;
-        }
-
         try {
+            // Handle responses first.
+            switch (type) {
+                case 'resolve':
+                    this._resolveClientMessage(args?.messageId, args?.value);
+                    return;
+
+                case 'reject':
+                    this._rejectClientMessage(args?.messageId, args?.value?.errorCode, args?.value?.message);
+                    return;
+            }
+
+            // Handle media events
+            if (type.startsWith('SIMID:Media:')) {
+                const event = type.split(':')[2];
+                this.onMediaEvent(event, args);
+                return;
+            }
+
             // Handle requests.
             switch (type) {
                 case 'SIMID:Player:Init':
@@ -76,11 +97,11 @@ export class SIMIDClient {
                     break;
 
                 case 'SIMID:Player:log':
-                    this._log(args?.message);
+                    this._log(args);
                     break;
 
                 case 'SIMID:Player:resize':
-                    this._log(args?.message);
+                    this._resize(args);
                     break;
             }
         } catch (error) {
@@ -89,6 +110,8 @@ export class SIMIDClient {
     }
 
     _sendMessage(type, args) {
+        if (!this.isActive) return;
+
         const message = this._createMessage(type, args);
 
         const promise = new Promise((resolve, reject) => {
@@ -109,6 +132,14 @@ export class SIMIDClient {
         const messageId = this._nextMessageId;
         this._nextMessageId += 1;
         return new SIMIDMessage(this._sessionId, messageId, type, args);
+    }
+
+    getErrorMessage(errorOrMessage) {
+        // Keep the class name for error subclasses/
+        const errMessage = (errorOrMessage instanceof Error)
+            ? (errorOrMessage.constructor == Error) ? errorOrMessage.message : errorOrMessage.toString()
+            : '' + errorOrMessage;
+        return errMessage;
     }
 
     _createError(msg, errroCode, message) {
@@ -138,11 +169,11 @@ export class SIMIDClient {
         this.playerWindow.postMessage(response, '*');
     }
 
+
+
     _rejectPlayerRequest(requestId, requestType, errorCode, errorOrMessage) {
         // Keep the class name for error subclasses/
-        const errMessage = (errorOrMessage instanceof Error)
-            ? (errorOrMessage.constructor == Error) ? errorOrMessage.message : errorOrMessage.toString()
-            : '' + errorOrMessage;
+        const errMessage = this.getErrorMessage(errorOrMessage);
         const response = this._createMessage('reject', { messageId: requestId, value: { errorCode, message: errMessage } });
         console.error(`SIMID reject player request ${requestId} ${requestType}: ${errorCode} - ${errMessage}`);
         this._finishMessage(requestId);
@@ -231,6 +262,9 @@ export class SIMIDClient {
      * @param {boolean} fullScreen
      */
     onResize(videoDimension, creativeDimensions, fullScreen) {
+    }
+
+    onMediaEvent(event, args) {
     }
 }
 
@@ -354,3 +388,35 @@ export class SIMIDDimensions {
     }
 }
 
+export class SIMIDMediaState {
+    currentSrc;
+    currentTime;
+    duration;
+    ended;
+    muted;
+    paused;
+    volume;
+    fullscreen;
+
+    constructor(mediaState) {
+        const {
+            currentSrc,
+            currentTime,
+            duration,
+            ended,
+            muted,
+            paused,
+            volume,
+            fullscreen
+        } = mediaState || {};
+
+        this.currentSrc = currentSrc;
+        this.currentTime = currentTime || 0;
+        this.duration = duration || 0;
+        this.ended = !!ended;
+        this.muted = !!muted;
+        this.paused = !!paused;
+        this.volume = volume || 0;
+        this.fullscreen = !!fullscreen;
+    }
+}
