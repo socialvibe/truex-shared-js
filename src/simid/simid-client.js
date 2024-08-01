@@ -49,7 +49,7 @@ export class SIMIDClient {
         if (!this.isActive) return;
         const data = event.data;
         if (!data) return;
-        const { sessionId, messageId, type, args } = data;
+        const {sessionId, messageId, type, args} = data;
         if (!sessionId || !messageId || !type) return;
         if (sessionId != this._sessionId) return;
 
@@ -60,19 +60,27 @@ export class SIMIDClient {
                 return;
 
             case 'reject':
-                this._rejectClientMessage(args?.messageId, args?.value);
+                this._rejectClientMessage(args?.messageId, args?.value?.errorCode, args?.value?.message);
                 return;
         }
 
-        // Handle requests.
         try {
+            // Handle requests.
             switch (type) {
                 case 'SIMID:Player:Init':
                     this._init(messageId, type, args);
                     break;
+
+                case 'SIMID:Player:log':
+                    this._log(args?.message);
+                    break;
+
+                case 'SIMID:Player:resize':
+                    this._log(args?.message);
+                    break;
             }
         } catch (error) {
-            this._rejectPlayerRequest(messageId, type, SIMIDErrors.unspecifiedError, error);
+            this._rejectPlayerRequest(messageId, type, SIMIDErrors.adInternalError, error);
         }
     }
 
@@ -81,8 +89,9 @@ export class SIMIDClient {
 
         const promise = new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
-                this._finishMessage(message);
-                reject(this._createError(message, SIMIDErrors.unspecifiedError, "message response timeout"));
+                const timeoutMsg = "message response timeout";
+                this._rejectClientMessage(message.id, SIMIDErrors.unspecifiedError, timeoutMsg);
+                reject(this._createError(message, SIMIDErrors.unspecifiedError, timeoutMsg));
             }, 5000);
 
             this._pendingMessages[messageId] = { message, resolve, reject, timeout };
@@ -131,7 +140,7 @@ export class SIMIDClient {
             ? (errorOrMessage.constructor == Error) ? errorOrMessage.message : errorOrMessage.toString()
             : '' + errorOrMessage;
         const response = this._createMessage('reject', { messageId: requestId, value: { errorCode, message: errMessage } });
-        console.error(`SIMID Client error for request ${requestId} ${requestType}: ${errorCode} - ${errMessage}`);
+        console.error(`SIMID reject player request ${requestId} ${requestType}: ${errorCode} - ${errMessage}`);
         this._finishMessage(requestId);
         this.playerWindow.postMessage(response, '*');
         return Promise.reject(errMessage);
@@ -144,12 +153,12 @@ export class SIMIDClient {
         pendingMsg.resolve(value);
     }
 
-    _rejectClientMessage(messageId, value) {
+    _rejectClientMessage(messageId, errorCode, errMessage) {
         const pendingMsg = this._pendingMessages[messageId];
         if (!pendingMsg) return;
         const msg = pendingMsg.message;
         this._finishMessage(pendingMsg.message);
-        console.error(`SIMID Player rejection for message ${msg.messageId} ${msg.type}: ${value?.errorCode} - ${value?.message}`);
+        console.error(`SIMID reject client message ${msg.messageId} ${msg.type}: ${errorCode} - ${errMessage}`);
         pendingMsg.reject(value);
     }
 
@@ -158,7 +167,7 @@ export class SIMIDClient {
         try {
             response = clientAction();
         } catch (error) {
-            return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.unspecifiedError, error);
+            return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, error);
         }
 
         const promise = (response instanceof Promise) ? response : Promise.resolve(response);
@@ -177,13 +186,37 @@ export class SIMIDClient {
         return this._playerResponse(requestId, requestType, () => this.onInit(this._playerConfig));
     }
 
-    // Request handlers: override as needed.
+    _log(args) {
+        const message = args?.message;
+        if (!message) return;
+        console.log('SIMID Player log: ' + message);
+        return message;
+    }
+
+    _resize(args) {
+        const videoDimension = new SIMIDDimensions(args?.videoDimensions);
+        const creativeDimensions = new SIMIDDimensions(args?.creativeDimensions);
+        const fullScreen = !!args?.fullscreen;
+        this.onResize(videoDimension, creativeDimensions, fullScreen);
+        return message;
+    }
+
+    // Request event handlers: override as needed.
 
     /**
      * @param {SIMIDPlayerConfig} playerConfig
+     * @return {Promise} Must return a promise that completes when client initialization is done.
      */
     onInit(playerConfig) {
-        // Override as needed. Must return a promise that completes when client initialization is done.
+    }
+
+    /**
+     * Should not need to do anything by default, since iframe window resizes should already be handled in practice.
+     * @param {SIMIDDimensions} videoDimensions
+     * @param {SIMIDDimensions} creativeDimensions
+     * @param {boolean} fullScreen
+     */
+    onResize(videoDimension, creativeDimensions, fullScreen) {
     }
 }
 
@@ -272,9 +305,9 @@ export class SIMIDEnvironmentData {
 
         this.videoDimensions = new SIMIDDimensions(videoDimensions);
         this.creativeDimensions = new SIMIDDimensions(creativeDimensions);
-        this.fullscreen = fullscreen || false;
-        this.fullscreenAllowed = fullscreenAllowed || false;
-        this.variableDurationAllowed = variableDurationAllowed || false;
+        this.fullscreen = !!fullscreen;
+        this.fullscreenAllowed = !!fullscreenAllowed;
+        this.variableDurationAllowed = !!variableDurationAllowed;
         this.skippableState = skippableState || 'notSkippable';
         this.skipoffset = skipoffset;
         this.version = version;
@@ -282,7 +315,7 @@ export class SIMIDEnvironmentData {
         this.appId = appId;
         this.useragent = useragent;
         this.deviceId = deviceId;
-        this.muted = muted || false;
+        this.muted = !!muted;
         this.volume = isNaN(volume) ? 1 : volume;
         this.navigationSupport = navigationSupport || 'notSupported';
         this.closeButtonSupport = closeButtonSupport || 'playerHandles';
