@@ -71,6 +71,10 @@ export class SIMIDClient {
                     this._init(messageId, type, args);
                     break;
 
+                case 'SIMID:Player:startCreative':
+                    this._startCreative(messageId, type);
+                    break;
+
                 case 'SIMID:Player:log':
                     this._log(args?.message);
                     break;
@@ -181,9 +185,13 @@ export class SIMIDClient {
             });
     }
 
-    _init(requestId, requestType, playerConfig) {
-        this._playerConfig = new SIMIDPlayerConfig(playerConfig);
+    _init(requestId, requestType, args) {
+        this._playerConfig = new SIMIDPlayerConfig(args);
         return this._playerResponse(requestId, requestType, () => this.onInit(this._playerConfig));
+    }
+
+    _startCreative(requestId, requestType) {
+        return this._playerResponse(requestId, requestType, () => this.onStartCreative());
     }
 
     _log(args) {
@@ -198,16 +206,22 @@ export class SIMIDClient {
         const creativeDimensions = new SIMIDDimensions(args?.creativeDimensions);
         const fullScreen = !!args?.fullscreen;
         this.onResize(videoDimension, creativeDimensions, fullScreen);
-        return message;
     }
 
     // Request event handlers: override as needed.
 
     /**
      * @param {SIMIDPlayerConfig} playerConfig
-     * @return {Promise} Must return a promise that completes when client initialization is done.
+     * @return {Promise} Should return a promise that completes when client initialization is done.
      */
     onInit(playerConfig) {
+    }
+
+    /**
+     * Should not need to do anything by default, since page should in theory be already loading due to player init.
+     * @return {Promise} Should return a promise that completes when start flow is complete.
+     */
+    onStartCreative() {
     }
 
     /**
