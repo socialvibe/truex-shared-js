@@ -20,8 +20,8 @@ export class SIMIDClient {
     constructor(contentWindow = window) {
         this.contentWindow = contentWindow;
         this.playerWindow = contentWindow.owner || contentWindow.parent;
-        this._pendingMessages = {};
-        this._onWindowMessage = this._onWindowMessage.bind(this);
+        this._pendingClientRequests = {};
+        this._onPlayerMessage = this._onPlayerMessage.bind(this);
         this.isActive = false;
         this._nextMessageId = 0;
         this._sessionId = null;
@@ -30,30 +30,30 @@ export class SIMIDClient {
     start() {
         if (this.isActive) return;
         this.isActive = true;
-        this.contentWindow.addEventListener('message', this._onWindowMessage);
+        this.contentWindow.addEventListener('message', this._onPlayerMessage);
         this._nextMessageId = 0;
         this._sessionId = uuid();
         this._playerConfig = null;
-        this._sendMessage('createSession', {});
+        this._sendClientMessage('createSession', {});
     }
 
     stop() {
         if (!this.isActive) return;
         this.isActive = false;
-        this.contentWindow.removeEventListener('message', this._onWindowMessage);
-        this._pendingMessages = {};
+        this.contentWindow.removeEventListener('message', this._onPlayerMessage);
+        this._pendingClientRequests = {};
     }
 
     fatalError(errorCode, errorOrMessage) {
         const message = this.getErrorMessage(errorOrMessage);
         console.error(`SIMID fatal client error: ${errorCode} - ${message}`);
-        this._sendMessageWithoutResponse('SIMID:Creative:fatalError', {errorCode, message});
+        this._sendClientMessage('SIMID:Creative:fatalError', {errorCode, message});
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
     }
 
     getMediaState() {
-        return this._sendMessage('SIMID:Creative:getMediaState')
+        return this._sendClientRequest('SIMID:Creative:getMediaState')
             .then(response => {
                 return new SIMIDMediaState(response);
             });
@@ -61,11 +61,11 @@ export class SIMIDClient {
 
     clickThru(x, y, url) {
         const playerHandles = this._playerConfig?.navigationSupport == 'playerHandles';
-        return this._sendMessage('SIMID:Creative:clickThru', {x, y, playerHandles, url});
+        return this._sendClientRequest('SIMID:Creative:clickThru', {x, y, playerHandles, url});
     }
 
     log(message) {
-        this._sendMessageWithoutResponse('SIMID:Creative:log', {message});
+        this._sendClientMessage('SIMID:Creative:log', {message});
     }
 
     /**
@@ -73,7 +73,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     reportTracking(trackingUrls) {
-        return this._sendMessage('SIMID:Creative:reportTracking', {trackingUrls});
+        return this._sendClientRequest('SIMID:Creative:reportTracking', {trackingUrls});
     }
 
     /**
@@ -81,7 +81,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestChangeAdDuration(duration) {
-        return this._sendMessage('SIMID:Creative:requestChangeAdDuration', {duration});
+        return this._sendClientRequest('SIMID:Creative:requestChangeAdDuration', {duration});
     }
 
     /**
@@ -90,7 +90,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestChangeVolume(volume, muted) {
-        return this._sendMessage('SIMID:Creative:requestChangeVolume', {volume, muted});
+        return this._sendClientRequest('SIMID:Creative:requestChangeVolume', {volume, muted});
     }
 
     /**
@@ -99,7 +99,7 @@ export class SIMIDClient {
     requestFullscreen() {
         const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
         if (!fullscreenAllowed) return Promise.reject();
-        return this._sendMessage('SIMID:Creative:requestFullscreen');
+        return this._sendClientRequest('SIMID:Creative:requestFullscreen');
     }
 
     /**
@@ -108,10 +108,10 @@ export class SIMIDClient {
     requestExitFullscreen() {
         const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
         if (!fullscreenAllowed) return Promise.reject();
-        return this._sendMessage('SIMID:Creative:requestExitFullscreen');
+        return this._sendClientRequest('SIMID:Creative:requestExitFullscreen');
     }
 
-    _onWindowMessage(event) {
+    _onPlayerMessage(event) {
         // Ignore non-SIMID messages, or those for other clients.
         if (!this.isActive) return;
         const data = event.data;
@@ -186,7 +186,26 @@ export class SIMIDClient {
         }
     }
 
-    _sendMessage(type, args) {
+    /**
+     * Sends a message to the SIMID player, without waiting for a response.
+     * @param {string} type
+     * @param {any} args
+     * @private
+     */
+    _sendClientMessage(type, args) {
+        if (!this.isActive) return;
+        const message = this._createMessage(type, args);
+        this.playerWindow.postMessage(message, '*');
+    }
+
+    /**
+     * Sends a message to the SIMID player, but waits for a response.
+     * @param {string} type
+     * @param {any} args
+     * @return {Promise<unknown>}
+     * @private
+     */
+    _sendClientRequest(type, args) {
         if (!this.isActive) return;
 
         const message = this._createMessage(type, args);
@@ -195,20 +214,13 @@ export class SIMIDClient {
             const timeout = setTimeout(() => {
                 const timeoutMsg = "message response timeout";
                 this._rejectClientMessage(message.id, SIMIDErrors.unspecifiedError, timeoutMsg);
-                reject(this._createError(message, SIMIDErrors.unspecifiedError, timeoutMsg));
             }, 5000);
 
-            this._pendingMessages[messageId] = {message, resolve, reject, timeout};
+            this._pendingClientRequests[messageId] = { message, resolve, reject, timeout };
 
             this.playerWindow.postMessage(message, '*');
         });
         return promise;
-    }
-
-    _sendMessageWithoutResponse(type, args) {
-        if (!this.isActive) return;
-        const message = this._createMessage(type, args);
-        this.playerWindow.postMessage(message, '*');
     }
 
     _createMessage(type, args) {
@@ -217,65 +229,38 @@ export class SIMIDClient {
         return new SIMIDMessage(this._sessionId, messageId, type, args);
     }
 
-    getErrorMessage(errorOrMessage) {
-        // Keep the class name for error subclasses/
-        const errMessage = (errorOrMessage instanceof Error)
-            ? (errorOrMessage.constructor == Error) ? errorOrMessage.message : errorOrMessage.toString()
-            : '' + errorOrMessage;
-        return errMessage;
-    }
-
-    _createError(msg, errroCode, message) {
-        const error = new Error(message);
-        error.code = errroCode;
-        error.sentMessage = msg;
-        return error;
-    }
-
-    _finishMessage(msgOrId) {
-        const msgId = msgOrId?.id || msgOrId;
-        if (!msgId) return;
-
-        const pendingMsg = this._pendingMessages[msgId];
-        if (!pendingMsg) return;
-
-        delete this._pendingMessages[msgId];
-        if (pendingMsg.timeout) {
-            clearTimeout(pendingMsg.timeout);
-            pendingMsg.timeout = null;
-        }
-    }
-
-    _resolvePlayerRequest(requestId, value) {
-        const response = this._createMessage('resolve', {messageId: requestId, value});
-        this._finishMessage(requestId);
-        this.playerWindow.postMessage(response, '*');
-    }
-
-    _rejectPlayerRequest(requestId, requestType, errorCode, errorOrMessage) {
-        // Keep the class name for error subclasses/
-        const errMessage = this.getErrorMessage(errorOrMessage);
-        const response = this._createMessage('reject', {messageId: requestId, value: {errorCode, message: errMessage}});
-        console.error(`SIMID reject player request ${requestId} ${requestType}: ${errorCode} - ${errMessage}`);
-        this._finishMessage(requestId);
-        this.playerWindow.postMessage(response, '*');
-        return Promise.reject(errMessage);
-    }
-
     _resolveClientMessage(messageId, value) {
-        const pendingMsg = this._pendingMessages[messageId];
+        const pendingMsg = this._pendingClientRequests[messageId];
         if (!pendingMsg) return;
-        this._finishMessage(pendingMsg.message);
+        this._completeClientRequest(pendingMsg.message);
         pendingMsg.resolve(value);
     }
 
     _rejectClientMessage(messageId, errorCode, errMessage) {
-        const pendingMsg = this._pendingMessages[messageId];
+        const pendingMsg = this._pendingClientRequests[messageId];
         if (!pendingMsg) return;
         const msg = pendingMsg.message;
-        this._finishMessage(pendingMsg.message);
+        this._completeClientRequest(pendingMsg.message);
         console.error(`SIMID reject client message ${msg.messageId} ${msg.type}: ${errorCode} - ${errMessage}`);
-        pendingMsg.reject(value);
+
+        const error = new Error(errMessage);
+        error.errorCode = errorCode;
+        error.clientRequest = msg;
+        pendingMsg.reject(error);
+    }
+
+    _completeClientRequest(msgOrId) {
+        const msgId = msgOrId?.id || msgOrId;
+        if (!msgId) return;
+
+        const clientRequest = this._pendingClientRequests[msgId];
+        if (!clientRequest) return;
+
+        delete this._pendingClientRequests[msgId];
+        if (clientRequest.timeout) {
+            clearTimeout(clientRequest.timeout);
+            clientRequest.timeout = null;
+        }
     }
 
     _playerResponse(requestId, requestType, clientAction) {
@@ -295,6 +280,24 @@ export class SIMIDClient {
             .catch(err => {
                 this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, err);
             });
+    }
+
+    _resolvePlayerRequest(requestId, value) {
+        this._sendClientMessage('resolve', { messageId: requestId, value });
+    }
+
+    _rejectPlayerRequest(requestId, requestType, errorCode, errorOrMessage) {
+        // Keep the class name for error subclasses/
+        const errMessage = this.getErrorMessage(errorOrMessage);
+        console.error(`SIMID reject player request ${requestId} ${requestType}: ${errorCode} - ${errMessage}`);
+
+        this._sendClientMessage('reject', { messageId: requestId, value: { errorCode, message: errMessage } });
+
+        const error = new Error(errMessage);
+        error.errorCode = errorCode;
+        error.playerRequestId = requestId;
+        error.playerRequestType = requestType;
+        return Promise.reject(error);
     }
 
     _init(requestId, requestType, args) {
@@ -345,6 +348,18 @@ export class SIMIDClient {
         console.error(`SIMID fatal player error: ${errorCode} - ${message}`);
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
+    }
+
+    /**
+     * @param {string|Error} errorOrMessage
+     * @return {string}
+     */
+    getErrorMessage(errorOrMessage) {
+        // Keep the class name for error subclasses
+        const errMessage = (errorOrMessage instanceof Error)
+            ? (errorOrMessage.constructor == Error) ? errorOrMessage.message : errorOrMessage.toString()
+            : '' + errorOrMessage;
+        return errMessage;
     }
 
     // Request event handlers: override as needed.
