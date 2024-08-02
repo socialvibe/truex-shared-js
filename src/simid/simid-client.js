@@ -45,6 +45,18 @@ export class SIMIDClient {
         this._pendingClientRequests = {};
     }
 
+    /**
+     * @param {string|Error} errorOrMessage
+     * @return {string}
+     */
+    getErrorMessage(errorOrMessage) {
+        // Keep the class name for error subclasses
+        const errMessage = (errorOrMessage instanceof Error)
+            ? (errorOrMessage.constructor == Error) ? errorOrMessage.message : errorOrMessage.toString()
+            : '' + errorOrMessage;
+        return errMessage;
+    }
+
     fatalError(errorCode, errorOrMessage) {
         const message = this.getErrorMessage(errorOrMessage);
         console.error(`SIMID fatal client error: ${errorCode} - ${message}`);
@@ -349,18 +361,6 @@ export class SIMIDClient {
         console.error(`SIMID fatal player error: ${errorCode} - ${message}`);
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
-    }
-
-    /**
-     * @param {string|Error} errorOrMessage
-     * @return {string}
-     */
-    getErrorMessage(errorOrMessage) {
-        // Keep the class name for error subclasses
-        const errMessage = (errorOrMessage instanceof Error)
-            ? (errorOrMessage.constructor == Error) ? errorOrMessage.message : errorOrMessage.toString()
-            : '' + errorOrMessage;
-        return errMessage;
     }
 
     // Request event handlers: override as needed.
