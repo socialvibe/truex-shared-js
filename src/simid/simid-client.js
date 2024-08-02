@@ -23,9 +23,9 @@ export class SIMIDClient {
         this._playerWindow = contentWindow.parent;
         this._pendingClientRequests = {};
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
-        this.isActive = false;
         this._nextMessageId = 0;
         this._sessionId = null;
+        this.isActive = false;
     }
 
     start() {
