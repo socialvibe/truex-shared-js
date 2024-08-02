@@ -49,6 +49,7 @@ export class SIMIDClient {
         console.error(`SIMID fatal client error: ${errorCode} - ${message}`);
         this._sendMessage('SIMID:Creative:fatalError', { errorCode, message });
         this.stop();
+        this.onFatalError(errorCode, message); // in case any completion is needed
     }
 
     getMediaState() {
@@ -102,6 +103,30 @@ export class SIMIDClient {
 
                 case 'SIMID:Player:resize':
                     this._resize(args);
+                    break;
+
+                case 'SIMID:Player:adSkipped':
+                    this._adSkipped();
+                    break;
+
+                case 'SIMID:Player:adStopped':
+                    this._adStopped();
+                    break;
+
+                case 'SIMID:Player:adBackgrounded':
+                    this._adBackgrounded(messageId, type);
+                    break;
+
+                case 'SIMID:Player:adForegrounded':
+                    this._adForegrounded(messageId, type);
+                    break;
+
+                case 'SIMID:Player:collapseNonLinear':
+                    // Not supported
+                    break;
+
+                case 'SIMID:Player:fatalError':
+                    this._playerFatalError(args);
                     break;
             }
         } catch (error) {
@@ -239,6 +264,33 @@ export class SIMIDClient {
         this.onResize(videoDimension, creativeDimensions, fullScreen);
     }
 
+    _adSkipped() {
+        this.stop();
+        this.onAdSkipped();
+    }
+
+    _adStopped() {
+        this.stop();
+        this.onAdStopped();
+    }
+
+    _adBackgrounded(requestId, requestType) {
+        return this._playerResponse(requestId, requestType, () => this.onAdBackgrounded());
+    }
+
+    _adForegrounded(requestId, requestType) {
+        // No promise response is sent.
+        this.onAdForegrounded();
+    }
+
+    _playerFatalError(args) {
+        const errorCode = args?.errorCode;
+        const message = this.getErrorMessage(args?.message);
+        console.error(`SIMID fatal player error: ${errorCode} - ${message}`);
+        this.stop();
+        this.onFatalError(errorCode, message); // in case any completion is needed
+    }
+
     // Request event handlers: override as needed.
 
     /**
@@ -265,6 +317,27 @@ export class SIMIDClient {
     }
 
     onMediaEvent(event, args) {
+    }
+
+    onAdSkipped() {
+    }
+
+    onAdStopped() {
+    }
+
+    /**
+     * @return {Promise} Should return a promise that completes when ad pause is complete.
+     */
+    onAdBackgrounded() {
+    }
+
+    onAdForegrounded() {
+    }
+
+    onCollapseNonLinear() {
+    }
+
+    onFatalError(errorCode, message) {
     }
 }
 
