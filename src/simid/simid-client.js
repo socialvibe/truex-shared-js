@@ -265,10 +265,6 @@ export class SIMIDClient {
         clientRequest.reject(error);
     }
 
-    /**
-     * @param {Number} messageId
-     * @private
-     */
     _completeClientRequest(messageId) {
         const clientRequest = this._pendingClientRequests[messageId];
         if (!clientRequest) return;
@@ -295,7 +291,7 @@ export class SIMIDClient {
                 return result;
             })
             .catch(err => {
-                this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, err);
+                return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, err);
             });
     }
 
