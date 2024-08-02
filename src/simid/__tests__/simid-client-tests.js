@@ -12,13 +12,9 @@ describe('test simid client', () => {
         expect(playerWindow.lastMessage).toBeUndefined();
         expect(simidClient.isActive).toBe(false);
 
-        jest.runOnlyPendingTimers();
-
         expect(adWindow.lastMessage.type).toBe('test');
 
         const startPromise = simidClient.start();
-
-        jest.runOnlyPendingTimers();
 
         expect(simidClient.isActive).toBe(true);
         expect(simidClient._sessionId).toBeDefined();
@@ -32,8 +28,6 @@ describe('test simid client', () => {
         // Acknowledge the createSession
         player.resolveClientRequest(clientMsg);
 
-        jest.runOnlyPendingTimers();
-
         await startPromise;
         expect(adWindow.lastMessage.type).toBe('resolve');
 
@@ -42,7 +36,6 @@ describe('test simid client', () => {
         simidClient.stop();
 
         player.sendPlayerMessage('SIMID:Player:init', { });
-        jest.runOnlyPendingTimers();
         expect(playerWindow.lastMessage).toBeUndefined();
     });
 
@@ -51,13 +44,10 @@ describe('test simid client', () => {
         const { player, simidClient, playerWindow, adWindow } = state;
 
         simidClient.start();
-        jest.runOnlyPendingTimers();
 
         // Acknowledge the createSession
         expect(playerWindow.lastMessage.type).toBe('createSession');
         player.resolveClientRequest(playerWindow.lastMessage);
-        jest.runOnlyPendingTimers();
-        jest.runOnlyPendingTimers();
 
         testPlayerRequest(state, 'SIMID:Player:init', { });
         testPlayerRequest(state, 'SIMID:Player:startCreative', { });
