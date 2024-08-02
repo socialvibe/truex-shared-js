@@ -47,7 +47,7 @@ export class SIMIDClient {
     fatalError(errorCode, errorOrMessage) {
         const message = this.getErrorMessage(errorOrMessage);
         console.error(`SIMID fatal client error: ${errorCode} - ${message}`);
-        this._sendMessageWithoutResponse('SIMID:Creative:fatalError', { errorCode, message });
+        this._sendMessageWithoutResponse('SIMID:Creative:fatalError', {errorCode, message});
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
     }
@@ -61,11 +61,11 @@ export class SIMIDClient {
 
     clickThru(x, y, url) {
         const playerHandles = this._playerConfig?.navigationSupport == 'playerHandles';
-        return this._sendMessage('SIMID:Creative:clickThru', { x, y, playerHandles, url });
+        return this._sendMessage('SIMID:Creative:clickThru', {x, y, playerHandles, url});
     }
 
     log(message) {
-        this._sendMessageWithoutResponse('SIMID:Creative:log', { message });
+        this._sendMessageWithoutResponse('SIMID:Creative:log', {message});
     }
 
     /**
@@ -73,7 +73,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     reportTracking(trackingUrls) {
-        return this._sendMessage('SIMID:Creative:reportTracking', { trackingUrls });
+        return this._sendMessage('SIMID:Creative:reportTracking', {trackingUrls});
     }
 
     /**
@@ -81,7 +81,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestChangeAdDuration(duration) {
-        return this._sendMessage('SIMID:Creative:requestChangeAdDuration', { duration });
+        return this._sendMessage('SIMID:Creative:requestChangeAdDuration', {duration});
     }
 
     /**
@@ -90,7 +90,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestChangeVolume(volume, muted) {
-        return this._sendMessage('SIMID:Creative:requestChangeVolume', { volume, muted });
+        return this._sendMessage('SIMID:Creative:requestChangeVolume', {volume, muted});
     }
 
     /**
@@ -198,7 +198,7 @@ export class SIMIDClient {
                 reject(this._createError(message, SIMIDErrors.unspecifiedError, timeoutMsg));
             }, 5000);
 
-            this._pendingMessages[messageId] = { message, resolve, reject, timeout };
+            this._pendingMessages[messageId] = {message, resolve, reject, timeout};
 
             this.playerWindow.postMessage(message, '*');
         });
@@ -247,7 +247,7 @@ export class SIMIDClient {
     }
 
     _resolvePlayerRequest(requestId, value) {
-        const response = this._createMessage('resolve', { messageId: requestId, value });
+        const response = this._createMessage('resolve', {messageId: requestId, value});
         this._finishMessage(requestId);
         this.playerWindow.postMessage(response, '*');
     }
@@ -255,7 +255,7 @@ export class SIMIDClient {
     _rejectPlayerRequest(requestId, requestType, errorCode, errorOrMessage) {
         // Keep the class name for error subclasses/
         const errMessage = this.getErrorMessage(errorOrMessage);
-        const response = this._createMessage('reject', { messageId: requestId, value: { errorCode, message: errMessage } });
+        const response = this._createMessage('reject', {messageId: requestId, value: {errorCode, message: errMessage}});
         console.error(`SIMID reject player request ${requestId} ${requestType}: ${errorCode} - ${errMessage}`);
         this._finishMessage(requestId);
         this.playerWindow.postMessage(response, '*');
@@ -420,7 +420,7 @@ export class SIMIDPlayerConfig {
     creativeData;
 
     constructor(playerState) {
-        const { environmentData, creativeData } = playerState;
+        const {environmentData, creativeData} = playerState;
         this.environmentData = new SIMIDEnvironmentData(environmentData);
         this.creativeData = new SIMIDCreativeData(creativeData);
     }
@@ -431,7 +431,7 @@ export class SIMIDCreativeData {
     clickThruUri;
 
     constructor(creativeData) {
-        const { adParameters, clickThruUrl, clickThruUri} = creativeData;
+        const {adParameters, clickThruUrl, clickThruUri} = creativeData;
         this.adParameters = adParameters;
         this.clickThruUri = clickThruUri || clickThruUrl;
     }
@@ -504,8 +504,11 @@ export class SIMIDDimensions {
     height;
 
     constructor(dimensions) {
-        const { x, y, width, height } = dimensions || {};
-        function toDimension(value) { isNaN(value) ? -1 : value }
+        const {x, y, width, height} = dimensions || {};
+
+        function toDimension(value) {
+            isNaN(value) ? -1 : value
+        }
 
         this.x = toDimension(x);
         this.y = toDimension(y);
