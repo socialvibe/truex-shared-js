@@ -334,9 +334,6 @@ export class SIMIDClient {
     onAdForegrounded() {
     }
 
-    onCollapseNonLinear() {
-    }
-
     onFatalError(errorCode, message) {
     }
 }
