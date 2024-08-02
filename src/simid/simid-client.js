@@ -245,16 +245,19 @@ export class SIMIDClient {
     _resolveClientMessage(messageId, value) {
         const clientRequest = this._pendingClientRequests[messageId];
         if (!clientRequest) return;
-        this._completeClientRequest(clientRequest.message);
+
+        this._completeClientRequest(messageId);
         clientRequest.resolve(value);
     }
 
     _rejectClientMessage(messageId, errorCode, errMessage) {
         const clientRequest = this._pendingClientRequests[messageId];
         if (!clientRequest) return;
+
         const msg = clientRequest.message;
-        this._completeClientRequest(msg);
         console.error(`SIMID reject client message ${msg.messageId} ${msg.type}: ${errorCode} - ${errMessage}`);
+
+        this._completeClientRequest(messageId);
 
         const error = new Error(errMessage);
         error.errorCode = errorCode;
@@ -263,17 +266,14 @@ export class SIMIDClient {
     }
 
     /**
-     * @param {SIMIDMessage} message
+     * @param {Number} messageId
      * @private
      */
-    _completeClientRequest(message) {
-        const msgId = message.id;
-        if (!msgId) return;
-
-        const clientRequest = this._pendingClientRequests[msgId];
+    _completeClientRequest(messageId) {
+        const clientRequest = this._pendingClientRequests[messageId];
         if (!clientRequest) return;
 
-        delete this._pendingClientRequests[msgId];
+        delete this._pendingClientRequests[messageId];
         if (clientRequest.timeout) {
             clearTimeout(clientRequest.timeout);
             clientRequest.timeout = null;
