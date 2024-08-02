@@ -47,7 +47,7 @@ export class SIMIDClient {
     fatalError(errorCode, errorOrMessage) {
         const message = this.getErrorMessage(errorOrMessage);
         console.error(`SIMID fatal client error: ${errorCode} - ${message}`);
-        this._sendMessage('SIMID:Creative:fatalError', { errorCode, message });
+        this._sendMessageWithoutResponse('SIMID:Creative:fatalError', { errorCode, message });
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
     }
@@ -57,6 +57,58 @@ export class SIMIDClient {
             .then(response => {
                 return new SIMIDMediaState(response);
             });
+    }
+
+    clickThru(x, y, url) {
+        const playerHandles = this._playerConfig?.navigationSupport == 'playerHandles';
+        return this._sendMessage('SIMID:Creative:clickThru', { x, y, playerHandles, url });
+    }
+
+    log(message) {
+        this._sendMessageWithoutResponse('SIMID:Creative:log', { message });
+    }
+
+    /**
+     * @param {string[]} trackingUrls
+     * @return {Promise<unknown>}
+     */
+    reportTracking(trackingUrls) {
+        return this._sendMessage('SIMID:Creative:reportTracking', { trackingUrls });
+    }
+
+    /**
+     * @param {Number} duration use -2 to indicate an unknown duration
+     * @return {Promise<unknown>}
+     */
+    requestChangeAdDuration(duration) {
+        return this._sendMessage('SIMID:Creative:requestChangeAdDuration', { duration });
+    }
+
+    /**
+     * @param {Number} volume from 0...1, inclusive
+     * @param {boolean} muted
+     * @return {Promise<unknown>}
+     */
+    requestChangeVolume(volume, muted) {
+        return this._sendMessage('SIMID:Creative:requestChangeVolume', { volume, muted });
+    }
+
+    /**
+     * @return {Promise<unknown>}
+     */
+    requestFullscreen() {
+        const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
+        if (!fullscreenAllowed) return Promise.reject();
+        return this._sendMessage('SIMID:Creative:requestFullscreen');
+    }
+
+    /**
+     * @return {Promise<unknown>}
+     */
+    requestExitFullscreen() {
+        const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
+        if (!fullscreenAllowed) return Promise.reject();
+        return this._sendMessage('SIMID:Creative:requestExitFullscreen');
     }
 
     _onWindowMessage(event) {
@@ -98,7 +150,7 @@ export class SIMIDClient {
                     break;
 
                 case 'SIMID:Player:log':
-                    this._log(args);
+                    this._playerLog(args);
                     break;
 
                 case 'SIMID:Player:resize':
@@ -153,6 +205,12 @@ export class SIMIDClient {
         return promise;
     }
 
+    _sendMessageWithoutResponse(type, args) {
+        if (!this.isActive) return;
+        const message = this._createMessage(type, args);
+        this.playerWindow.postMessage(message, '*');
+    }
+
     _createMessage(type, args) {
         const messageId = this._nextMessageId;
         this._nextMessageId += 1;
@@ -193,8 +251,6 @@ export class SIMIDClient {
         this._finishMessage(requestId);
         this.playerWindow.postMessage(response, '*');
     }
-
-
 
     _rejectPlayerRequest(requestId, requestType, errorCode, errorOrMessage) {
         // Keep the class name for error subclasses/
@@ -250,7 +306,7 @@ export class SIMIDClient {
         return this._playerResponse(requestId, requestType, () => this.onStartCreative());
     }
 
-    _log(args) {
+    _playerLog(args) {
         const message = args?.message;
         if (!message) return;
         console.log('SIMID Player log: ' + message);
