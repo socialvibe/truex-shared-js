@@ -23,7 +23,7 @@ export class SIMIDClient {
         this._playerWindow = contentWindow.parent;
         this._pendingClientRequests = {};
         this._nextMessageId = 0;
-        this._sessionId = null;
+        this._sessionId = undefined;
         this.isActive = false;
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
     }
@@ -34,8 +34,9 @@ export class SIMIDClient {
         this._contentWindow.addEventListener('message', this._onPlayerMessage);
         this._nextMessageId = 0;
         this._sessionId = uuid();
-        this._playerConfig = null;
-        this._sendClientMessage('createSession', {});
+        this._playerConfig = undefined;
+        this._pendingClientRequests = {};
+        return this._sendClientRequest('createSession', {});
     }
 
     stop() {
@@ -130,7 +131,7 @@ export class SIMIDClient {
         const data = event.data;
         if (!data) return;
         const {sessionId, messageId, type, args} = data;
-        if (!sessionId || !messageId || !type) return;
+        if (!sessionId || isNaN(messageId) || !type) return;
         if (sessionId != this._sessionId) return;
 
         try {
@@ -154,7 +155,7 @@ export class SIMIDClient {
 
             // Handle requests.
             switch (type) {
-                case 'SIMID:Player:Init':
+                case 'SIMID:Player:init':
                     this._init(messageId, type, args);
                     break;
 
@@ -171,11 +172,11 @@ export class SIMIDClient {
                     break;
 
                 case 'SIMID:Player:adSkipped':
-                    this._adSkipped();
+                    this._adSkipped(messageId, type);
                     break;
 
                 case 'SIMID:Player:adStopped':
-                    this._adStopped();
+                    this._adStopped(messageId, type);
                     break;
 
                 case 'SIMID:Player:adBackgrounded':
@@ -229,7 +230,7 @@ export class SIMIDClient {
                 this._rejectClientMessage(message.id, SIMIDErrors.unspecifiedError, timeoutMsg);
             }, 5000);
 
-            this._pendingClientRequests[messageId] = { message, resolve, reject, timeout };
+            this._pendingClientRequests[message.messageId] = { message, resolve, reject, timeout };
 
             this._playerWindow.postMessage(message, '*');
         });
@@ -280,19 +281,21 @@ export class SIMIDClient {
         let response;
         try {
             response = clientAction();
+            if (response instanceof Promise) {
+                return response
+                    .then(result => {
+                        this._resolvePlayerRequest(requestId, result);
+                        return result;
+                    })
+                    .catch(err => {
+                        return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, err);
+                    });
+            } else {
+                this._resolvePlayerRequest(requestId, response);
+            }
         } catch (error) {
             return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, error);
         }
-
-        const promise = (response instanceof Promise) ? response : Promise.resolve(response);
-        return promise
-            .then(result => {
-                this._resolvePlayerRequest(requestId, result);
-                return result;
-            })
-            .catch(err => {
-                return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, err);
-            });
     }
 
     _resolvePlayerRequest(requestId, value) {
@@ -310,7 +313,7 @@ export class SIMIDClient {
         error.errorCode = errorCode;
         error.playerRequestId = requestId;
         error.playerRequestType = requestType;
-        return Promise.reject(error);
+        return Promise.reject(errorOrMessage);
     }
 
     _init(requestId, requestType, args) {
@@ -336,14 +339,16 @@ export class SIMIDClient {
         this.onResize(videoDimension, creativeDimensions, fullScreen);
     }
 
-    _adSkipped() {
+    _adSkipped(requestId, requestType) {
+        // Stop only after the final message is sent.
+        this._playerResponse(requestId, requestType, () => this.onAdSkipped());
         this.stop();
-        this.onAdSkipped();
     }
 
-    _adStopped() {
+    _adStopped(requestId, requestType) {
+        // Stop only after the final message is sent.
+        this._playerResponse(requestId, requestType, () => this.onAdStopped());
         this.stop();
-        this.onAdStopped();
     }
 
     _adBackgrounded(requestId, requestType) {
