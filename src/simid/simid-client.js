@@ -7,6 +7,8 @@ import { v4 as uuid } from 'uuid';
  * That is, provides the iframe client implementation of the SIMID message protocol, assuming the existence of the SIMID
  * Player with a currently playing ad video (as specified by the associated VAST <MediaFile> element). The SIMID Player is then the
  * producer of the SIMID messages.
+ *
+ * @see https://interactiveadvertisingbureau.github.io/SIMID
  */
 export class SIMIDClient {
     isActive;
