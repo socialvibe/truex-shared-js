@@ -410,12 +410,12 @@ export class SIMIDClient {
     }
 }
 
-const SIMIDErrors = {
+export const SIMIDErrors = {
     unspecifiedError: 1100,
     adInternalError: 1108
 }
 
-class SIMIDMessage {
+export class SIMIDMessage {
     sessionId;
     messageId;
     timestamp;
