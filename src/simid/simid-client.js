@@ -436,7 +436,7 @@ export class SIMIDPlayerConfig {
     creativeData;
 
     constructor(playerState) {
-        const {environmentData, creativeData} = playerState;
+        const {environmentData, creativeData} = playerState || {};
         this.environmentData = new SIMIDEnvironmentData(environmentData);
         this.creativeData = new SIMIDCreativeData(creativeData);
     }
@@ -447,7 +447,7 @@ export class SIMIDCreativeData {
     clickThruUri;
 
     constructor(creativeData) {
-        const {adParameters, clickThruUrl, clickThruUri} = creativeData;
+        const {adParameters, clickThruUrl, clickThruUri} = creativeData || {};
         this.adParameters = adParameters;
         this.clickThruUri = clickThruUri || clickThruUrl;
     }
