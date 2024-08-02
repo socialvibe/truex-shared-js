@@ -1,5 +1,4 @@
 import { v4 as uuid } from 'uuid';
-import { re } from "@babel/core/lib/vendor/import-meta-resolve";
 
 /**
  * Provides an implementation of the Secure Interactive Media Interface Definition (SIMID) for use in
