@@ -20,7 +20,7 @@ export class SIMIDClient {
      */
     constructor(contentWindow = window) {
         this.contentWindow = contentWindow;
-        this.playerWindow = contentWindow.owner || contentWindow.parent;
+        this.playerWindow = contentWindow.parent;
         this._pendingClientRequests = {};
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
         this.isActive = false;
