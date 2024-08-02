@@ -19,8 +19,8 @@ export class SIMIDClient {
      * @param {Window} contentWindow
      */
     constructor(contentWindow = window) {
-        this.contentWindow = contentWindow;
-        this.playerWindow = contentWindow.parent;
+        this._contentWindow = contentWindow;
+        this._playerWindow = contentWindow.parent;
         this._pendingClientRequests = {};
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
         this.isActive = false;
@@ -31,7 +31,7 @@ export class SIMIDClient {
     start() {
         if (this.isActive) return;
         this.isActive = true;
-        this.contentWindow.addEventListener('message', this._onPlayerMessage);
+        this._contentWindow.addEventListener('message', this._onPlayerMessage);
         this._nextMessageId = 0;
         this._sessionId = uuid();
         this._playerConfig = null;
@@ -41,7 +41,7 @@ export class SIMIDClient {
     stop() {
         if (!this.isActive) return;
         this.isActive = false;
-        this.contentWindow.removeEventListener('message', this._onPlayerMessage);
+        this._contentWindow.removeEventListener('message', this._onPlayerMessage);
         this._pendingClientRequests = {};
     }
 
@@ -208,7 +208,7 @@ export class SIMIDClient {
     _sendClientMessage(type, args) {
         if (!this.isActive) return;
         const message = this._createMessage(type, args);
-        this.playerWindow.postMessage(message, '*');
+        this._playerWindow.postMessage(message, '*');
     }
 
     /**
@@ -231,7 +231,7 @@ export class SIMIDClient {
 
             this._pendingClientRequests[messageId] = { message, resolve, reject, timeout };
 
-            this.playerWindow.postMessage(message, '*');
+            this._playerWindow.postMessage(message, '*');
         });
         return promise;
     }
