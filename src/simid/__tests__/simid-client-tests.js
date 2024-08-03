@@ -96,9 +96,23 @@ describe('test simid client', () => {
         const videoDimensions = {x: 1, y: 2, width: 3, height: 4};
         const creativeDimensions = {x: 1, y: 2, width: 3, height: 4};
         const fullscreen = true;
+
         simidClient.onResize = jest.fn();
         player.sendPlayerMessage('SIMID:Player:resize', {videoDimensions, creativeDimensions, fullscreen});
         expect(simidClient.onResize).toHaveBeenCalledWith({ videoDimensions, creativeDimensions, fullscreen });
+    });
+
+    test('test background/foreground', () => {
+        const state = newStartedTestState();
+        const { player, simidClient } = state;;
+
+        simidClient.onAdBackgrounded = jest.fn();
+        player.sendPlayerMessage('SIMID:Player:adBackgrounded');
+        expect(simidClient.onAdBackgrounded).toHaveBeenCalled();
+
+        simidClient.onAdForegrounded = jest.fn();
+        player.sendPlayerMessage('SIMID:Player:adForegrounded');
+        expect(simidClient.onAdForegrounded).toHaveBeenCalled();
     });
 });
 
