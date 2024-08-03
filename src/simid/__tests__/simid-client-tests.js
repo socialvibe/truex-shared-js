@@ -134,6 +134,28 @@ describe('test simid client', () => {
         expect(playerWindow.lastMessage.args).toEqual(fatalError);
         expect(simidClient.isActive).toBe(false);
     });
+
+    test('test media events', () => {
+        const { player, simidClient, playerWindow } = newStartedTestState();;
+
+        function testEvent(event, args) {
+            simidClient.onMediaEvent = jest.fn();
+            player.sendPlayerMessage('SIMID:Media:' + event, args);
+            expect(simidClient.onMediaEvent).toHaveBeenCalledWith(event, args);
+        }
+
+        testEvent('durationchange', {duration: 123});
+        testEvent('ended');
+        testEvent('error', {error: 123, message: 'test media error'});
+        testEvent('pause');
+        testEvent('play');
+        testEvent('playing');
+        testEvent('seeked');
+        testEvent('seeking');
+        testEvent('stalled');
+        testEvent('timeupdate', {currentTime: 123});
+        testEvent('volumechange', {volume: 0.5, muted: true});
+    });
 });
 
 function testPlayerRequest(state, type, args) {
