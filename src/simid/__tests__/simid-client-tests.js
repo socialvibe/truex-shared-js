@@ -74,6 +74,20 @@ describe('test simid client', () => {
         expect(simidClient.isActive).toBe(false);
         expect(simidClient.onAdStopped).toHaveBeenCalled();
     });
+
+    test('test logging', () => {
+        const state = newStartedTestState();
+        const { player, simidClient, playerWindow } = state;
+
+        const playerLogMsg = 'test player log';
+        simidClient.onPlayerLog = jest.fn();
+        player.sendPlayerMessage('SIMID:Player:log', {message: playerLogMsg});
+        expect(simidClient.onPlayerLog).toHaveBeenCalledWith(playerLogMsg);
+
+        const clientLogMsg = 'test client log';
+        simidClient.log(clientLogMsg);
+        expect(playerWindow.lastMessage).toEqual(expect.objectContaining({args: {message: clientLogMsg}}));
+    });
 });
 
 function testPlayerRequest(state, type, args) {

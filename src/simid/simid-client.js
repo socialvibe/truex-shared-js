@@ -328,7 +328,7 @@ export class SIMIDClient {
     _playerLog(args) {
         const message = args?.message;
         if (!message) return;
-        console.log('SIMID Player log: ' + message);
+        this.onPlayerLog(message);
         return message;
     }
 
@@ -382,6 +382,10 @@ export class SIMIDClient {
      * @return {Promise} Should return a promise that completes when start flow is complete.
      */
     onStartCreative() {
+    }
+
+    onPlayerLog(message) {
+        console.log('SIMID Player log: ' + message);
     }
 
     /**
