@@ -76,8 +76,7 @@ describe('test simid client', () => {
     });
 
     test('test logging', () => {
-        const state = newStartedTestState();
-        const { player, simidClient, playerWindow } = state;
+        const { player, simidClient, playerWindow } = newStartedTestState();
 
         const playerLogMsg = 'test player log';
         simidClient.onPlayerLog = jest.fn();
@@ -90,8 +89,7 @@ describe('test simid client', () => {
     });
 
     test('test resize', () => {
-        const state = newStartedTestState();
-        const { player, simidClient } = state;
+        const { player, simidClient } = newStartedTestState();
 
         const videoDimensions = {x: 1, y: 2, width: 3, height: 4};
         const creativeDimensions = {x: 1, y: 2, width: 3, height: 4};
@@ -103,8 +101,7 @@ describe('test simid client', () => {
     });
 
     test('test background/foreground', () => {
-        const state = newStartedTestState();
-        const { player, simidClient } = state;;
+        const { player, simidClient } = newStartedTestState();
 
         simidClient.onAdBackgrounded = jest.fn();
         player.sendPlayerMessage('SIMID:Player:adBackgrounded');
@@ -113,6 +110,26 @@ describe('test simid client', () => {
         simidClient.onAdForegrounded = jest.fn();
         player.sendPlayerMessage('SIMID:Player:adForegrounded');
         expect(simidClient.onAdForegrounded).toHaveBeenCalled();
+    });
+
+    test('test player fatalError', () => {
+        const { player, simidClient } = newStartedTestState();
+
+        const fatalError = { errorCode: 999, message: 'test player error' };
+        simidClient.onFatalError = jest.fn();
+        player.sendPlayerMessage('SIMID:Player:fatalError', fatalError);
+
+        expect(simidClient.onFatalError).toHaveBeenCalledWith(fatalError.errorCode, fatalError.message);
+        expect(simidClient.isActive).toBe(false);
+    });
+
+    test('test client fatalError', () => {
+        const { simidClient, playerWindow } = newStartedTestState();;
+
+        const fatalError = { errorCode: 999, message: 'test player error' };
+        simidClient.fatalError(fatalError.errorCode, fatalError.message);
+        expect(playerWindow.lastMessage.args).toEqual(fatalError);
+        expect(simidClient.isActive).toBe(false);
     });
 });
 
