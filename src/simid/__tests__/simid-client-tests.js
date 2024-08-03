@@ -129,7 +129,7 @@ describe('test simid client', () => {
     test('test client fatalError', () => {
         const { simidClient, playerWindow } = newStartedTestState();;
 
-        const fatalError = { errorCode: 999, message: 'test player error' };
+        const fatalError = { errorCode: 999, message: 'test client error' };
         simidClient.fatalError(fatalError.errorCode, fatalError.message);
         expect(playerWindow.lastMessage.args).toEqual(fatalError);
         expect(simidClient.isActive).toBe(false);
