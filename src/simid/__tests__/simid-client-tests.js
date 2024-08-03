@@ -63,7 +63,7 @@ describe('test simid client', () => {
         simidClient.onAdSkipped = jest.fn();
         testPlayerRequest(state, 'SIMID:Player:adSkipped');
         expect(simidClient.isActive).toBe(false);
-        expect(adWindow.onPostMessage).toBeUndefined();
+        expect(adWindow.onPostMessage).toBeUndefined(); // i.e. removeEventListener was called
         expect(simidClient.onAdSkipped).toHaveBeenCalled();
     });
 
