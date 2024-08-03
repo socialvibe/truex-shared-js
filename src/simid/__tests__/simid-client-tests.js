@@ -1,4 +1,4 @@
-import { SIMIDClient, SIMIDMessage } from '../simid-client';
+import { SIMIDClient, SIMIDDimensions, SIMIDMessage } from '../simid-client';
 
 jest.useFakeTimers();
 
@@ -87,6 +87,18 @@ describe('test simid client', () => {
         const clientLogMsg = 'test client log';
         simidClient.log(clientLogMsg);
         expect(playerWindow.lastMessage).toEqual(expect.objectContaining({args: {message: clientLogMsg}}));
+    });
+
+    test('test resize', () => {
+        const state = newStartedTestState();
+        const { player, simidClient } = state;
+
+        const videoDimensions = {x: 1, y: 2, width: 3, height: 4};
+        const creativeDimensions = {x: 1, y: 2, width: 3, height: 4};
+        const fullscreen = true;
+        simidClient.onResize = jest.fn();
+        player.sendPlayerMessage('SIMID:Player:resize', {videoDimensions, creativeDimensions, fullscreen});
+        expect(simidClient.onResize).toHaveBeenCalledWith({ videoDimensions, creativeDimensions, fullscreen });
     });
 });
 

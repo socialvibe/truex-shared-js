@@ -333,10 +333,10 @@ export class SIMIDClient {
     }
 
     _resize(args) {
-        const videoDimension = new SIMIDDimensions(args?.videoDimensions);
+        const videoDimensions = new SIMIDDimensions(args?.videoDimensions);
         const creativeDimensions = new SIMIDDimensions(args?.creativeDimensions);
-        const fullScreen = !!args?.fullscreen;
-        this.onResize(videoDimension, creativeDimensions, fullScreen);
+        const fullscreen = !!args?.fullscreen;
+        this.onResize({ videoDimensions, creativeDimensions, fullscreen });
     }
 
     _adSkipped(requestId, requestType) {
@@ -392,9 +392,9 @@ export class SIMIDClient {
      * Should not need to do anything by default, since iframe window resizes should already be handled in practice.
      * @param {SIMIDDimensions} videoDimensions
      * @param {SIMIDDimensions} creativeDimensions
-     * @param {boolean} fullScreen
+     * @param {boolean} fullscreen
      */
-    onResize(videoDimension, creativeDimensions, fullScreen) {
+    onResize({ videoDimension, creativeDimensions, fullscreen }) {
     }
 
     onMediaEvent(event, args) {
@@ -532,7 +532,7 @@ export class SIMIDDimensions {
         const {x, y, width, height} = dimensions || {};
 
         function toDimension(value) {
-            isNaN(value) ? -1 : value
+            return isNaN(value) ? -1 : value
         }
 
         this.x = toDimension(x);
