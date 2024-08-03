@@ -11,6 +11,7 @@ describe('test simid client', () => {
         player.sendPlayerMessage('test', {});
         expect(playerWindow.lastMessage).toBeUndefined();
         expect(simidClient.isActive).toBe(false);
+        expect(adWindow.onPostMessage).toBeUndefined();
 
         expect(adWindow.lastMessage.type).toBe('test');
 
@@ -55,12 +56,14 @@ describe('test simid client', () => {
 
     test('test ad skipped', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const { simidClient, adWindow } = state;
         expect(simidClient.isActive).toBe(true);
+        expect(adWindow.onPostMessage).toBeDefined();
 
         simidClient.onAdSkipped = jest.fn();
         testPlayerRequest(state, 'SIMID:Player:adSkipped');
         expect(simidClient.isActive).toBe(false);
+        expect(adWindow.onPostMessage).toBeUndefined();
         expect(simidClient.onAdSkipped).toHaveBeenCalled();
     });
 
@@ -92,7 +95,7 @@ describe('test simid client', () => {
         const { player, simidClient } = newStartedTestState();
 
         const videoDimensions = {x: 1, y: 2, width: 3, height: 4};
-        const creativeDimensions = {x: 1, y: 2, width: 3, height: 4};
+        const creativeDimensions = {x: 5, y: 6, width: 7, height: 8};
         const fullscreen = true;
 
         simidClient.onResize = jest.fn();
@@ -154,7 +157,8 @@ class WindowStub {
         const msgJson = JSON.stringify(msg);
         const msgCopy = JSON.parse(msgJson);
 
-        console.log(`${this.id}.postMessage: ${msg.messageId} ${msg.type}`);
+        // For debugging
+        //console.log(`${this.id}.postMessage: ${msg.messageId} ${msg.type}`);
 
         this.lastMessage = msgCopy;
         if (!this.onPostMessage) return;
