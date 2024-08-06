@@ -95,7 +95,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestChangeAdDuration(duration) {
-        return this._sendClientRequest('SIMID:Creative:requestChangeAdDuration', {duration});
+        return this._sendClientRequest('SIMID:Creative:requestChangeAdDuration', { duration });
     }
 
     /**

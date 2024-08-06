@@ -175,8 +175,24 @@ describe('test simid client', () => {
             ]
         };
 
-        await testClientRequest(state, 'SIMID:Creative:reportTracking', requestArgs, () => simidClient.reportTracking(requestArgs.trackingUrls), undefined);
-        await testClientReject(state, requestArgs, () => simidClient.reportTracking(requestArgs.trackingUrls), 1100, 'tracking rejected');
+        await testClientRequest(state, 'SIMID:Creative:reportTracking', requestArgs,
+            () => simidClient.reportTracking(requestArgs.trackingUrls), undefined);
+        await testClientReject(state, requestArgs,
+            () => simidClient.reportTracking(requestArgs.trackingUrls), 1100, 'tracking rejected');
+    });
+
+    test('test requestChangeAdDuration', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        const requestArgs = {
+            duration: 123
+        };
+
+        await testClientRequest(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
+            () => simidClient.requestChangeAdDuration(requestArgs.duration), undefined);
+        await testClientReject(state, requestArgs,
+            () => simidClient.requestChangeAdDuration(requestArgs.duration), 1100, 'duration change rejected');
     });
 
     test('test media events', () => {
