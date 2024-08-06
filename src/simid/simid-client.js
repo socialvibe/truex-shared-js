@@ -134,25 +134,24 @@ export class SIMIDClient {
         if (!sessionId || isNaN(messageId) || !type) return;
         if (sessionId != this._sessionId) return;
 
-        try {
-            // Handle responses first.
-            switch (type) {
-                case 'resolve':
-                    this._resolveClientMessage(args?.messageId, args?.value);
-                    return;
-
-                case 'reject':
-                    this._rejectClientMessage(args?.messageId, args?.value?.errorCode, args?.value?.message);
-                    return;
-            }
-
-            // Handle media events
-            if (type.startsWith('SIMID:Media:')) {
-                const event = type.split(':')[2];
-                this.onMediaEvent(event, args);
+        // Handle responses first.
+        switch (type) {
+            case 'resolve':
+                this._resolveClientMessage(args?.messageId, args?.value);
                 return;
-            }
 
+            case 'reject':
+                this._rejectClientMessage(args?.messageId, args?.value?.errorCode, args?.value?.message);
+                return;
+        }
+
+        // Handle media events
+        if (type.startsWith('SIMID:Media:')) {
+            this._mediaEvent(messageId, type, args);
+            return;
+        }
+
+        try {
             // Handle requests.
             switch (type) {
                 case 'SIMID:Player:init':
@@ -366,6 +365,16 @@ export class SIMIDClient {
         console.error(`SIMID fatal player error: ${errorCode} - ${message}`);
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
+    }
+
+    _mediaEvent(messageId, type, args) {
+        try {
+            const event = type.split(':')[2];
+            this.onMediaEvent(event, args);
+        } catch (error) {
+            const message = this.getErrorMessage(args?.message);
+            console.error(`SIMID error for media event: ${messageId} - ${type}: ${message}`);
+        }
     }
 
     // Request event handlers: override as needed.

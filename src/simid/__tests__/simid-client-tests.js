@@ -1,7 +1,5 @@
 import { SIMIDClient, SIMIDDimensions, SIMIDMessage } from '../simid-client';
 
-jest.useFakeTimers();
-
 describe('test simid client', () => {
 
     test('start/stop simid client', async () => {
@@ -265,7 +263,6 @@ function newTestState() {
 function newStartedTestState() {
     const state = newTestState();
     state.simidClient.start();
-    jest.runOnlyPendingTimers();
     state.simidClient._pendingClientRequests = {};
     state.player.sessionId = state.simidClient._sessionId;
     return state;
