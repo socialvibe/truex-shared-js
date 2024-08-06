@@ -367,7 +367,7 @@ export class SIMIDClient {
                 if (postResponseAction) postResponseAction();
             }
         } catch (error) {
-            return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, error);
+            this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, error);
         }
     }
 
@@ -381,12 +381,6 @@ export class SIMIDClient {
         console.error(`SIMID reject player request ${requestId} ${requestType}: ${errorCode} - ${errMessage}`);
 
         this._sendClientMessage('reject', { messageId: requestId, value: { errorCode, message: errMessage } });
-
-        const error = new Error(errMessage);
-        error.errorCode = errorCode;
-        error.playerRequestId = requestId;
-        error.playerRequestType = requestType;
-        return Promise.reject(errorOrMessage);
     }
 
     _init(requestId, requestType, args) {

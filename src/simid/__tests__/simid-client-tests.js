@@ -53,6 +53,24 @@ describe('test simid client', () => {
         testPlayerRequest(state, 'SIMID:Player:startCreative', { });
     });
 
+    test('test init reject', async () => {
+        const state = newStartedTestState();
+        const { player, simidClient, playerWindow, adWindow } = state;
+
+        const errMessage = 'init test error';
+        simidClient.onInit = () => { throw new Error(errMessage) };
+        testPlayerReject(state, 'SIMID:Player:init', { }, SIMIDErrors.adInternalError, errMessage);
+    });
+
+    test('test startCreative reject', async () => {
+        const state = newStartedTestState();
+        const { player, simidClient, playerWindow, adWindow } = state;
+
+        const errMessage = 'startCreative test error';
+        simidClient.onStartCreative = () => { throw new Error(errMessage) };
+        testPlayerReject(state, 'SIMID:Player:startCreative', { }, SIMIDErrors.adInternalError, errMessage);
+    });
+
     test('test ad skipped', async () => {
         const state = newStartedTestState();
         const { simidClient, adWindow } = state;
@@ -66,6 +84,15 @@ describe('test simid client', () => {
         expect(simidClient.onAdSkipped).toHaveBeenCalled();
     });
 
+    test('test adSkipped reject', async () => {
+        const state = newStartedTestState();
+        const { player, simidClient, playerWindow, adWindow } = state;
+
+        const errMessage = 'adSkipped test error';
+        simidClient.onAdSkipped = () => { throw new Error(errMessage) };
+        testPlayerReject(state, 'SIMID:Player:adSkipped', { }, SIMIDErrors.adInternalError, errMessage);
+    });
+
     test('test ad stopped', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
@@ -75,6 +102,15 @@ describe('test simid client', () => {
         testPlayerRequest(state, 'SIMID:Player:adStopped');
         expect(simidClient.isActive).toBe(false);
         expect(simidClient.onAdStopped).toHaveBeenCalled();
+    });
+
+    test('test adStopped reject', async () => {
+        const state = newStartedTestState();
+        const { player, simidClient, playerWindow, adWindow } = state;
+
+        const errMessage = 'adStopped test error';
+        simidClient.onAdStopped = () => { throw new Error(errMessage) };
+        testPlayerReject(state, 'SIMID:Player:adStopped', { }, SIMIDErrors.adInternalError, errMessage);
     });
 
     test('test logging', () => {
@@ -102,6 +138,15 @@ describe('test simid client', () => {
         expect(simidClient.onResize).toHaveBeenCalledWith({ videoDimensions, creativeDimensions, fullscreen });
     });
 
+    test('test resize reject', async () => {
+        const state = newStartedTestState();
+        const { player, simidClient, playerWindow, adWindow } = state;
+
+        const errMessage = 'resize test error';
+        simidClient.onResize = () => { throw new Error(errMessage) };
+        testPlayerReject(state, 'SIMID:Player:resize', { }, SIMIDErrors.adInternalError, errMessage);
+    });
+
     test('test requestResize', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
@@ -124,6 +169,15 @@ describe('test simid client', () => {
         simidClient.onAdForegrounded = jest.fn();
         player.sendPlayerMessage('SIMID:Player:adForegrounded');
         expect(simidClient.onAdForegrounded).toHaveBeenCalled();
+    });
+
+    test('test backgrounded reject', async () => {
+        const state = newStartedTestState();
+        const { player, simidClient, playerWindow, adWindow } = state;
+
+        const errMessage = 'adBackgrounded test error';
+        simidClient.onAdBackgrounded = () => { throw new Error(errMessage) };
+        testPlayerReject(state, 'SIMID:Player:adBackgrounded', { }, SIMIDErrors.adInternalError, errMessage);
     });
 
     test('test player fatalError', () => {
@@ -371,6 +425,12 @@ function testPlayerRequest(state, type, args) {
     const { player, playerWindow } = state;
     const requestMsg = player.sendPlayerMessage(type, args);
     expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'resolve', args: {messageId: requestMsg.messageId, value: undefined}}));
+}
+
+function testPlayerReject(state, type, args, errorCode, errMessage) {
+    const { player, playerWindow } = state;
+    const requestMsg = player.sendPlayerMessage(type, args);
+    expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'reject', args: {messageId: requestMsg.messageId, value: { errorCode, message: errMessage }}}));
 }
 
 async function testClientRequest(state, type, expectedArgs, requestAction, requestResult) {
