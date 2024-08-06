@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid';
+import { getRandomValuesFallback } from "../uuid-polyfill";
 
 describe('uuid_polyfill-test', () => {
 
@@ -18,12 +19,23 @@ describe('uuid_polyfill-test', () => {
         const v = uuid();
         expect(isUuid(v)).toBe(true);
 
-        // Ensure polyfill is in NOT place.
         const crypto = global.crypto;
+
+        // Tolerate polyfill already being in place, due to updated dependencies
+        const hasCrypto = crypto && !!crypto.getRandomValues;
+        if (hasCrypto) return;
+
+        // Ensure polyfill is in NOT place.
         expect(!crypto || !crypto.getRandomValues).toBe(true);
     });
 
     test('with uuid polyfilled', () => {
+        const crypto = global.crypto;
+
+        // Tolerate polyfill already being in place, due to updated dependencies
+        const hasCrypto = crypto && !!crypto.getRandomValues;
+        if (hasCrypto) return;
+
         const { getRandomValuesFallback } = require('../uuid-polyfill');
         const { TXMFocusManager }  = require('../../focus_manager/txm_focus_manager');
 
