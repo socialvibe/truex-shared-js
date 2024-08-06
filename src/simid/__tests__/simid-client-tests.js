@@ -1,4 +1,4 @@
-import { SIMIDClient, SIMIDDimensions, SIMIDMessage } from '../simid-client';
+import { SIMIDClient, SIMIDDimensions, SIMIDMessage, SIMIDErrors } from '../simid-client';
 import { re } from "@babel/core/lib/vendor/import-meta-resolve";
 
 describe('test simid client', () => {
@@ -178,7 +178,8 @@ describe('test simid client', () => {
         await testClientRequest(state, 'SIMID:Creative:reportTracking', requestArgs,
             () => simidClient.reportTracking(requestArgs.trackingUrls), undefined);
         await testClientReject(state, 'SIMID:Creative:reportTracking', requestArgs,
-            () => simidClient.reportTracking(requestArgs.trackingUrls), 1200, 'tracking rejected');
+            () => simidClient.reportTracking(requestArgs.trackingUrls),
+            SIMIDErrors.unspecifiedPlayerError, 'tracking rejected');
     });
 
     test('test requestChangeAdDuration', async () => {
@@ -190,13 +191,15 @@ describe('test simid client', () => {
 
         simidClient._playerConfig = { variableDurationAllowed: false };
         await testClientReject(state, undefined, undefined,
-            () => simidClient.requestChangeAdDuration(duration), 1100, 'requestChangeAdDuration request not allowed when variableDurationAllowed is false');
+            () => simidClient.requestChangeAdDuration(duration),
+            SIMIDErrors.unspecifiedClientError, 'requestChangeAdDuration request not allowed when variableDurationAllowed is false');
 
         simidClient._playerConfig = { variableDurationAllowed: true };
         await testClientRequest(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
             () => simidClient.requestChangeAdDuration(duration), undefined);
         await testClientReject(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
-            () => simidClient.requestChangeAdDuration(duration), 1200, 'duration change rejected');
+            () => simidClient.requestChangeAdDuration(duration),
+            SIMIDErrors.unspecifiedPlayerError, 'duration change rejected');
     });
 
     test('test requestChangeVolume', async () => {
@@ -211,7 +214,8 @@ describe('test simid client', () => {
         await testClientRequest(state, 'SIMID:Creative:requestChangeVolume', requestArgs,
             () => simidClient.requestChangeVolume(requestArgs), undefined);
         await testClientReject(state, 'SIMID:Creative:requestChangeVolume', requestArgs,
-            () => simidClient.requestChangeVolume(requestArgs), 1200, 'volume change rejected');
+            () => simidClient.requestChangeVolume(requestArgs),
+            SIMIDErrors.unspecifiedPlayerError, 'volume change rejected');
     });
 
     test('test requestFullscreen', async () => {
@@ -220,14 +224,14 @@ describe('test simid client', () => {
 
         simidClient._playerConfig = { fullscreenAllowed: false };
         await testClientReject(state, undefined, undefined,
-            () => simidClient.requestFullscreen(), 1100, 'requestFullscreen request not allowed when fullscreenAllowed is false');
+            () => simidClient.requestFullscreen(), SIMIDErrors.unspecifiedClientError, 'requestFullscreen request not allowed when fullscreenAllowed is false');
 
         simidClient._playerConfig = { fullscreenAllowed: true };
         await testClientRequest(state, 'SIMID:Creative:requestFullscreen', undefined,
             () => simidClient.requestFullscreen(), undefined);
 
         await testClientReject(state, 'SIMID:Creative:requestFullscreen', undefined,
-            () => simidClient.requestFullscreen(), 1200, 'requestFullscreen rejected');
+            () => simidClient.requestFullscreen(), SIMIDErrors.unspecifiedPlayerError, 'requestFullscreen rejected');
     });
 
     test('test requestExitFullscreen', async () => {
@@ -236,14 +240,14 @@ describe('test simid client', () => {
 
         simidClient._playerConfig = { fullscreenAllowed: false };
         await testClientReject(state, undefined, undefined,
-            () => simidClient.requestExitFullscreen(), 1100, 'requestExitFullscreen request not allowed when fullscreenAllowed is false');
+            () => simidClient.requestExitFullscreen(), SIMIDErrors.unspecifiedClientError, 'requestExitFullscreen request not allowed when fullscreenAllowed is false');
 
         simidClient._playerConfig = { fullscreenAllowed: true };
         await testClientRequest(state, 'SIMID:Creative:requestExitFullscreen', undefined,
             () => simidClient.requestExitFullscreen(), undefined);
 
         await testClientReject(state, 'SIMID:Creative:requestExitFullscreen', undefined,
-            () => simidClient.requestExitFullscreen(), 1200, 'requestExitFullscreen rejected');
+            () => simidClient.requestExitFullscreen(), SIMIDErrors.unspecifiedPlayerError, 'requestExitFullscreen rejected');
     });
 
     test('test clickThru', async () => {
@@ -267,7 +271,7 @@ describe('test simid client', () => {
             () => simidClient.clickThru(callArgs), undefined);
 
         await testClientReject(state, 'SIMID:Creative:clickThru', requestArgs,
-            () => simidClient.clickThru(callArgs), 1200, 'clickThru rejected');
+            () => simidClient.clickThru(callArgs), SIMIDErrors.unspecifiedPlayerError, 'clickThru rejected');
     });
 
     test('test requestNavigation', async () => {
@@ -281,7 +285,63 @@ describe('test simid client', () => {
             () => simidClient.requestNavigation(uri), undefined);
 
         await testClientReject(state, 'SIMID:Creative:requestNavigation', requestArgs,
-            () => simidClient.requestNavigation(uri), 1200, 'requestNavigation rejected');
+            () => simidClient.requestNavigation(uri), SIMIDErrors.unspecifiedPlayerError, 'requestNavigation rejected');
+    });
+
+    test('test requestPause', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        simidClient._playerConfig = { variableDurationAllowed: false };
+        await testClientReject(state, undefined, undefined,
+            () => simidClient.requestPause(),
+            SIMIDErrors.unspecifiedClientError, 'requestPause request not allowed when variableDurationAllowed is false');
+
+        simidClient._playerConfig = { variableDurationAllowed: true };
+        await testClientRequest(state, 'SIMID:Creative:requestPause', undefined,
+            () => simidClient.requestPause(), undefined);
+        await testClientReject(state, 'SIMID:Creative:requestPause', undefined,
+            () => simidClient.requestPause(),
+            SIMIDErrors.unspecifiedPlayerError, 'requestPause rejected');
+    });
+
+    test('test requestPlay', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        simidClient._playerConfig = { variableDurationAllowed: false };
+        await testClientReject(state, undefined, undefined,
+            () => simidClient.requestPlay(),
+            SIMIDErrors.unspecifiedClientError, 'requestPlay request not allowed when variableDurationAllowed is false');
+
+        simidClient._playerConfig = { variableDurationAllowed: true };
+        await testClientRequest(state, 'SIMID:Creative:requestPlay', undefined,
+            () => simidClient.requestPlay(), undefined);
+        await testClientReject(state, 'SIMID:Creative:requestPlay', undefined,
+            () => simidClient.requestPlay(),
+            SIMIDErrors.unspecifiedPlayerError, 'requestPlay rejected');
+    });
+
+    test('test requestSkip', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        await testClientRequest(state, 'SIMID:Creative:requestSkip', undefined,
+            () => simidClient.requestSkip(), undefined);
+        await testClientReject(state, 'SIMID:Creative:requestSkip', undefined,
+            () => simidClient.requestSkip(),
+            SIMIDErrors.unspecifiedPlayerError, 'requestSkip rejected');
+    });
+
+    test('test requestStop', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        await testClientRequest(state, 'SIMID:Creative:requestStop', undefined,
+            () => simidClient.requestStop(), undefined);
+        await testClientReject(state, 'SIMID:Creative:requestStop', undefined,
+            () => simidClient.requestStop(),
+            SIMIDErrors.unspecifiedPlayerError, 'requestStop rejected');
     });
 
     test('test media events', () => {

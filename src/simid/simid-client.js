@@ -97,7 +97,7 @@ export class SIMIDClient {
     requestChangeAdDuration(duration) {
         const variableDurationAllowed = this._playerConfig?.variableDurationAllowed;
         if (!variableDurationAllowed) {
-            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedError,
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestChangeAdDuration request not allowed when variableDurationAllowed is false'));
         }
         return this._sendClientRequest('SIMID:Creative:requestChangeAdDuration', { duration });
@@ -118,7 +118,7 @@ export class SIMIDClient {
     requestFullscreen() {
         const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
         if (!fullscreenAllowed) {
-            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedError,
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestFullscreen request not allowed when fullscreenAllowed is false'));
         }
         return this._sendClientRequest('SIMID:Creative:requestFullscreen');
@@ -130,7 +130,7 @@ export class SIMIDClient {
     requestExitFullscreen() {
         const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
         if (!fullscreenAllowed) {
-            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedError,
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestExitFullscreen request not allowed when fullscreenAllowed is false'));
         }
         return this._sendClientRequest('SIMID:Creative:requestExitFullscreen');
@@ -149,7 +149,10 @@ export class SIMIDClient {
      */
     requestPause() {
         const canPause = this._playerConfig?.variableDurationAllowed;
-        if (!canPause) return Promise.reject();
+        if (!canPause) {
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
+                'requestPause request not allowed when variableDurationAllowed is false'));
+        }
         return this._sendClientRequest('SIMID:Creative:requestPause');
     }
 
@@ -158,7 +161,10 @@ export class SIMIDClient {
      */
     requestPlay() {
         const canPlay = this._playerConfig?.variableDurationAllowed;
-        if (!canPlay) return Promise.reject();
+        if (!canPlay) {
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
+                'requestPlay request not allowed when variableDurationAllowed is false'));
+        }
         return this._sendClientRequest('SIMID:Creative:requestPlay');
     }
 
@@ -286,7 +292,7 @@ export class SIMIDClient {
         const promise = new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 const timeoutMsg = "message response timeout";
-                this._rejectClientMessage(message.id, SIMIDErrors.unspecifiedError, timeoutMsg);
+                this._rejectClientMessage(message.id, SIMIDErrors.unspecifiedClientError, timeoutMsg);
             }, 5000);
 
             this._pendingClientRequests[message.messageId] = { message, resolve, reject, timeout };
@@ -495,8 +501,9 @@ export class SIMIDClient {
 }
 
 export const SIMIDErrors = {
-    unspecifiedError: 1100,
-    adInternalError: 1108
+    unspecifiedClientError: 1100,
+    adInternalError: 1108,
+    unspecifiedPlayerError: 1200,
 }
 
 export class SIMIDMessage {
