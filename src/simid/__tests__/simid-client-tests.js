@@ -1,4 +1,5 @@
 import { SIMIDClient, SIMIDDimensions, SIMIDMessage } from '../simid-client';
+import { re } from "@babel/core/lib/vendor/import-meta-resolve";
 
 describe('test simid client', () => {
 
@@ -101,6 +102,18 @@ describe('test simid client', () => {
         expect(simidClient.onResize).toHaveBeenCalledWith({ videoDimensions, creativeDimensions, fullscreen });
     });
 
+    test('test requestResize', () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        const resizeArgs = {
+            mediaDimensions: {x: 1, y: 2, width: 3, height: 4},
+            creativeDimensions: {x: 5, y: 6, width: 7, height: 8}
+        };
+
+        testClientRequest(state, 'SIMID:Creative:requestResize', resizeArgs, () => simidClient.requestResize(resizeArgs), undefined);
+    });
+
     test('test background/foreground', () => {
         const { player, simidClient } = newStartedTestState();
 
@@ -133,6 +146,25 @@ describe('test simid client', () => {
         expect(simidClient.isActive).toBe(false);
     });
 
+    test('test getMediaState', () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        const result = {
+            currentSrc: 'https://media.truex.com/some-video.mp4',
+            currentTime: 13,
+            duration: 35,
+            ended: false,
+            muted: false,
+            paused: true,
+            volume: 0.5,
+            fullscreen: false
+        };
+
+        testClientRequest(state, 'SIMID:Creative:getMediaState', undefined, () => simidClient.getMediaState(), result);
+    });
+
+
     test('test media events', () => {
         const { player, simidClient, playerWindow } = newStartedTestState();;
 
@@ -160,6 +192,50 @@ function testPlayerRequest(state, type, args) {
     const { player, playerWindow } = state;
     const requestMsg = player.sendPlayerMessage(type, args);
     expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'resolve', args: {messageId: requestMsg.messageId, value: undefined}}));
+}
+
+async function testClientRequest(state, type, expectedArgs, requestAction, requestResult) {
+    const { player, simidClient, playerWindow, adWindow } = state;
+    playerWindow.lastMessage = null;
+    adWindow.lastMessage = null;
+
+    const requestPromise = requestAction();
+
+    const clientMsg = playerWindow.lastMessage;
+    expect(clientMsg).toBeDefined();
+    expect(clientMsg.type).toEqual(type);
+    expect(clientMsg.args).toEqual(expectedArgs);
+
+    player.resolveClientRequest(clientMsg, requestResult);
+
+    const requestResponse = await requestPromise;
+
+    const resolveMsg = adWindow.lastMessage;
+    expect(resolveMsg).toBeDefined();
+    expect(resolveMsg.type).toEqual('resolve');
+    expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, value: requestResult });
+}
+
+async function testClientReject(state, type, expectedArgs, requestAction, errorCode, errMessage) {
+    const { player, simidClient, playerWindow, adWindow } = state;
+    playerWindow.lastMessage = null;
+    adWindow.lastMessage = null;
+
+    const requestPromise = requestAction();
+
+    const clientMsg = playerWindow.lastMessage;
+    expect(clientMsg).toBeDefined();
+    expect(clientMsg.type).toEqual(type);
+    expect(clientMsg.args).toEqual(expectedArgs);
+
+    player.rejectClientRequest(clientMsg, errorCode, errMessage);
+
+    const requestResponse = await requestPromise;
+
+    const resolveMsg = adWindow.lastMessage;
+    expect(resolveMsg).toBeDefined();
+    expect(resolveMsg.type).toEqual('reject');
+    expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, errorCode, message: errMessage });
 }
 
 // Stub to fake window postMessage processing without requiring real DOM/iframe windows

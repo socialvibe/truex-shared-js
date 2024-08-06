@@ -103,7 +103,7 @@ export class SIMIDClient {
      * @param {boolean} muted
      * @return {Promise<unknown>}
      */
-    requestChangeVolume(volume, muted) {
+    requestChangeVolume({ volume, muted }) {
         return this._sendClientRequest('SIMID:Creative:requestChangeVolume', {volume, muted});
     }
 
@@ -156,8 +156,8 @@ export class SIMIDClient {
      * @param {{x, y, width, height }} creativeDimensions
      * @return {Promise<unknown>}
      */
-    requestResize(mediaDimensions, creativeDimensions) {
-        return this._sendClientRequest('SIMID:Creative:requestExitFullscreen', { mediaDimensions, creativeDimensions });
+    requestResize({ mediaDimensions, creativeDimensions }) {
+        return this._sendClientRequest('SIMID:Creative:requestResize', { mediaDimensions, creativeDimensions });
     }
 
     /**
