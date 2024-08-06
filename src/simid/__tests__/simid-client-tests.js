@@ -195,6 +195,21 @@ describe('test simid client', () => {
             () => simidClient.requestChangeAdDuration(requestArgs.duration), 1100, 'duration change rejected');
     });
 
+    test('test requestChangeVolume', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        const requestArgs = {
+            volume: 0.8,
+            muted: true
+        };
+
+        await testClientRequest(state, 'SIMID:Creative:requestChangeVolume', requestArgs,
+            () => simidClient.requestChangeVolume(requestArgs), undefined);
+        await testClientReject(state, requestArgs,
+            () => simidClient.requestChangeVolume(requestArgs), 1100, 'volume change rejected');
+    });
+
     test('test media events', () => {
         const { player, simidClient, playerWindow } = newStartedTestState();;
 
