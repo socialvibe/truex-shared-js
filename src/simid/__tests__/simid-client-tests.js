@@ -146,7 +146,7 @@ describe('test simid client', () => {
         expect(simidClient.isActive).toBe(false);
     });
 
-    test('test getMediaState', () => {
+    test('test getMediaState', async () => {
         const state = newStartedTestState();
         const { simidClient } = state;
 
@@ -161,9 +161,23 @@ describe('test simid client', () => {
             fullscreen: false
         };
 
-        testClientRequest(state, 'SIMID:Creative:getMediaState', undefined, () => simidClient.getMediaState(), result);
+        await testClientRequest(state, 'SIMID:Creative:getMediaState', undefined, () => simidClient.getMediaState(), result);
     });
 
+    test('test reportTracking', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        const requestArgs = {
+            trackingUrls: [
+                "https://measure.truex.com/tracking/1.gif",
+                "https://measure.truex.com/tracking/2.gif",
+            ]
+        };
+
+        await testClientRequest(state, 'SIMID:Creative:reportTracking', requestArgs, () => simidClient.reportTracking(requestArgs.trackingUrls), undefined);
+        await testClientReject(state, requestArgs, () => simidClient.reportTracking(requestArgs.trackingUrls), 1100, 'tracking rejected');
+    });
 
     test('test media events', () => {
         const { player, simidClient, playerWindow } = newStartedTestState();;
@@ -208,7 +222,7 @@ async function testClientRequest(state, type, expectedArgs, requestAction, reque
 
     player.resolveClientRequest(clientMsg, requestResult);
 
-    const requestResponse = await requestPromise;
+    await expect(requestPromise).resolves.toEqual(requestResult);
 
     const resolveMsg = adWindow.lastMessage;
     expect(resolveMsg).toBeDefined();
@@ -216,7 +230,7 @@ async function testClientRequest(state, type, expectedArgs, requestAction, reque
     expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, value: requestResult });
 }
 
-async function testClientReject(state, type, expectedArgs, requestAction, errorCode, errMessage) {
+async function testClientReject(state, expectedArgs, requestAction, errorCode, errMessage) {
     const { player, simidClient, playerWindow, adWindow } = state;
     playerWindow.lastMessage = null;
     adWindow.lastMessage = null;
@@ -224,18 +238,14 @@ async function testClientReject(state, type, expectedArgs, requestAction, errorC
     const requestPromise = requestAction();
 
     const clientMsg = playerWindow.lastMessage;
-    expect(clientMsg).toBeDefined();
-    expect(clientMsg.type).toEqual(type);
-    expect(clientMsg.args).toEqual(expectedArgs);
-
     player.rejectClientRequest(clientMsg, errorCode, errMessage);
 
-    const requestResponse = await requestPromise;
+    await expect(requestPromise).rejects.toThrowError({ errorCode, message: errMessage, clientRequest: clientMsg });
 
     const resolveMsg = adWindow.lastMessage;
     expect(resolveMsg).toBeDefined();
     expect(resolveMsg.type).toEqual('reject');
-    expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, errorCode, message: errMessage });
+    expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, value: { errorCode, message: errMessage } });
 }
 
 // Stub to fake window postMessage processing without requiring real DOM/iframe windows
