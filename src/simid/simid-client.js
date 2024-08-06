@@ -15,7 +15,7 @@ export class SIMIDClient {
 
     /**
      * Will listen to SIMID player messages posted to the specified window, will post SIMID creative messages to
-     * the window's owner.
+     * the window's parent.
      * @param {Window} contentWindow
      */
     constructor(contentWindow = window) {
