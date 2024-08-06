@@ -73,9 +73,9 @@ export class SIMIDClient {
             });
     }
 
-    clickThru(x, y, url) {
+    clickThru({ x, y, uri }) {
         const playerHandles = this._playerConfig?.navigationSupport == 'playerHandles';
-        return this._sendClientRequest('SIMID:Creative:clickThru', {x, y, playerHandles, url});
+        return this._sendClientRequest('SIMID:Creative:clickThru', {x, y, playerHandles, uri });
     }
 
     log(message) {

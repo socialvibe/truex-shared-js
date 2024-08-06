@@ -242,6 +242,30 @@ describe('test simid client', () => {
             () => simidClient.requestExitFullscreen(), 1200, 'requestExitFullscreen rejected');
     });
 
+    test('test clickThru', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        simidClient._playerConfig = { navigationSupport: 'adHandles' };
+        const callArgs = {
+            x: 1, y: 2, uri: 'some uri'
+        }
+        const requestArgs = {
+            ...callArgs,
+            playerHandles: false
+        }
+        await testClientRequest(state, 'SIMID:Creative:clickThru', requestArgs,
+            () => simidClient.clickThru(callArgs), undefined);
+
+        simidClient._playerConfig = { navigationSupport: 'playerHandles' };
+        requestArgs.playerHandles = true;
+        await testClientRequest(state, 'SIMID:Creative:clickThru', requestArgs,
+            () => simidClient.clickThru(callArgs), undefined);
+
+        await testClientReject(state, 'SIMID:Creative:clickThru', requestArgs,
+            () => simidClient.clickThru(callArgs), 1200, 'clickThru rejected');
+    });
+
     test('test media events', () => {
         const { player, simidClient, playerWindow } = newStartedTestState();;
 
