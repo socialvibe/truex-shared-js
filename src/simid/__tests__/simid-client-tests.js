@@ -177,8 +177,8 @@ describe('test simid client', () => {
 
         await testClientRequest(state, 'SIMID:Creative:reportTracking', requestArgs,
             () => simidClient.reportTracking(requestArgs.trackingUrls), undefined);
-        await testClientReject(state, requestArgs,
-            () => simidClient.reportTracking(requestArgs.trackingUrls), 1100, 'tracking rejected');
+        await testClientReject(state, 'SIMID:Creative:reportTracking', requestArgs,
+            () => simidClient.reportTracking(requestArgs.trackingUrls), 1200, 'tracking rejected');
     });
 
     test('test requestChangeAdDuration', async () => {
@@ -191,8 +191,8 @@ describe('test simid client', () => {
 
         await testClientRequest(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
             () => simidClient.requestChangeAdDuration(requestArgs.duration), undefined);
-        await testClientReject(state, requestArgs,
-            () => simidClient.requestChangeAdDuration(requestArgs.duration), 1100, 'duration change rejected');
+        await testClientReject(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
+            () => simidClient.requestChangeAdDuration(requestArgs.duration), 1200, 'duration change rejected');
     });
 
     test('test requestChangeVolume', async () => {
@@ -206,8 +206,40 @@ describe('test simid client', () => {
 
         await testClientRequest(state, 'SIMID:Creative:requestChangeVolume', requestArgs,
             () => simidClient.requestChangeVolume(requestArgs), undefined);
-        await testClientReject(state, requestArgs,
-            () => simidClient.requestChangeVolume(requestArgs), 1100, 'volume change rejected');
+        await testClientReject(state, 'SIMID:Creative:requestChangeVolume', requestArgs,
+            () => simidClient.requestChangeVolume(requestArgs), 1200, 'volume change rejected');
+    });
+
+    test('test requestFullscreen', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        simidClient._playerConfig = { fullscreenAllowed: false };
+        await testClientReject(state, undefined, undefined,
+            () => simidClient.requestFullscreen(), 1100, 'requestFullscreen request not allowed when fullscreenAllowed is false');
+
+        simidClient._playerConfig = { fullscreenAllowed: true };
+        await testClientRequest(state, 'SIMID:Creative:requestFullscreen', undefined,
+            () => simidClient.requestFullscreen(), undefined);
+
+        await testClientReject(state, 'SIMID:Creative:requestFullscreen', undefined,
+            () => simidClient.requestFullscreen(), 1200, 'requestFullscreen rejected');
+    });
+
+    test('test requestExitFullscreen', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        simidClient._playerConfig = { fullscreenAllowed: false };
+        await testClientReject(state, undefined, undefined,
+            () => simidClient.requestExitFullscreen(), 1100, 'requestExitFullscreen request not allowed when fullscreenAllowed is false');
+
+        simidClient._playerConfig = { fullscreenAllowed: true };
+        await testClientRequest(state, 'SIMID:Creative:requestExitFullscreen', undefined,
+            () => simidClient.requestExitFullscreen(), undefined);
+
+        await testClientReject(state, 'SIMID:Creative:requestExitFullscreen', undefined,
+            () => simidClient.requestExitFullscreen(), 1200, 'requestExitFullscreen rejected');
     });
 
     test('test media events', () => {
@@ -261,7 +293,7 @@ async function testClientRequest(state, type, expectedArgs, requestAction, reque
     expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, value: requestResult });
 }
 
-async function testClientReject(state, expectedArgs, requestAction, errorCode, errMessage) {
+async function testClientReject(state, type, expectedArgs, requestAction, errorCode, errMessage) {
     const { player, simidClient, playerWindow, adWindow } = state;
     playerWindow.lastMessage = null;
     adWindow.lastMessage = null;
@@ -269,14 +301,24 @@ async function testClientReject(state, expectedArgs, requestAction, errorCode, e
     const requestPromise = requestAction();
 
     const clientMsg = playerWindow.lastMessage;
-    player.rejectClientRequest(clientMsg, errorCode, errMessage);
+
+    if (!type) {
+        // Expect no message to have been sent.
+        // Instead the client should have rejected locally.
+        expect(clientMsg).toBeNull();
+
+    } else {
+        player.rejectClientRequest(clientMsg, errorCode, errMessage);
+    }
 
     await expect(requestPromise).rejects.toThrowError({ errorCode, message: errMessage, clientRequest: clientMsg });
 
-    const resolveMsg = adWindow.lastMessage;
-    expect(resolveMsg).toBeDefined();
-    expect(resolveMsg.type).toEqual('reject');
-    expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, value: { errorCode, message: errMessage } });
+    if (type) {
+        const resolveMsg = adWindow.lastMessage;
+        expect(resolveMsg).toBeDefined();
+        expect(resolveMsg.type).toEqual('reject');
+        expect(resolveMsg.args).toEqual({messageId: clientMsg.messageId, value: {errorCode, message: errMessage}});
+    }
 }
 
 // Stub to fake window postMessage processing without requiring real DOM/iframe windows

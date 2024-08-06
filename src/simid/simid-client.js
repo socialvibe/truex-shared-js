@@ -112,7 +112,10 @@ export class SIMIDClient {
      */
     requestFullscreen() {
         const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
-        if (!fullscreenAllowed) return Promise.reject();
+        if (!fullscreenAllowed) {
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedError,
+                'requestFullscreen request not allowed when fullscreenAllowed is false'));
+        }
         return this._sendClientRequest('SIMID:Creative:requestFullscreen');
     }
 
@@ -121,7 +124,10 @@ export class SIMIDClient {
      */
     requestExitFullscreen() {
         const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
-        if (!fullscreenAllowed) return Promise.reject();
+        if (!fullscreenAllowed) {
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedError,
+                'requestExitFullscreen request not allowed when fullscreenAllowed is false'));
+        }
         return this._sendClientRequest('SIMID:Creative:requestExitFullscreen');
     }
 
@@ -283,6 +289,12 @@ export class SIMIDClient {
             this._playerWindow.postMessage(message, '*');
         });
         return promise;
+    }
+
+    _newClientError(errorCode, message) {
+        const error = new Error(message);
+        error.errorCode = errorCode;
+        return error;
     }
 
     _createMessage(type, args) {
