@@ -125,6 +125,55 @@ export class SIMIDClient {
         return this._sendClientRequest('SIMID:Creative:requestExitFullscreen');
     }
 
+    /**
+     * @param {string} uri
+     * @return {Promise<unknown>}
+     */
+    requestNavigation(uri) {
+        return this._sendClientRequest('SIMID:Creative:requestNavigation', { uri });
+    }
+
+    /**
+     * @return {Promise<unknown>}
+     */
+    requestPause() {
+        const canPause = this._playerConfig?.variableDurationAllowed;
+        if (!canPause) return Promise.reject();
+        return this._sendClientRequest('SIMID:Creative:requestPause');
+    }
+
+    /**
+     * @return {Promise<unknown>}
+     */
+    requestPlay() {
+        const canPlay = this._playerConfig?.variableDurationAllowed;
+        if (!canPlay) return Promise.reject();
+        return this._sendClientRequest('SIMID:Creative:requestPlay');
+    }
+
+    /**
+     * @param {{x, y, width, height }} mediaDimensions
+     * @param {{x, y, width, height }} creativeDimensions
+     * @return {Promise<unknown>}
+     */
+    requestResize(mediaDimensions, creativeDimensions) {
+        return this._sendClientRequest('SIMID:Creative:requestExitFullscreen', { mediaDimensions, creativeDimensions });
+    }
+
+    /**
+     * @return {Promise<unknown>}
+     */
+    requestSkip() {
+        return this._sendClientRequest('SIMID:Creative:requestSkip');
+    }
+
+    /**
+     * @return {Promise<unknown>}
+     */
+    requestStop() {
+        return this._sendClientRequest('SIMID:Creative:requestStop');
+    }
+
     _onPlayerMessage(event) {
         // Ignore non-SIMID messages, or those for other clients.
         if (!this.isActive) return;
@@ -276,7 +325,7 @@ export class SIMIDClient {
         }
     }
 
-    _playerResponse(requestId, requestType, clientAction) {
+    _playerResponse(requestId, requestType, clientAction, postResponseAction) {
         let response;
         try {
             response = clientAction();
@@ -284,6 +333,7 @@ export class SIMIDClient {
                 return response
                     .then(result => {
                         this._resolvePlayerRequest(requestId, result);
+                        if (postResponseAction) postResponseAction();
                         return result;
                     })
                     .catch(err => {
@@ -291,6 +341,7 @@ export class SIMIDClient {
                     });
             } else {
                 this._resolvePlayerRequest(requestId, response);
+                if (postResponseAction) postResponseAction();
             }
         } catch (error) {
             return this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, error);
@@ -340,14 +391,12 @@ export class SIMIDClient {
 
     _adSkipped(requestId, requestType) {
         // Stop only after the final message is sent.
-        this._playerResponse(requestId, requestType, () => this.onAdSkipped());
-        this.stop();
+        this._playerResponse(requestId, requestType, () => this.onAdSkipped(), () => this.stop());
     }
 
     _adStopped(requestId, requestType) {
         // Stop only after the final message is sent.
-        this._playerResponse(requestId, requestType, () => this.onAdStopped());
-        this.stop();
+        this._playerResponse(requestId, requestType, () => this.onAdStopped(), () => this.stop());
     }
 
     _adBackgrounded(requestId, requestType) {
