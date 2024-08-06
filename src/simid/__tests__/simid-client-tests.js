@@ -185,14 +185,18 @@ describe('test simid client', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
 
-        const requestArgs = {
-            duration: 123
-        };
+        const duration = 123;
+        const requestArgs = { duration };
 
+        simidClient._playerConfig = { variableDurationAllowed: false };
+        await testClientReject(state, undefined, undefined,
+            () => simidClient.requestChangeAdDuration(duration), 1100, 'requestChangeAdDuration request not allowed when variableDurationAllowed is false');
+
+        simidClient._playerConfig = { variableDurationAllowed: true };
         await testClientRequest(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
-            () => simidClient.requestChangeAdDuration(requestArgs.duration), undefined);
+            () => simidClient.requestChangeAdDuration(duration), undefined);
         await testClientReject(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
-            () => simidClient.requestChangeAdDuration(requestArgs.duration), 1200, 'duration change rejected');
+            () => simidClient.requestChangeAdDuration(duration), 1200, 'duration change rejected');
     });
 
     test('test requestChangeVolume', async () => {
@@ -264,6 +268,20 @@ describe('test simid client', () => {
 
         await testClientReject(state, 'SIMID:Creative:clickThru', requestArgs,
             () => simidClient.clickThru(callArgs), 1200, 'clickThru rejected');
+    });
+
+    test('test requestNavigation', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+
+        const uri = 'some uri';
+        const requestArgs = { uri };
+
+        await testClientRequest(state, 'SIMID:Creative:requestNavigation', requestArgs,
+            () => simidClient.requestNavigation(uri), undefined);
+
+        await testClientReject(state, 'SIMID:Creative:requestNavigation', requestArgs,
+            () => simidClient.requestNavigation(uri), 1200, 'requestNavigation rejected');
     });
 
     test('test media events', () => {

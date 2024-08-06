@@ -95,6 +95,11 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestChangeAdDuration(duration) {
+        const variableDurationAllowed = this._playerConfig?.variableDurationAllowed;
+        if (!variableDurationAllowed) {
+            return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedError,
+                'requestChangeAdDuration request not allowed when variableDurationAllowed is false'));
+        }
         return this._sendClientRequest('SIMID:Creative:requestChangeAdDuration', { duration });
     }
 
