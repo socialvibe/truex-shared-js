@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.11.0
+* [PI-2897](https://infillion.atlassian.net/browse/PI-2897): Create SIMID Core Message component
+
 ## v1.10.3
 * [PI-2658](https://infillion.atlassian.net/browse/PI-2658): Crunchyroll Desktop placement not including a network user id
   * add setQueryArgs helper
