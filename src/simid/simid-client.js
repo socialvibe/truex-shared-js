@@ -345,7 +345,7 @@ export class SIMIDClient {
         const isResolveMsg = msg.type == 'resolve';
         if (isLogMsg || isErrMsg || isMediaEvent || isRejectMsg || isResolveMsg) return;
 
-        let logMsg = `SIMID ${prefix} ${msg.messageId} ${msg.type}`;
+        let logMsg = `SIMID ${prefix}: ${msg.messageId} ${msg.type}`;
         if (msg.args) logMsg += ': ' + JSON.stringify(msg.args);
         console.log(logMsg);
     }
