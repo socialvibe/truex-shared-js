@@ -202,9 +202,6 @@ export class SIMIDClient {
         if (!sessionId || isNaN(messageId) || !type) return;
         if (sessionId != this._sessionId) return;
 
-        const isLogMsg = type == 'SIMID:Player:log';
-        const isErrMsg = type == 'SIMID:Player:fatalError';
-
         this._logMessage('player message', data);
 
         // Handle responses first.
