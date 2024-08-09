@@ -21,7 +21,10 @@ export class SIMIDClient {
      */
     constructor(contentWindow = window) {
         this._contentWindow = contentWindow;
-        this._playerWindow = contentWindow.parent;
+
+        // Guard against self messaging
+        this._playerWindow = contentWindow === contentWindow.parent ? undefined : contentWindow.parent;
+
         this._pendingClientRequests = {};
         this._nextMessageId = 0;
         this._sessionId = undefined;
@@ -278,8 +281,12 @@ export class SIMIDClient {
     _sendClientMessage(type, args) {
         if (!this.isActive) return;
         const message = this._createMessage(type, args);
-        this._debugMessage('client message', message);
-        this._playerWindow.postMessage(message, '*');
+        if (this._playerWindow) {
+            this._debugMessage('client message', message);
+            this._playerWindow.postMessage(message, '*');
+        } else {
+            this._debugMessage('client message ignored', message);
+        }
     }
 
     /**
@@ -293,7 +300,14 @@ export class SIMIDClient {
         if (!this.isActive) return;
 
         const message = this._createMessage(type, args);
-        this._debugMessage('client request', message);
+
+        if (this._playerWindow) {
+            this._debugMessage('client request', message);
+            this._playerWindow.postMessage(message, '*');
+        } else {
+            this._debugMessage('client request ignored', message);
+            return;
+        }
 
         const promise = new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
