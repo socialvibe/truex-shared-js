@@ -202,7 +202,7 @@ export class SIMIDClient {
         if (!sessionId || isNaN(messageId) || !type) return;
         if (sessionId != this._sessionId) return;
 
-        this._logMessage('player message', data);
+        this._debugMessage('player message', data);
 
         // Handle responses first.
         switch (type) {
@@ -278,7 +278,7 @@ export class SIMIDClient {
     _sendClientMessage(type, args) {
         if (!this.isActive) return;
         const message = this._createMessage(type, args);
-        this._logMessage('client message', message);
+        this._debugMessage('client message', message);
         this._playerWindow.postMessage(message, '*');
     }
 
@@ -293,7 +293,7 @@ export class SIMIDClient {
         if (!this.isActive) return;
 
         const message = this._createMessage(type, args);
-        this._logMessage('client request', message);
+        this._debugMessage('client request', message);
 
         const promise = new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -320,7 +320,7 @@ export class SIMIDClient {
         return new SIMIDMessage(this._sessionId, messageId, type, args);
     }
 
-    _logMessage(prefix, msg) {
+    _debugMessage(prefix, msg) {
         if (!this.debug) return;
 
         // ignore messages that already log themselves, or else cause too much noise.
