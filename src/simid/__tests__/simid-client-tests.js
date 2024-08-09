@@ -116,6 +116,8 @@ describe('test simid client', () => {
     test('test logging', () => {
         const { player, simidClient, playerWindow } = newStartedTestState();
 
+        simidClient.debug = true; // also see how things log
+
         const playerLogMsg = 'test player log';
         simidClient.onPlayerLog = jest.fn();
         player.sendPlayerMessage('SIMID:Player:log', {message: playerLogMsg});
@@ -182,6 +184,8 @@ describe('test simid client', () => {
 
     test('test player fatalError', () => {
         const { player, simidClient } = newStartedTestState();
+
+        simidClient.debug = true; // also see how things log
 
         const fatalError = { errorCode: 999, message: 'test player error' };
         simidClient.onFatalError = jest.fn();
@@ -390,6 +394,8 @@ describe('test simid client', () => {
     test('test requestStop', async () => {
         const state = newStartedTestState();
         const { simidClient } = state;
+
+        simidClient.debug = true; // also see how things log
 
         await testClientRequest(state, 'SIMID:Creative:requestStop', undefined,
             () => simidClient.requestStop(), undefined);

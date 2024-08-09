@@ -12,6 +12,7 @@ import { v4 as uuid } from 'uuid';
  */
 export class SIMIDClient {
     isActive;
+    debug;
 
     /**
      * Will listen to SIMID player messages posted to the specified window, will post SIMID creative messages to
@@ -25,6 +26,7 @@ export class SIMIDClient {
         this._nextMessageId = 0;
         this._sessionId = undefined;
         this.isActive = false;
+        this.debug = false;
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
     }
 
@@ -200,6 +202,8 @@ export class SIMIDClient {
         if (!sessionId || isNaN(messageId) || !type) return;
         if (sessionId != this._sessionId) return;
 
+        this._debugMessage('player message', data);
+
         // Handle responses first.
         switch (type) {
             case 'resolve':
@@ -274,6 +278,7 @@ export class SIMIDClient {
     _sendClientMessage(type, args) {
         if (!this.isActive) return;
         const message = this._createMessage(type, args);
+        this._debugMessage('client message', message);
         this._playerWindow.postMessage(message, '*');
     }
 
@@ -288,6 +293,7 @@ export class SIMIDClient {
         if (!this.isActive) return;
 
         const message = this._createMessage(type, args);
+        this._debugMessage('client request', message);
 
         const promise = new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -312,6 +318,22 @@ export class SIMIDClient {
         const messageId = this._nextMessageId;
         this._nextMessageId += 1;
         return new SIMIDMessage(this._sessionId, messageId, type, args);
+    }
+
+    _debugMessage(prefix, msg) {
+        if (!this.debug) return;
+
+        // ignore messages that already log themselves, or else cause too much noise.
+        const isLogMsg = msg.type.endsWith(':log');
+        const isErrMsg = msg.type.endsWith(':fatalError');
+        const isMediaEvent = msg.type.startsWith('SIMID:Media:');
+        const isRejectMsg = msg.type == 'reject';
+        const isResolveMsg = msg.type == 'resolve';
+        if (isLogMsg || isErrMsg || isMediaEvent || isRejectMsg || isResolveMsg) return;
+
+        let logMsg = `SIMID ${prefix} ${msg.messageId} ${msg.type}`;
+        if (msg.args) logMsg += ': ' + JSON.stringify(msg.args);
+        console.log(logMsg);
     }
 
     _resolveClientMessage(messageId, value) {
