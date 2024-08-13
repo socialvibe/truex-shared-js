@@ -21,7 +21,10 @@ export class SIMIDClient {
      */
     constructor(contentWindow = window) {
         this._contentWindow = contentWindow;
-        this._playerWindow = contentWindow.parent;
+
+        // Guard against self messaging
+        this._playerWindow = contentWindow === contentWindow.parent ? undefined : contentWindow.parent;
+
         this._pendingClientRequests = {};
         this._nextMessageId = 0;
         this._sessionId = undefined;
@@ -196,13 +199,15 @@ export class SIMIDClient {
     _onPlayerMessage(event) {
         // Ignore non-SIMID messages, or those for other clients.
         if (!this.isActive) return;
-        const data = event.data;
-        if (!data) return;
-        const {sessionId, messageId, type, args} = data;
+        const eventData = event.data;
+        if (!eventData || typeof eventData != 'string') return;
+
+        const message = JSON.parse(eventData);
+        const {sessionId, messageId, type, args} = message;
         if (!sessionId || isNaN(messageId) || !type) return;
         if (sessionId != this._sessionId) return;
 
-        this._debugMessage('player message', data);
+        this._debugMessage('player message', message);
 
         // Handle responses first.
         switch (type) {
@@ -278,8 +283,7 @@ export class SIMIDClient {
     _sendClientMessage(type, args) {
         if (!this.isActive) return;
         const message = this._createMessage(type, args);
-        this._debugMessage('client message', message);
-        this._playerWindow.postMessage(message, '*');
+        this._postClientMessage('client message', message);
     }
 
     /**
@@ -293,7 +297,6 @@ export class SIMIDClient {
         if (!this.isActive) return;
 
         const message = this._createMessage(type, args);
-        this._debugMessage('client request', message);
 
         const promise = new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -303,9 +306,18 @@ export class SIMIDClient {
 
             this._pendingClientRequests[message.messageId] = { message, resolve, reject, timeout };
 
-            this._playerWindow.postMessage(message, '*');
+            this._postClientMessage('client request', message);
         });
         return promise;
+    }
+
+    _postClientMessage(prefix, message) {
+        if (this._playerWindow) {
+            this._debugMessage(prefix, message);
+            this._playerWindow.postMessage(JSON.stringify(message), '*');
+        } else {
+            this._debugMessage(prefix + ' ignored', message);
+        }
     }
 
     _newClientError(errorCode, message) {
@@ -331,7 +343,7 @@ export class SIMIDClient {
         const isResolveMsg = msg.type == 'resolve';
         if (isLogMsg || isErrMsg || isMediaEvent || isRejectMsg || isResolveMsg) return;
 
-        let logMsg = `SIMID ${prefix} ${msg.messageId} ${msg.type}`;
+        let logMsg = `SIMID ${prefix}: ${msg.messageId} ${msg.type}`;
         if (msg.args) logMsg += ': ' + JSON.stringify(msg.args);
         console.log(logMsg);
     }

@@ -500,16 +500,10 @@ class WindowStub {
        this.id = id;
     }
 
-    postMessage(msg, domain) {
-        const msgJson = JSON.stringify(msg);
-        const msgCopy = JSON.parse(msgJson);
-
-        // For debugging
-        //console.log(`${this.id}.postMessage: ${msg.messageId} ${msg.type}`);
-
-        this.lastMessage = msgCopy;
+    postMessage(msgJson, domain) {
+        this.lastMessage = JSON.parse(msgJson);
         if (!this.onPostMessage) return;
-        this.onPostMessage({data: msgCopy})
+        this.onPostMessage({data: msgJson})
     }
 
     addEventListener(type, listener) {
@@ -544,14 +538,16 @@ class PlayerStub {
         this.playerWindow.lastMessage = undefined;
         const msg = new SIMIDMessage(this.sessionId, this._nextMessageId, type, args);
         this._nextMessageId += 1;
-        this.adWindow.postMessage(msg, '*');
+        this.adWindow.postMessage(JSON.stringify(msg), '*');
         return msg;
     }
 
     onPostMessage(event) {
-        const data = event.data;
-        if (!data) return;
-        const {sessionId, messageId, type, args} = data;
+        const eventData = event.data;
+        if (!eventData || typeof eventData != 'string') return;
+
+        const message = JSON.parse(eventData);
+        const {sessionId, messageId, type, args} = message;
         if (!sessionId || isNaN(messageId) || !type) return;
 
         if (type == 'createSession') {
