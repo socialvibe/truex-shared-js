@@ -407,10 +407,22 @@ describe('test simid client', () => {
     test('test media events', () => {
         const { player, simidClient, playerWindow } = newStartedTestState();;
 
-        function testEvent(event, args) {
+        function testEvent(event, args = {}) {
             simidClient.onMediaEvent = jest.fn();
+
+            const eventListener = jest.fn();
+            simidClient.addEventListener(event, eventListener);
+
             player.sendPlayerMessage('SIMID:Media:' + event, args);
             expect(simidClient.onMediaEvent).toHaveBeenCalledWith(event, args);
+
+            const expectedEvent = {...args, type: event};
+            expect(eventListener).toHaveBeenCalledWith(event, expectedEvent);
+
+            // Verify event cleanup
+            expect(simidClient._eventListeners[event].find(eventListener)).toBeGreaterThanOrEqual(0);
+            simidClient.removeEventListener(event, eventListener);
+            expect(simidClient._eventListeners[event].find(eventListener)).toBe(-1);
         }
 
         testEvent('durationchange', {duration: 123});
@@ -427,10 +439,27 @@ describe('test simid client', () => {
     });
 });
 
-function testPlayerRequest(state, type, args) {
-    const { player, playerWindow } = state;
+function testPlayerRequest(state, type, args, supportsEventListener = true, expectedEventData = {}) {
+    const { player, playerWindow, simidClient } = state;
     const requestMsg = player.sendPlayerMessage(type, args);
+
+    const eventListener = supportsEventListener ? jest.fn() : undefined;
+    const eventType = simidClient._getEventType(type);
+    if (eventListener) {
+        simidClient.addEventListener(eventType, eventListener);
+    }
+
     expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'resolve', args: {messageId: requestMsg.messageId, value: undefined}}));
+
+    if (eventListener) {
+        const expectedEvent = {...expectedEventData, type: eventType};
+        expect(eventListener).toHaveBeenCalledWith(expectedEvent);
+
+        // Verify event cleanup
+        expect(simidClient._eventListeners[eventType].find(eventListener)).toBeGreaterThanOrEqual(0);
+        simidClient.removeEventListener(eventType, eventListener);
+        expect(simidClient._eventListeners[eventType].find(eventListener)).toBe(-1);
+    }
 }
 
 function testPlayerReject(state, type, args, errorCode, errMessage) {
