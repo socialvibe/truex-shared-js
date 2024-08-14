@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.11.2
+## v1.11.3
 * [PI-2897](https://infillion.atlassian.net/browse/PI-2897): Create SIMID Core Message component
 
 ## v1.10.3

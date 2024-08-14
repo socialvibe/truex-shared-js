@@ -31,6 +31,8 @@ export class SIMIDClient {
         this.isActive = false;
         this.debug = false;
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
+
+        this._eventListeners = {};
     }
 
     start() {
@@ -49,6 +51,7 @@ export class SIMIDClient {
         this.isActive = false;
         this._contentWindow.removeEventListener('message', this._onPlayerMessage);
         this._pendingClientRequests = {};
+        this._eventListeners = {};
     }
 
     /**
@@ -66,9 +69,11 @@ export class SIMIDClient {
     fatalError(errorCode, errorOrMessage) {
         const message = this.getErrorMessage(errorOrMessage);
         console.error(`SIMID fatal client error: ${errorCode} - ${message}`);
-        this._sendClientMessage('SIMID:Creative:fatalError', {errorCode, message});
+        const errorArgs = {errorCode, message};
+        this._sendClientMessage('SIMID:Creative:fatalError', errorArgs);
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
+        this._invokeEventListeners('fatalError', errorArgs);
     }
 
     getMediaState() {
@@ -419,17 +424,24 @@ export class SIMIDClient {
 
     _init(requestId, requestType, args) {
         this._playerConfig = new SIMIDPlayerConfig(args);
-        return this._playerResponse(requestId, requestType, () => this.onInit(this._playerConfig));
+        return this._playerResponse(requestId, requestType, () => {
+            this.onInit(this._playerConfig);
+            this._invokeEventListeners(requestType, this._playerConfig);
+        });
     }
 
     _startCreative(requestId, requestType) {
-        return this._playerResponse(requestId, requestType, () => this.onStartCreative());
+        return this._playerResponse(requestId, requestType, () => {
+            this.onStartCreative();
+            this._invokeEventListeners(requestType);
+        });
     }
 
     _playerLog(args) {
         const message = args?.message;
         if (!message) return;
         this.onPlayerLog(message);
+        this._invokeEventListeners('log', { message });
         return message;
     }
 
@@ -437,26 +449,38 @@ export class SIMIDClient {
         const videoDimensions = new SIMIDDimensions(args?.videoDimensions);
         const creativeDimensions = new SIMIDDimensions(args?.creativeDimensions);
         const fullscreen = !!args?.fullscreen;
-        this.onResize({ videoDimensions, creativeDimensions, fullscreen });
+        const resizeArgs = { videoDimensions, creativeDimensions, fullscreen };
+        this.onResize(resizeArgs);
+        this._invokeEventListeners('resize', resizeArgs);
     }
 
     _adSkipped(requestId, requestType) {
         // Stop only after the final message is sent.
-        this._playerResponse(requestId, requestType, () => this.onAdSkipped(), () => this.stop());
+        this._playerResponse(requestId, requestType, () => {
+            this.onAdSkipped();
+            this._invokeEventListeners(requestType);
+        }, () => this.stop());
     }
 
     _adStopped(requestId, requestType) {
         // Stop only after the final message is sent.
-        this._playerResponse(requestId, requestType, () => this.onAdStopped(), () => this.stop());
+        this._playerResponse(requestId, requestType, () => {
+            this.onAdStopped();
+            this._invokeEventListeners(requestType);
+        }, () => this.stop());
     }
 
     _adBackgrounded(requestId, requestType) {
-        return this._playerResponse(requestId, requestType, () => this.onAdBackgrounded());
+        return this._playerResponse(requestId, requestType, () => {
+            this.onAdBackgrounded()
+            this._invokeEventListeners(requestType);
+        });
     }
 
     _adForegrounded(requestId, requestType) {
         // No promise response is sent.
         this.onAdForegrounded();
+        this._invokeEventListeners(requestType);
     }
 
     _playerFatalError(args) {
@@ -465,12 +489,14 @@ export class SIMIDClient {
         console.error(`SIMID fatal player error: ${errorCode} - ${message}`);
         this.stop();
         this.onFatalError(errorCode, message); // in case any completion is needed
+        this._invokeEventListeners('fatalError', { errorCode, message });
     }
 
     _mediaEvent(messageId, type, args) {
         try {
-            const event = type.split(':')[2];
-            this.onMediaEvent(event, args);
+            const eventType = this._getEventType(type);
+            this.onMediaEvent(eventType, args);
+            this._invokeEventListeners(eventType, args);
         } catch (error) {
             const message = this.getErrorMessage(args?.message);
             console.error(`SIMID error for media event: ${messageId} - ${type}: ${message}`);
@@ -525,6 +551,49 @@ export class SIMIDClient {
     }
 
     onFatalError(errorCode, message) {
+    }
+
+    // Event listener helpers for convenience.
+
+    addEventListener(type, callback) {
+        if (!callback) return;
+        let eventCallbacks = this._eventListeners[type];
+        if (!eventCallbacks) {
+            eventCallbacks = [];
+            this._eventListeners[type] = eventCallbacks;
+
+        } else if (eventCallbacks.indexOf(callback) >= 0) {
+            return; // already present
+        }
+        eventCallbacks.push(callback);
+    }
+
+    removeEventListener(type, callback) {
+        if (!callback) return;
+        let eventCallbacks = this._eventListeners[type];
+        if (!eventCallbacks) return;
+
+        const foundAt = eventCallbacks.indexOf(callback);
+        if (foundAt < 0) return;
+
+        eventCallbacks.splice(foundAt, 1);
+    }
+
+    _invokeEventListeners(type, data) {
+        const eventType = this._getEventType(type);
+        const eventCallbacks = this._eventListeners[eventType];
+        if (!eventCallbacks || eventCallbacks.length <= 0) return;
+        if (!data) data = {};
+        const event = {...data, type: eventType};
+        eventCallbacks.forEach(callback => {
+            callback(event);
+        });
+    }
+
+    _getEventType(messageType) {
+        const typeParts = messageType.split(':');
+        const eventType = typeParts.length == 3 ? typeParts[2] : messageType;
+        return eventType;
     }
 }
 
