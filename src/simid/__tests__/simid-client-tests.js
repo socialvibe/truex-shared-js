@@ -407,7 +407,7 @@ describe('test simid client', () => {
     test('test media events', () => {
         const { player, simidClient, playerWindow } = newStartedTestState();;
 
-        function testEvent(event, args = {}) {
+        function testEvent(event, args) {
             simidClient.onMediaEvent = jest.fn();
 
             const eventListener = jest.fn();
@@ -416,7 +416,8 @@ describe('test simid client', () => {
             player.sendPlayerMessage('SIMID:Media:' + event, args);
             expect(simidClient.onMediaEvent).toHaveBeenCalledWith(event, args);
 
-            const expectedEvent = {...args, type: event};
+            const eventArgs = args || {};
+            const expectedEvent = {...eventArgs, type: event};
             expect(eventListener).toHaveBeenCalledWith(expectedEvent);
 
             // Verify event cleanup
