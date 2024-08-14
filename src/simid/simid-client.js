@@ -573,7 +573,7 @@ export class SIMIDClient {
         let eventCallbacks = this._eventListeners[type];
         if (!eventCallbacks) return;
 
-        const foundAt = eventCallbacks.find(existingCallback => existingCallback == callback);
+        const foundAt = eventCallbacks.indexOf(callback);
         if (foundAt < 0) return;
 
         eventCallbacks.splice(foundAt, 1);
