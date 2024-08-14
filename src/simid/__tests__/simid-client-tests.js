@@ -1,4 +1,4 @@
-import { SIMIDClient, SIMIDDimensions, SIMIDMessage, SIMIDErrors } from '../simid-client';
+import { SIMIDClient, SIMIDDimensions, SIMIDMessage, SIMIDErrors, SIMIDPlayerConfig } from '../simid-client';
 import { re } from "@babel/core/lib/vendor/import-meta-resolve";
 
 describe('test simid client', () => {
@@ -49,7 +49,7 @@ describe('test simid client', () => {
         expect(playerWindow.lastMessage.type).toBe('createSession');
         player.resolveClientRequest(playerWindow.lastMessage);
 
-        testPlayerRequest(state, 'SIMID:Player:init', { });
+        testPlayerRequest(state, 'SIMID:Player:init', new SIMIDPlayerConfig());
         testPlayerRequest(state, 'SIMID:Player:startCreative', { });
     });
 
@@ -417,12 +417,12 @@ describe('test simid client', () => {
             expect(simidClient.onMediaEvent).toHaveBeenCalledWith(event, args);
 
             const expectedEvent = {...args, type: event};
-            expect(eventListener).toHaveBeenCalledWith(event, expectedEvent);
+            expect(eventListener).toHaveBeenCalledWith(expectedEvent);
 
             // Verify event cleanup
-            expect(simidClient._eventListeners[event].find(eventListener)).toBeGreaterThanOrEqual(0);
+            expect(simidClient._eventListeners[event].indexOf(eventListener)).toBeGreaterThanOrEqual(0);
             simidClient.removeEventListener(event, eventListener);
-            expect(simidClient._eventListeners[event].find(eventListener)).toBe(-1);
+            expect(simidClient._eventListeners[event].indexOf(eventListener)).toBe(-1);
         }
 
         testEvent('durationchange', {duration: 123});
@@ -439,9 +439,8 @@ describe('test simid client', () => {
     });
 });
 
-function testPlayerRequest(state, type, args, supportsEventListener = true, expectedEventData = {}) {
+function testPlayerRequest(state, type, args, supportsEventListener = true) {
     const { player, playerWindow, simidClient } = state;
-    const requestMsg = player.sendPlayerMessage(type, args);
 
     const eventListener = supportsEventListener ? jest.fn() : undefined;
     const eventType = simidClient._getEventType(type);
@@ -449,16 +448,23 @@ function testPlayerRequest(state, type, args, supportsEventListener = true, expe
         simidClient.addEventListener(eventType, eventListener);
     }
 
+    const requestMsg = player.sendPlayerMessage(type, args);
+
     expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'resolve', args: {messageId: requestMsg.messageId, value: undefined}}));
 
     if (eventListener) {
-        const expectedEvent = {...expectedEventData, type: eventType};
+        const eventData = args || {};
+        const expectedEvent = {...eventData, type: eventType};
         expect(eventListener).toHaveBeenCalledWith(expectedEvent);
 
         // Verify event cleanup
-        expect(simidClient._eventListeners[eventType].find(eventListener)).toBeGreaterThanOrEqual(0);
-        simidClient.removeEventListener(eventType, eventListener);
-        expect(simidClient._eventListeners[eventType].find(eventListener)).toBe(-1);
+        if (simidClient.isActive) {
+            expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBeGreaterThanOrEqual(0);
+            simidClient.removeEventListener(eventType, eventListener);
+            expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBe(-1);
+        } else {
+            expect(simidClient._eventListeners).toEqual({});
+        }
     }
 }
 

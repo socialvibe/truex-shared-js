@@ -590,8 +590,8 @@ export class SIMIDClient {
     }
 
     _getEventType(messageType) {
-        const typeParts = type.split(':');
-        const eventType = typeParts.length == 3 ? typeParts[2] : type;
+        const typeParts = messageType.split(':');
+        const eventType = typeParts.length == 3 ? typeParts[2] : messageType;
         return eventType;
     }
 }
