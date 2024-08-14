@@ -494,9 +494,9 @@ export class SIMIDClient {
 
     _mediaEvent(messageId, type, args) {
         try {
-            const event = type.split(':')[2];
-            this.onMediaEvent(event, args);
-            this._invokeEventListeners(type, args);
+            const eventType = this._getEventType(type);
+            this.onMediaEvent(eventType, args);
+            this._invokeEventListeners(eventType, args);
         } catch (error) {
             const message = this.getErrorMessage(args?.message);
             console.error(`SIMID error for media event: ${messageId} - ${type}: ${message}`);
