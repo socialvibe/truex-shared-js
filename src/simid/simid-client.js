@@ -561,8 +561,9 @@ export class SIMIDClient {
         if (!eventCallbacks) {
             eventCallbacks = [];
             this._eventListeners[type] = eventCallbacks;
-        } else {
-            if (eventCallbacks.find(existingCallback => existingCallback == callback)) return; // already present
+
+        } else if (eventCallbacks.indexOf(callback) >= 0) {
+            return; // already present
         }
         eventCallbacks.push(callback);
     }
