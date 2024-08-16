@@ -84,7 +84,7 @@ export class SIMIDClient {
     }
 
     clickThru({ x, y, uri }) {
-        const playerHandles = this._playerConfig?.navigationSupport == 'playerHandles';
+        const playerHandles = this._playerConfig?.environmentData.navigationSupport == 'playerHandles';
         return this._sendClientRequest('SIMID:Creative:clickThru', {x, y, playerHandles, uri });
     }
 
@@ -105,7 +105,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestChangeAdDuration(duration) {
-        const variableDurationAllowed = this._playerConfig?.variableDurationAllowed;
+        const variableDurationAllowed = this._playerConfig?.environmentData.variableDurationAllowed;
         if (!variableDurationAllowed) {
             return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestChangeAdDuration not allowed when variableDurationAllowed is false'));
@@ -126,7 +126,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestFullscreen() {
-        const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
+        const fullscreenAllowed = this._playerConfig?.environmentData.fullscreenAllowed;
         if (!fullscreenAllowed) {
             return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestFullscreen not allowed when fullscreenAllowed is false'));
@@ -138,7 +138,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestExitFullscreen() {
-        const fullscreenAllowed = this._playerConfig?.fullscreenAllowed;
+        const fullscreenAllowed = this._playerConfig?.environmentData.fullscreenAllowed;
         if (!fullscreenAllowed) {
             return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestExitFullscreen not allowed when fullscreenAllowed is false'));
@@ -158,7 +158,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestPause() {
-        const canPause = this._playerConfig?.variableDurationAllowed;
+        const canPause = this._playerConfig?.environmentData.variableDurationAllowed;
         if (!canPause) {
             return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestPause not allowed when variableDurationAllowed is false'));
@@ -170,7 +170,7 @@ export class SIMIDClient {
      * @return {Promise<unknown>}
      */
     requestPlay() {
-        const canPlay = this._playerConfig?.variableDurationAllowed;
+        const canPlay = this._playerConfig?.environmentData.variableDurationAllowed;
         if (!canPlay) {
             return Promise.reject(this._newClientError(SIMIDErrors.unspecifiedClientError,
                 'requestPlay not allowed when variableDurationAllowed is false'));
