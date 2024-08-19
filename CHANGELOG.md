@@ -1,6 +1,7 @@
 # Changelog
 
-## v1.11.3
+## v1.11.4
+* [PI-2895](https://infillion.atlassian.net/browse/PI-2895): Create a new end point for SIMID support to be loaded into ad's iframe as creative file
 * [PI-2897](https://infillion.atlassian.net/browse/PI-2897): Create SIMID Core Message component
 
 ## v1.10.3

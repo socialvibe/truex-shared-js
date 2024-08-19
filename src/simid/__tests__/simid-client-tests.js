@@ -247,12 +247,12 @@ describe('test simid client', () => {
         const duration = 123;
         const requestArgs = { duration };
 
-        simidClient._playerConfig = { variableDurationAllowed: false };
+        simidClient._playerConfig = { environmentData: {variableDurationAllowed: false} };
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestChangeAdDuration(duration),
             SIMIDErrors.unspecifiedClientError, 'requestChangeAdDuration not allowed when variableDurationAllowed is false');
 
-        simidClient._playerConfig = { variableDurationAllowed: true };
+        simidClient._playerConfig = { environmentData: {variableDurationAllowed: true} };
         await testClientRequest(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
             () => simidClient.requestChangeAdDuration(duration), undefined);
         await testClientReject(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
@@ -280,11 +280,11 @@ describe('test simid client', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
 
-        simidClient._playerConfig = { fullscreenAllowed: false };
+        simidClient._playerConfig = { environmentData: {fullscreenAllowed: false} };
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestFullscreen(), SIMIDErrors.unspecifiedClientError, 'requestFullscreen not allowed when fullscreenAllowed is false');
 
-        simidClient._playerConfig = { fullscreenAllowed: true };
+        simidClient._playerConfig = { environmentData: {fullscreenAllowed: true} };
         await testClientRequest(state, 'SIMID:Creative:requestFullscreen', undefined,
             () => simidClient.requestFullscreen(), undefined);
 
@@ -296,11 +296,11 @@ describe('test simid client', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
 
-        simidClient._playerConfig = { fullscreenAllowed: false };
+        simidClient._playerConfig = { environmentData: { fullscreenAllowed: false} };
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestExitFullscreen(), SIMIDErrors.unspecifiedClientError, 'requestExitFullscreen not allowed when fullscreenAllowed is false');
 
-        simidClient._playerConfig = { fullscreenAllowed: true };
+        simidClient._playerConfig = { environmentData: {fullscreenAllowed: true} };
         await testClientRequest(state, 'SIMID:Creative:requestExitFullscreen', undefined,
             () => simidClient.requestExitFullscreen(), undefined);
 
@@ -312,7 +312,7 @@ describe('test simid client', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
 
-        simidClient._playerConfig = { navigationSupport: 'adHandles' };
+        simidClient._playerConfig = { environmentData: {navigationSupport: 'adHandles'} };
         const callArgs = {
             x: 1, y: 2, uri: 'some uri'
         }
@@ -323,7 +323,7 @@ describe('test simid client', () => {
         await testClientRequest(state, 'SIMID:Creative:clickThru', requestArgs,
             () => simidClient.clickThru(callArgs), undefined);
 
-        simidClient._playerConfig = { navigationSupport: 'playerHandles' };
+        simidClient._playerConfig = { environmentData: {navigationSupport: 'playerHandles'} };
         requestArgs.playerHandles = true;
         await testClientRequest(state, 'SIMID:Creative:clickThru', requestArgs,
             () => simidClient.clickThru(callArgs), undefined);
@@ -350,12 +350,12 @@ describe('test simid client', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
 
-        simidClient._playerConfig = { variableDurationAllowed: false };
+        simidClient._playerConfig = { environmentData: {variableDurationAllowed: false} };
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestPause(),
             SIMIDErrors.unspecifiedClientError, 'requestPause not allowed when variableDurationAllowed is false');
 
-        simidClient._playerConfig = { variableDurationAllowed: true };
+        simidClient._playerConfig = { environmentData: {variableDurationAllowed: true} };
         await testClientRequest(state, 'SIMID:Creative:requestPause', undefined,
             () => simidClient.requestPause(), undefined);
         await testClientReject(state, 'SIMID:Creative:requestPause', undefined,
@@ -367,12 +367,12 @@ describe('test simid client', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
 
-        simidClient._playerConfig = { variableDurationAllowed: false };
+        simidClient._playerConfig = { environmentData: {variableDurationAllowed: false} };
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestPlay(),
             SIMIDErrors.unspecifiedClientError, 'requestPlay not allowed when variableDurationAllowed is false');
 
-        simidClient._playerConfig = { variableDurationAllowed: true };
+        simidClient._playerConfig = { environmentData: {variableDurationAllowed: true} };
         await testClientRequest(state, 'SIMID:Creative:requestPlay', undefined,
             () => simidClient.requestPlay(), undefined);
         await testClientReject(state, 'SIMID:Creative:requestPlay', undefined,
