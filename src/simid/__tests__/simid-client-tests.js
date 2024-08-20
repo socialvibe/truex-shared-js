@@ -110,9 +110,7 @@ describe('test simid client', () => {
             });
             return responsePromise;
         };
-        await testPlayerRequest(state, 'SIMID:Player:adSkipped', undefined, () => {
-            return responsePromise;
-        });
+        await testPlayerRequest(state, 'SIMID:Player:adSkipped', undefined, () => responsePromise);
         expect(simidClient.isStopped).toBe(true);
         expect(resolved).toBe(true);
     });
@@ -145,9 +143,7 @@ describe('test simid client', () => {
             });
             return responsePromise;
         };
-        await testPlayerRequest(state, 'SIMID:Player:adStopped', undefined, () => {
-            return responsePromise;
-        });
+        await testPlayerRequest(state, 'SIMID:Player:adStopped', undefined, () => responsePromise);
         expect(simidClient.isStopped).toBe(true);
         expect(resolved).toBe(true);
     });
