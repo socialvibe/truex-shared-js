@@ -79,9 +79,10 @@ describe('test simid client', () => {
 
         simidClient.onAdSkipped = jest.fn();
         testPlayerRequest(state, 'SIMID:Player:adSkipped');
-        expect(simidClient.isActive).toBe(false);
-        expect(adWindow.onPostMessage).toBeUndefined(); // i.e. removeEventListener was called
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
         expect(simidClient.onAdSkipped).toHaveBeenCalled();
+        expect(adWindow.onPostMessage).toBeUndefined(); // i.e. removeEventListener was called
     });
 
     test('test adSkipped reject', async () => {
@@ -93,6 +94,29 @@ describe('test simid client', () => {
         testPlayerReject(state, 'SIMID:Player:adSkipped', { }, SIMIDErrors.adInternalError, errMessage);
     });
 
+    test('test async ad skipped', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+        expect(simidClient.isActive).toBe(true);
+
+        let responsePromise;
+        let resolved = false;
+        simidClient.onAdSkipped = () => {
+            responsePromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolved = true;
+                    resolve();
+                }, 50);
+            });
+            return responsePromise;
+        };
+        await testPlayerRequest(state, 'SIMID:Player:adSkipped', undefined, () => {
+            return responsePromise;
+        });
+        expect(simidClient.isStopped).toBe(true);
+        expect(resolved).toBe(true);
+    });
+
     test('test ad stopped', () => {
         const state = newStartedTestState();
         const { simidClient } = state;
@@ -100,8 +124,32 @@ describe('test simid client', () => {
 
         simidClient.onAdStopped = jest.fn();
         testPlayerRequest(state, 'SIMID:Player:adStopped');
-        expect(simidClient.isActive).toBe(false);
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
         expect(simidClient.onAdStopped).toHaveBeenCalled();
+    });
+
+    test('test async ad stopped', async () => {
+        const state = newStartedTestState();
+        const { simidClient } = state;
+        expect(simidClient.isActive).toBe(true);
+
+        let responsePromise;
+        let resolved = false;
+        simidClient.onAdStopped = () => {
+            responsePromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolved = true;
+                    resolve();
+                }, 50);
+            });
+            return responsePromise;
+        };
+        await testPlayerRequest(state, 'SIMID:Player:adStopped', undefined, () => {
+            return responsePromise;
+        });
+        expect(simidClient.isStopped).toBe(true);
+        expect(resolved).toBe(true);
     });
 
     test('test adStopped reject', async () => {
@@ -192,7 +240,8 @@ describe('test simid client', () => {
         player.sendPlayerMessage('SIMID:Player:fatalError', fatalError);
 
         expect(simidClient.onFatalError).toHaveBeenCalledWith(fatalError.errorCode, fatalError.message);
-        expect(simidClient.isActive).toBe(false);
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
     });
 
     test('test client fatalError', () => {
@@ -201,7 +250,8 @@ describe('test simid client', () => {
         const fatalError = { errorCode: 999, message: 'test client error' };
         simidClient.fatalError(fatalError.errorCode, fatalError.message);
         expect(playerWindow.lastMessage.args).toEqual(fatalError);
-        expect(simidClient.isActive).toBe(false);
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
     });
 
     test('test getMediaState', async () => {
@@ -440,16 +490,18 @@ describe('test simid client', () => {
     });
 });
 
-function testPlayerRequest(state, type, args, supportsEventListener = true) {
+async function testPlayerRequest(state, type, args, waitForResponse) {
     const { player, playerWindow, simidClient } = state;
 
-    const eventListener = supportsEventListener ? jest.fn() : undefined;
+    const eventListener = jest.fn();
     const eventType = simidClient._getEventType(type);
     if (eventListener) {
         simidClient.addEventListener(eventType, eventListener);
     }
 
     const requestMsg = player.sendPlayerMessage(type, args);
+
+    if (waitForResponse) await waitForResponse();
 
     expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'resolve', args: {messageId: requestMsg.messageId, value: undefined}}));
 
@@ -459,12 +511,12 @@ function testPlayerRequest(state, type, args, supportsEventListener = true) {
         expect(eventListener).toHaveBeenCalledWith(expectedEvent);
 
         // Verify event cleanup
-        if (simidClient.isActive) {
+        if (simidClient.isStopped) {
+            expect(simidClient._eventListeners).toEqual({});
+        } else {
             expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBeGreaterThanOrEqual(0);
             simidClient.removeEventListener(eventType, eventListener);
             expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBe(-1);
-        } else {
-            expect(simidClient._eventListeners).toEqual({});
         }
     }
 }
