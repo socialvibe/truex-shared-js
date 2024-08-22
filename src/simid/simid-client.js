@@ -12,6 +12,7 @@ import { v4 as uuid } from 'uuid';
  */
 export class SIMIDClient {
     isActive;
+    isStopped;
     debug;
 
     /**
@@ -29,6 +30,7 @@ export class SIMIDClient {
         this._nextMessageId = 0;
         this._sessionId = undefined;
         this.isActive = false;
+        this.isStopped = false;
         this.debug = false;
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
 
@@ -47,8 +49,8 @@ export class SIMIDClient {
     }
 
     stop() {
-        if (!this.isActive) return;
-        this.isActive = false;
+        if (this.isStopped) return;
+        this.isStopped = true;
         this._contentWindow.removeEventListener('message', this._onPlayerMessage);
         this._pendingClientRequests = {};
         this._eventListeners = {};
@@ -286,7 +288,9 @@ export class SIMIDClient {
      * @private
      */
     _sendClientMessage(type, args) {
-        if (!this.isActive) return;
+        if (!this.isActive) return; // no traffic allowed if not active
+        if (this.isStopped && !(type == 'reject' || type == 'resolve')) return; // only responses allowed if stopped
+
         const message = this._createMessage(type, args);
         this._postClientMessage('client message', message);
     }
@@ -299,7 +303,7 @@ export class SIMIDClient {
      * @private
      */
     _sendClientRequest(type, args) {
-        if (!this.isActive) return;
+        if (!this.isActive || this.isStopped) return; // no traffic allowed if not active
 
         const message = this._createMessage(type, args);
 
@@ -387,7 +391,7 @@ export class SIMIDClient {
         }
     }
 
-    _playerResponse(requestId, requestType, clientAction, postResponseAction) {
+    _playerResponse(requestId, requestType, clientAction) {
         let response;
         try {
             response = clientAction();
@@ -395,7 +399,6 @@ export class SIMIDClient {
                 return response
                     .then(result => {
                         this._resolvePlayerRequest(requestId, result);
-                        if (postResponseAction) postResponseAction();
                         return result;
                     })
                     .catch(err => {
@@ -403,7 +406,6 @@ export class SIMIDClient {
                     });
             } else {
                 this._resolvePlayerRequest(requestId, response);
-                if (postResponseAction) postResponseAction();
             }
         } catch (error) {
             this._rejectPlayerRequest(requestId, requestType, SIMIDErrors.adInternalError, error);
@@ -455,19 +457,21 @@ export class SIMIDClient {
     }
 
     _adSkipped(requestId, requestType) {
-        // Stop only after the final message is sent.
         this._playerResponse(requestId, requestType, () => {
-            this.onAdSkipped();
+            const possiblePromise = this.onAdSkipped();
             this._invokeEventListeners(requestType);
-        }, () => this.stop());
+            this.stop();
+            return possiblePromise;
+        });
     }
 
     _adStopped(requestId, requestType) {
-        // Stop only after the final message is sent.
         this._playerResponse(requestId, requestType, () => {
-            this.onAdStopped();
+            const possiblePromise = this.onAdStopped();
             this._invokeEventListeners(requestType);
-        }, () => this.stop());
+            this.stop();
+            return possiblePromise;
+        });
     }
 
     _adBackgrounded(requestId, requestType) {
@@ -535,9 +539,15 @@ export class SIMIDClient {
     onMediaEvent(event, args) {
     }
 
+    /**
+     * @return {Promise|undefined} Returns a promise if a wait is needed before responding to the player.
+     */
     onAdSkipped() {
     }
 
+    /**
+     * @return {Promise|undefined} Returns a promise if a wait is needed before responding to the player.
+     */
     onAdStopped() {
     }
 

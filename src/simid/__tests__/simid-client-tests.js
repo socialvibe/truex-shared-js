@@ -1,10 +1,9 @@
 import { SIMIDClient, SIMIDDimensions, SIMIDMessage, SIMIDErrors, SIMIDPlayerConfig } from '../simid-client';
-import { re } from "@babel/core/lib/vendor/import-meta-resolve";
 
 describe('test simid client', () => {
 
     test('start/stop simid client', async () => {
-        const { player, simidClient, playerWindow, adWindow } = newTestState();
+        const {player, simidClient, playerWindow, adWindow} = newTestState();
         expect(simidClient._sessionId).toBeUndefined()
 
         player.sendPlayerMessage('test', {});
@@ -20,7 +19,7 @@ describe('test simid client', () => {
         expect(simidClient._sessionId).toBeDefined();
         let clientMsg = playerWindow.lastMessage;
         expect(clientMsg).toEqual(expect.objectContaining(
-            { sessionId: simidClient._sessionId, messageId: 0, type: 'createSession', args: {} }));
+            {sessionId: simidClient._sessionId, messageId: 0, type: 'createSession', args: {}}));
         expect(clientMsg?.timestamp).toBeLessThanOrEqual(Date.now());
         expect(player.sessionId).toEqual(simidClient._sessionId);
 
@@ -35,13 +34,13 @@ describe('test simid client', () => {
         playerWindow.lastMessage = undefined;
         simidClient.stop();
 
-        player.sendPlayerMessage('SIMID:Player:init', { });
+        player.sendPlayerMessage('SIMID:Player:init', {});
         expect(playerWindow.lastMessage).toBeUndefined();
     });
 
-    test('test initial ad flow', async () => {
+    test('test initial ad flow', () => {
         const state = newTestState();
-        const { player, simidClient, playerWindow, adWindow } = state;
+        const {player, simidClient, playerWindow, adWindow} = state;
 
         simidClient.start();
 
@@ -50,71 +49,114 @@ describe('test simid client', () => {
         player.resolveClientRequest(playerWindow.lastMessage);
 
         testPlayerRequest(state, 'SIMID:Player:init', new SIMIDPlayerConfig());
-        testPlayerRequest(state, 'SIMID:Player:startCreative', { });
+        testPlayerRequest(state, 'SIMID:Player:startCreative', {});
     });
 
-    test('test init reject', async () => {
+    test('test init reject', () => {
         const state = newStartedTestState();
-        const { player, simidClient, playerWindow, adWindow } = state;
+        const {player, simidClient, playerWindow, adWindow} = state;
 
         const errMessage = 'init test error';
         simidClient.onInit = () => { throw new Error(errMessage) };
-        testPlayerReject(state, 'SIMID:Player:init', { }, SIMIDErrors.adInternalError, errMessage);
+        testPlayerReject(state, 'SIMID:Player:init', {}, SIMIDErrors.adInternalError, errMessage);
     });
 
-    test('test startCreative reject', async () => {
+    test('test startCreative reject', () => {
         const state = newStartedTestState();
-        const { player, simidClient, playerWindow, adWindow } = state;
+        const {player, simidClient, playerWindow, adWindow} = state;
 
         const errMessage = 'startCreative test error';
         simidClient.onStartCreative = () => { throw new Error(errMessage) };
-        testPlayerReject(state, 'SIMID:Player:startCreative', { }, SIMIDErrors.adInternalError, errMessage);
+        testPlayerReject(state, 'SIMID:Player:startCreative', {}, SIMIDErrors.adInternalError, errMessage);
     });
 
-    test('test ad skipped', async () => {
+    test('test adSkipped', () => {
         const state = newStartedTestState();
-        const { simidClient, adWindow } = state;
+        const {simidClient, adWindow} = state;
         expect(simidClient.isActive).toBe(true);
         expect(adWindow.onPostMessage).toBeDefined();
 
         simidClient.onAdSkipped = jest.fn();
         testPlayerRequest(state, 'SIMID:Player:adSkipped');
-        expect(simidClient.isActive).toBe(false);
-        expect(adWindow.onPostMessage).toBeUndefined(); // i.e. removeEventListener was called
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
         expect(simidClient.onAdSkipped).toHaveBeenCalled();
+        expect(adWindow.onPostMessage).toBeUndefined(); // i.e. removeEventListener was called
     });
 
-    test('test adSkipped reject', async () => {
+    test('test adSkipped reject', () => {
         const state = newStartedTestState();
-        const { player, simidClient, playerWindow, adWindow } = state;
+        const {player, simidClient, playerWindow, adWindow} = state;
 
         const errMessage = 'adSkipped test error';
         simidClient.onAdSkipped = () => { throw new Error(errMessage) };
         testPlayerReject(state, 'SIMID:Player:adSkipped', { }, SIMIDErrors.adInternalError, errMessage);
     });
 
-    test('test ad stopped', () => {
+    test('test async adSkipped', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
+        expect(simidClient.isActive).toBe(true);
+
+        let responsePromise;
+        let resolved = false;
+        simidClient.onAdSkipped = () => {
+            responsePromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolved = true;
+                    resolve();
+                }, 50);
+            });
+            return responsePromise;
+        };
+        await testPlayerRequest(state, 'SIMID:Player:adSkipped', undefined, () => responsePromise);
+        expect(simidClient.isStopped).toBe(true);
+        expect(resolved).toBe(true);
+    });
+
+    test('test adStopped', () => {
+        const state = newStartedTestState();
+        const {simidClient} = state;
         expect(simidClient.isActive).toBe(true);
 
         simidClient.onAdStopped = jest.fn();
         testPlayerRequest(state, 'SIMID:Player:adStopped');
-        expect(simidClient.isActive).toBe(false);
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
         expect(simidClient.onAdStopped).toHaveBeenCalled();
     });
 
-    test('test adStopped reject', async () => {
+    test('test adStopped reject', () => {
         const state = newStartedTestState();
-        const { player, simidClient, playerWindow, adWindow } = state;
-
+        const {player, simidClient, playerWindow, adWindow} = state;
         const errMessage = 'adStopped test error';
-        simidClient.onAdStopped = () => { throw new Error(errMessage) };
-        testPlayerReject(state, 'SIMID:Player:adStopped', { }, SIMIDErrors.adInternalError, errMessage);
+        simidClient.onAdStopped = () => {throw new Error(errMessage)};
+        testPlayerReject(state, 'SIMID:Player:adStopped', {}, SIMIDErrors.adInternalError, errMessage);
+    });
+
+    test('test async adStopped', async () => {
+        const state = newStartedTestState();
+        const {simidClient} = state;
+        expect(simidClient.isActive).toBe(true);
+
+        let responsePromise;
+        let resolved = false;
+        simidClient.onAdStopped = () => {
+            responsePromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolved = true;
+                    resolve();
+                }, 2000);
+            });
+            return responsePromise;
+        };
+        await testPlayerRequest(state, 'SIMID:Player:adStopped', undefined, () => responsePromise);
+        expect(simidClient.isStopped).toBe(true);
+        expect(resolved).toBe(true);
     });
 
     test('test logging', () => {
-        const { player, simidClient, playerWindow } = newStartedTestState();
+        const {player, simidClient, playerWindow} = newStartedTestState();
 
         simidClient.debug = true; // also see how things log
 
@@ -129,7 +171,7 @@ describe('test simid client', () => {
     });
 
     test('test resize', () => {
-        const { player, simidClient } = newStartedTestState();
+        const {player, simidClient} = newStartedTestState();
 
         const videoDimensions = {x: 1, y: 2, width: 3, height: 4};
         const creativeDimensions = {x: 5, y: 6, width: 7, height: 8};
@@ -137,21 +179,21 @@ describe('test simid client', () => {
 
         simidClient.onResize = jest.fn();
         player.sendPlayerMessage('SIMID:Player:resize', {videoDimensions, creativeDimensions, fullscreen});
-        expect(simidClient.onResize).toHaveBeenCalledWith({ videoDimensions, creativeDimensions, fullscreen });
+        expect(simidClient.onResize).toHaveBeenCalledWith({videoDimensions, creativeDimensions, fullscreen});
     });
 
-    test('test resize reject', async () => {
+    test('test resize reject', () => {
         const state = newStartedTestState();
-        const { player, simidClient, playerWindow, adWindow } = state;
+        const {player, simidClient, playerWindow, adWindow} = state;
 
         const errMessage = 'resize test error';
         simidClient.onResize = () => { throw new Error(errMessage) };
-        testPlayerReject(state, 'SIMID:Player:resize', { }, SIMIDErrors.adInternalError, errMessage);
+        testPlayerReject(state, 'SIMID:Player:resize', {}, SIMIDErrors.adInternalError, errMessage);
     });
 
     test('test requestResize', () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         const resizeArgs = {
             mediaDimensions: {x: 1, y: 2, width: 3, height: 4},
@@ -162,7 +204,7 @@ describe('test simid client', () => {
     });
 
     test('test background/foreground', () => {
-        const { player, simidClient } = newStartedTestState();
+        const {player, simidClient} = newStartedTestState();
 
         simidClient.onAdBackgrounded = jest.fn();
         player.sendPlayerMessage('SIMID:Player:adBackgrounded');
@@ -173,40 +215,42 @@ describe('test simid client', () => {
         expect(simidClient.onAdForegrounded).toHaveBeenCalled();
     });
 
-    test('test backgrounded reject', async () => {
+    test('test backgrounded reject', () => {
         const state = newStartedTestState();
-        const { player, simidClient, playerWindow, adWindow } = state;
+        const {player, simidClient, playerWindow, adWindow} = state;
 
         const errMessage = 'adBackgrounded test error';
         simidClient.onAdBackgrounded = () => { throw new Error(errMessage) };
-        testPlayerReject(state, 'SIMID:Player:adBackgrounded', { }, SIMIDErrors.adInternalError, errMessage);
+        testPlayerReject(state, 'SIMID:Player:adBackgrounded', {}, SIMIDErrors.adInternalError, errMessage);
     });
 
     test('test player fatalError', () => {
-        const { player, simidClient } = newStartedTestState();
+        const {player, simidClient} = newStartedTestState();
 
         simidClient.debug = true; // also see how things log
 
-        const fatalError = { errorCode: 999, message: 'test player error' };
+        const fatalError = {errorCode: 999, message: 'test player error'};
         simidClient.onFatalError = jest.fn();
         player.sendPlayerMessage('SIMID:Player:fatalError', fatalError);
 
         expect(simidClient.onFatalError).toHaveBeenCalledWith(fatalError.errorCode, fatalError.message);
-        expect(simidClient.isActive).toBe(false);
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
     });
 
     test('test client fatalError', () => {
-        const { simidClient, playerWindow } = newStartedTestState();;
+        const { simidClient, playerWindow } = newStartedTestState();
 
-        const fatalError = { errorCode: 999, message: 'test client error' };
+        const fatalError = {errorCode: 999, message: 'test client error'};
         simidClient.fatalError(fatalError.errorCode, fatalError.message);
         expect(playerWindow.lastMessage.args).toEqual(fatalError);
-        expect(simidClient.isActive).toBe(false);
+        expect(simidClient.isActive).toBe(true);
+        expect(simidClient.isStopped).toBe(true);
     });
 
     test('test getMediaState', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         const result = {
             currentSrc: 'https://media.truex.com/some-video.mp4',
@@ -224,7 +268,7 @@ describe('test simid client', () => {
 
     test('test reportTracking', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         const requestArgs = {
             trackingUrls: [
@@ -242,17 +286,17 @@ describe('test simid client', () => {
 
     test('test requestChangeAdDuration', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         const duration = 123;
-        const requestArgs = { duration };
+        const requestArgs = {duration};
 
-        simidClient._playerConfig = { environmentData: {variableDurationAllowed: false} };
+        simidClient._playerConfig = {environmentData: {variableDurationAllowed: false}};
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestChangeAdDuration(duration),
             SIMIDErrors.unspecifiedClientError, 'requestChangeAdDuration not allowed when variableDurationAllowed is false');
 
-        simidClient._playerConfig = { environmentData: {variableDurationAllowed: true} };
+        simidClient._playerConfig = {environmentData: {variableDurationAllowed: true}};
         await testClientRequest(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
             () => simidClient.requestChangeAdDuration(duration), undefined);
         await testClientReject(state, 'SIMID:Creative:requestChangeAdDuration', requestArgs,
@@ -262,7 +306,7 @@ describe('test simid client', () => {
 
     test('test requestChangeVolume', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         const requestArgs = {
             volume: 0.8,
@@ -278,13 +322,13 @@ describe('test simid client', () => {
 
     test('test requestFullscreen', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
-        simidClient._playerConfig = { environmentData: {fullscreenAllowed: false} };
+        simidClient._playerConfig = {environmentData: {fullscreenAllowed: false}};
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestFullscreen(), SIMIDErrors.unspecifiedClientError, 'requestFullscreen not allowed when fullscreenAllowed is false');
 
-        simidClient._playerConfig = { environmentData: {fullscreenAllowed: true} };
+        simidClient._playerConfig = {environmentData: {fullscreenAllowed: true}};
         await testClientRequest(state, 'SIMID:Creative:requestFullscreen', undefined,
             () => simidClient.requestFullscreen(), undefined);
 
@@ -294,13 +338,13 @@ describe('test simid client', () => {
 
     test('test requestExitFullscreen', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
-        simidClient._playerConfig = { environmentData: { fullscreenAllowed: false} };
+        simidClient._playerConfig = {environmentData: {fullscreenAllowed: false}};
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestExitFullscreen(), SIMIDErrors.unspecifiedClientError, 'requestExitFullscreen not allowed when fullscreenAllowed is false');
 
-        simidClient._playerConfig = { environmentData: {fullscreenAllowed: true} };
+        simidClient._playerConfig = {environmentData: {fullscreenAllowed: true}};
         await testClientRequest(state, 'SIMID:Creative:requestExitFullscreen', undefined,
             () => simidClient.requestExitFullscreen(), undefined);
 
@@ -310,9 +354,9 @@ describe('test simid client', () => {
 
     test('test clickThru', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
-        simidClient._playerConfig = { environmentData: {navigationSupport: 'adHandles'} };
+        simidClient._playerConfig = {environmentData: {navigationSupport: 'adHandles'}};
         const callArgs = {
             x: 1, y: 2, uri: 'some uri'
         }
@@ -323,7 +367,7 @@ describe('test simid client', () => {
         await testClientRequest(state, 'SIMID:Creative:clickThru', requestArgs,
             () => simidClient.clickThru(callArgs), undefined);
 
-        simidClient._playerConfig = { environmentData: {navigationSupport: 'playerHandles'} };
+        simidClient._playerConfig = {environmentData: {navigationSupport: 'playerHandles'}};
         requestArgs.playerHandles = true;
         await testClientRequest(state, 'SIMID:Creative:clickThru', requestArgs,
             () => simidClient.clickThru(callArgs), undefined);
@@ -334,10 +378,10 @@ describe('test simid client', () => {
 
     test('test requestNavigation', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         const uri = 'some uri';
-        const requestArgs = { uri };
+        const requestArgs = {uri};
 
         await testClientRequest(state, 'SIMID:Creative:requestNavigation', requestArgs,
             () => simidClient.requestNavigation(uri), undefined);
@@ -348,14 +392,14 @@ describe('test simid client', () => {
 
     test('test requestPause', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
-        simidClient._playerConfig = { environmentData: {variableDurationAllowed: false} };
+        simidClient._playerConfig = {environmentData: {variableDurationAllowed: false}};
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestPause(),
             SIMIDErrors.unspecifiedClientError, 'requestPause not allowed when variableDurationAllowed is false');
 
-        simidClient._playerConfig = { environmentData: {variableDurationAllowed: true} };
+        simidClient._playerConfig = {environmentData: {variableDurationAllowed: true}};
         await testClientRequest(state, 'SIMID:Creative:requestPause', undefined,
             () => simidClient.requestPause(), undefined);
         await testClientReject(state, 'SIMID:Creative:requestPause', undefined,
@@ -365,14 +409,14 @@ describe('test simid client', () => {
 
     test('test requestPlay', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
-        simidClient._playerConfig = { environmentData: {variableDurationAllowed: false} };
+        simidClient._playerConfig = {environmentData: {variableDurationAllowed: false}};
         await testClientReject(state, undefined, undefined,
             () => simidClient.requestPlay(),
             SIMIDErrors.unspecifiedClientError, 'requestPlay not allowed when variableDurationAllowed is false');
 
-        simidClient._playerConfig = { environmentData: {variableDurationAllowed: true} };
+        simidClient._playerConfig = {environmentData: {variableDurationAllowed: true}};
         await testClientRequest(state, 'SIMID:Creative:requestPlay', undefined,
             () => simidClient.requestPlay(), undefined);
         await testClientReject(state, 'SIMID:Creative:requestPlay', undefined,
@@ -382,7 +426,7 @@ describe('test simid client', () => {
 
     test('test requestSkip', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         await testClientRequest(state, 'SIMID:Creative:requestSkip', undefined,
             () => simidClient.requestSkip(), undefined);
@@ -393,7 +437,7 @@ describe('test simid client', () => {
 
     test('test requestStop', async () => {
         const state = newStartedTestState();
-        const { simidClient } = state;
+        const {simidClient} = state;
 
         simidClient.debug = true; // also see how things log
 
@@ -405,7 +449,7 @@ describe('test simid client', () => {
     });
 
     test('test media events', () => {
-        const { player, simidClient, playerWindow } = newStartedTestState();;
+        const {player, simidClient, playerWindow} = newStartedTestState();
 
         function testEvent(event, args) {
             simidClient.onMediaEvent = jest.fn();
@@ -440,10 +484,10 @@ describe('test simid client', () => {
     });
 });
 
-function testPlayerRequest(state, type, args, supportsEventListener = true) {
-    const { player, playerWindow, simidClient } = state;
+function testPlayerRequest(state, type, args, waitForResponse) {
+    const {player, playerWindow, simidClient} = state;
 
-    const eventListener = supportsEventListener ? jest.fn() : undefined;
+    const eventListener = jest.fn();
     const eventType = simidClient._getEventType(type);
     if (eventListener) {
         simidClient.addEventListener(eventType, eventListener);
@@ -451,32 +495,43 @@ function testPlayerRequest(state, type, args, supportsEventListener = true) {
 
     const requestMsg = player.sendPlayerMessage(type, args);
 
-    expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'resolve', args: {messageId: requestMsg.messageId, value: undefined}}));
+    if (waitForResponse) {
+        return waitForResponse().then(verifyResponse);
+    } else {
+        verifyResponse();
+        return;
+    }
 
-    if (eventListener) {
-        const eventData = args || {};
-        const expectedEvent = {...eventData, type: eventType};
-        expect(eventListener).toHaveBeenCalledWith(expectedEvent);
+    function verifyResponse() {
+        const lastMsg = playerWindow.lastMessage;
+        expect(lastMsg).toMatchObject({type: 'resolve', args: {messageId: requestMsg.messageId}});
+        expect(lastMsg.args.value).toBeUndefined();
 
-        // Verify event cleanup
-        if (simidClient.isActive) {
-            expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBeGreaterThanOrEqual(0);
-            simidClient.removeEventListener(eventType, eventListener);
-            expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBe(-1);
-        } else {
-            expect(simidClient._eventListeners).toEqual({});
+        if (eventListener) {
+            const eventData = args || {};
+            const expectedEvent = {...eventData, type: eventType};
+            expect(eventListener).toHaveBeenCalledWith(expectedEvent);
+
+            // Verify event cleanup
+            if (simidClient.isStopped) {
+                expect(simidClient._eventListeners).toEqual({});
+            } else {
+                expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBeGreaterThanOrEqual(0);
+                simidClient.removeEventListener(eventType, eventListener);
+                expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBe(-1);
+            }
         }
     }
 }
 
 function testPlayerReject(state, type, args, errorCode, errMessage) {
-    const { player, playerWindow } = state;
+    const {player, playerWindow} = state;
     const requestMsg = player.sendPlayerMessage(type, args);
-    expect(playerWindow.lastMessage).toEqual(expect.objectContaining({type: 'reject', args: {messageId: requestMsg.messageId, value: { errorCode, message: errMessage }}}));
+    expect(playerWindow.lastMessage).toMatchObject({ type: 'reject', args: {messageId: requestMsg.messageId, value: {errorCode, message: errMessage}}});
 }
 
 async function testClientRequest(state, type, expectedArgs, requestAction, requestResult) {
-    const { player, simidClient, playerWindow, adWindow } = state;
+    const {player, simidClient, playerWindow, adWindow} = state;
     playerWindow.lastMessage = null;
     adWindow.lastMessage = null;
 
@@ -494,11 +549,11 @@ async function testClientRequest(state, type, expectedArgs, requestAction, reque
     const resolveMsg = adWindow.lastMessage;
     expect(resolveMsg).toBeDefined();
     expect(resolveMsg.type).toEqual('resolve');
-    expect(resolveMsg.args).toEqual({ messageId: clientMsg.messageId, value: requestResult });
+    expect(resolveMsg.args).toEqual({messageId: clientMsg.messageId, value: requestResult});
 }
 
 async function testClientReject(state, type, expectedArgs, requestAction, errorCode, errMessage) {
-    const { player, simidClient, playerWindow, adWindow } = state;
+    const {player, simidClient, playerWindow, adWindow} = state;
     playerWindow.lastMessage = null;
     adWindow.lastMessage = null;
 
@@ -515,7 +570,7 @@ async function testClientReject(state, type, expectedArgs, requestAction, errorC
         player.rejectClientRequest(clientMsg, errorCode, errMessage);
     }
 
-    await expect(requestPromise).rejects.toThrowError({ errorCode, message: errMessage, clientRequest: clientMsg });
+    await expect(requestPromise).rejects.toThrowError({errorCode, message: errMessage, clientRequest: clientMsg});
 
     if (type) {
         const resolveMsg = adWindow.lastMessage;
@@ -533,7 +588,7 @@ class WindowStub {
     lastMessage;
 
     constructor(id) {
-       this.id = id;
+        this.id = id;
     }
 
     postMessage(msgJson, domain) {
@@ -592,11 +647,11 @@ class PlayerStub {
     }
 
     resolveClientRequest(clientMsg, value) {
-        this.sendPlayerMessage('resolve', {messageId: clientMsg.messageId, value });
+        this.sendPlayerMessage('resolve', {messageId: clientMsg.messageId, value});
     }
 
     rejectClientRequest(clientMsg, errorCode, errMessage) {
-        this.sendPlayerMessage('reject', {messageId: clientMsg.messageId, value: { errorCode, message: errMessage } });
+        this.sendPlayerMessage('reject', {messageId: clientMsg.messageId, value: {errorCode, message: errMessage}});
     }
 }
 
