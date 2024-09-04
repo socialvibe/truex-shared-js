@@ -8,9 +8,8 @@ on:
     branches: [ "develop" ]
 
 jobs:
-  deploy-qa:
-
-    runs-on: [self-hosted, linux, X64, truex-old-qa, us-east-1]
+  unit-test:
+    #runs-on: [self-hosted, linux, X64, truex-old-qa, us-east-1]
     environment: qa
 
     steps:
