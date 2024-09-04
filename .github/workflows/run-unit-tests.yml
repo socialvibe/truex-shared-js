@@ -3,14 +3,9 @@ name: Run Unit Tests
 # Run tests on pushes and PRs targeting develop
 on:
   push:
-    branches:
-      - develop
-
+    branches: [ "develop" ]
   pull_request:
-    branches:
-      - develop
-
-  workflow_dispatch:
+    branches: [ "develop" ]
 
 jobs:
   deploy-qa:
