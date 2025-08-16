@@ -1,10 +1,9 @@
 
 export function isTruexProductionUrl(url) {
     if (url) {
-        const m = url.match(/^(https?:\/\/)?([a-z])+.truex.com/);
+        const m = url.match(/^(https?:\/\/)?([a-zA-Z0-9\-_]+).truex.com/);
         if (m) {
-            if (m[2].startsWith('qa-')) return false;
-            return true;
+            return !m[2].startsWith('qa-');
         }
     }
     return false;
@@ -34,6 +33,7 @@ export class TruexServers {
         this.engageServerUrl = serverUrlOf('engage.truex.com');
         this.mediaServerUrl = serverUrlOf('media.truex.com');
         this.measureServerUrl = serverUrlOf('measure.truex.com');
+        this.qrCodeServerUrl = serverUrlOf('qr.truex.com');
 
         /**
          * @deprecated use engage.truex.com instead. serve.truex.com is now just a redirect to it.

@@ -1,9 +1,15 @@
 # Changelog
 
+## v1.11.6
+* [PI-3311](https://infillion.atlassian.net/browse/PI-3311): truex_servers, added `qrCodeServerUrl`
+* [PI-2952](https://infillion.atlassian.net/browse/PI-2952): migrate travis deploy script to Github Actions
+
+## v1.11.5
+* [PI-2895](https://infillion.atlassian.net/browse/PI-2895): Create a new end point for SIMID support to be loaded into ad's iframe as creative file
+
 ## v1.11.4
 * [PI-2895](https://infillion.atlassian.net/browse/PI-2895): Create a new end point for SIMID support to be loaded into ad's iframe as creative file
 * [PI-2897](https://infillion.atlassian.net/browse/PI-2897): Create SIMID Core Message component
-* [PI-2952](https://infillion.atlassian.net/browse/PI-2952): truex-shared-js - migrate travis deploy script to Github Actions
 
 ## v1.10.3
 * [PI-2658](https://infillion.atlassian.net/browse/PI-2658): Crunchyroll Desktop placement not including a network user id

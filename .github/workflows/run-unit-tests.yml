@@ -31,4 +31,11 @@ jobs:
         run: yarn install
 
       - name: Run Unit Tests
-        run: yarn run test
+        run: yarn run test:ci
+
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        with:
+          name: Jest Unit Tests
+          path: test-results/junit.xml
+          reporter: jest-junit
