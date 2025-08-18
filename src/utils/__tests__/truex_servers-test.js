@@ -13,6 +13,7 @@ describe("truex_servers testing", () => {
         expect(isTruexProductionUrl("https://qa-media.truex.com")).toBe(false);
         expect(isTruexProductionUrl("https://qa-server.truex.com")).toBe(false);
         expect(isTruexProductionUrl("https://media.somewhere.else.com")).toBe(false);
+        expect(isTruexProductionUrl("https://qa-rtb-tf.truex.com")).toBe(false);
 
         expect(isTruexProductionUrl("qa-media.truex.com")).toBe(false);
         expect(isTruexProductionUrl("media.truex.com")).toBe(true);
@@ -65,11 +66,13 @@ describe("truex_servers testing", () => {
                 expect(servers.measureServerUrl).toBe("https://measure.truex.com");
                 expect(servers.engageServerUrl).toBe("https://engage.truex.com");
                 expect(servers.serverUrlOf("something.truex.com")).toBe("https://something.truex.com");
+                expect(servers.qrCodeServerUrl).toBe("https://qr.truex.com");
             } else {
                 expect(servers.truexServerUrl).toBe("https://qa-serve.truex.com");
                 expect(servers.mediaServerUrl).toBe("https://qa-media.truex.com");
                 expect(servers.measureServerUrl).toBe("https://qa-measure.truex.com");
                 expect(servers.engageServerUrl).toBe("https://qa-engage.truex.com");
+                expect(servers.qrCodeServerUrl).toBe("https://qa-qr.truex.com");
                 expect(servers.serverUrlOf("something.truex.com")).toBe("https://qa-something.truex.com");
             }
         }

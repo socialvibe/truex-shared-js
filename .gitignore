@@ -6,9 +6,11 @@ yarn-error.log
 **/dist/
 /concat/
 /coverage/
+/test-results/
 
 .vscode
 
 # IntelliJ project files
 /.idea/
+/*.iml
 
