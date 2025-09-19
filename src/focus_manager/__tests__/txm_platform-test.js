@@ -295,6 +295,45 @@ describe("TXMPlatform", () => {
         });
     });
 
+    describe("Kepler Tests", () => {
+
+        let platform = new TXMPlatform(
+            "Mozilla/5.0 (Linux; Kepler 1.1; AFTCA002 user-external/4418; wv) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Chrome/132.0.6834.209 Safari/537.36"
+        );
+
+        test("recognize the Kepler platform", () => {
+            expect(platform.isUnknown).toBe(false);
+            expect(platform.isFireTV).toBe(false);
+            expect(platform.isAndroidTV).toBe(false);
+            expect(platform.isVizio).toBe(false);
+            expect(platform.isLG).toBe(false);
+            expect(platform.isTizen).toBe(false);
+            expect(platform.isPS4).toBe(false);
+            expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(true);
+            expect(platform.name).toBe("Kepler");
+            expect(platform.version).toBe("1.1");
+            expect(platform.isCTV).toBe(true);
+            expect(platform.isConsole).toBe(false);
+            expect(platform.model).toBe("AFTCA002");
+        });
+
+        test("Kepler key mapping", () => {
+            const keyCodes = platform.keyCodes;
+            expect(platform.getInputAction(keyCodes.upArrow)).toBe(inputActions.moveUp);
+            expect(platform.getInputAction(keyCodes.downArrow)).toBe(inputActions.moveDown);
+            expect(platform.getInputAction(keyCodes.leftArrow)).toBe(inputActions.moveLeft);
+            expect(platform.getInputAction(keyCodes.rightArrow)).toBe(inputActions.moveRight);
+            expect(platform.getInputAction(keyCodes.enter)).toBe(inputActions.select);
+            expect(platform.getInputAction(keyCodes.backspace)).toBe(inputActions.back);
+            expect(platform.getInputAction(keyCodes.esc)).toBe(inputActions.back);
+            expect(platform.getInputAction(179)).toBe(inputActions.playPause);
+            expect(platform.getInputAction(227)).toBe(inputActions.rewind);
+            expect(platform.getInputAction(228)).toBe(inputActions.fastForward);
+        });
+    });
+
     describe("LG Tests", () => {
         // Mock LG OS API
         window.PalmSystem = new Object();

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.11.7
+* [PI-3307](https://infillion.atlassian.net/browse/PI-3307): TAR Kepler: main video "flashes thru" videos playing in webview
+  * add Kepler as a recognized platform 
+
 ## v1.11.6
 * [PI-3311](https://infillion.atlassian.net/browse/PI-3311): truex_servers, added `qrCodeServerUrl`
 * [PI-2952](https://infillion.atlassian.net/browse/PI-2952): migrate travis deploy script to Github Actions
