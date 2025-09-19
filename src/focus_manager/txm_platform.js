@@ -73,6 +73,7 @@ export class TXMPlatform {
         this.isAndroidMobile = false;
         this.isAndroidTV = false;
         this.isFireTV = false;
+        this.isKepler = false;
 
         this.isXboxOne = false;
         this.isNintendoSwitch = false;
@@ -122,7 +123,7 @@ export class TXMPlatform {
     get isHandheld() { return this.isIPhone || this.isAndroidMobile && /Mobile/.test(this.userAgent) }
     get isTablet() { return this.isIPad || this.isAndroidMobile && !this.isHandheld }
 
-    get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV || this.isComcast }
+    get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV || this.isComcast || this.isKepler }
     get isConsole() { return this.isXboxOne || this.isPS4 || this.isPS5 || this.isNintendoSwitch }
 
 
@@ -268,6 +269,9 @@ export class TXMPlatform {
             } else {
                 configureForAndroid();
             }
+
+        } else if (/Kepler/.test(userAgent)) {
+            configureForKepler();
 
         } else if (/Linux/.test(userAgent) && (window.$badger || !window.localStorage)) {
             // "Real" comcast apps uses the badger lib.
@@ -640,6 +644,21 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.fastForward] = 228;
             actionKeyCodes[inputActions.rewind] = 227;
             actionKeyCodes[inputActions.extra] = 82;
+        }
+
+        function configureForKepler() {
+            self.isKepler = true;
+            self.name = "Kepler";
+
+            // E.g. Mozilla/5.0 (Linux; Kepler 1.1; AFTCA002 user-external/4418; wv) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Chrome/132.0.6834.209 Safari/537.36
+            const matches = userAgent.match(/Kepler ([0-9.]+); (\S+)/);
+            self.version = matches && matches[1] || "?.?";
+            self.model = matches && matches[2] || "Unknown";
+
+            addDefaultKeyMap();
+            actionKeyCodes[inputActions.playPause] = 179;
+            actionKeyCodes[inputActions.rewind] = 227;
+            actionKeyCodes[inputActions.fastForward] = 228;
         }
 
         function configureForUnknownPlatform() {
