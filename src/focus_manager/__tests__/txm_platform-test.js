@@ -15,6 +15,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("Unknown");
             expect(platform.isCTV).toBe(false);
             expect(platform.isConsole).toBe(false);
@@ -80,6 +82,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("FireTV");
             expect(platform.model).toBe("Fire TV Stick (Gen 2)");
             expect(platform.modelId).toBe("AFTT");
@@ -130,6 +134,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("AndroidTV");
             expect(platform.model).toBe(platform.name);
             expect(platform.version).toBe("5.1");
@@ -177,6 +183,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("Android");
             expect(platform.model).toBe(platform.name);
             expect(platform.version).toBe("4.2");
@@ -205,6 +213,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("Android");
             expect(platform.model).toBe(platform.name);
             expect(platform.version).toBe("7.1.1");
@@ -229,6 +239,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("Vizio");
             expect(platform.isCTV).toBe(true);
             expect(platform.isConsole).toBe(false);
@@ -275,6 +287,7 @@ describe("TXMPlatform", () => {
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
             expect(platform.isComcast).toBe(true);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("Comcast");
             expect(platform.isCTV).toBe(true);
             expect(platform.isConsole).toBe(false);
@@ -360,6 +373,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("LG");
             expect(platform.model).toBe("LG Fake Model");
             expect(platform.version).toBe("1.2.3");
@@ -397,6 +412,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(true);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("Tizen");
             expect(platform.model).toBe("2018");
             expect(platform.version).toBe("4.0");
@@ -432,6 +449,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(true);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("PS4");
             expect(platform.model).toBe("PS4");
             expect(platform.version).toBe("5.05");
@@ -452,6 +471,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(true);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("PS4");
             expect(platform.model).toBe("PS4");
             expect(platform.version).toBe("WebMAF/v1.2.30.4");
@@ -489,6 +510,8 @@ describe("TXMPlatform", () => {
             expect(platform.isPS4).toBe(false);
             expect(platform.isPS5).toBe(true);
             expect(platform.isXboxOne).toBe(false);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("PS5");
             expect(platform.model).toBe("PS5");
             expect(platform.version).toBe("1.05");
@@ -525,6 +548,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(true);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("XboxOne");
             expect(platform.model).toBe("Windows.Xbox");
             expect(platform.version).toBe("Unknown");
@@ -560,6 +585,8 @@ describe("TXMPlatform", () => {
             expect(platform.isTizen).toBe(false);
             expect(platform.isPS4).toBe(false);
             expect(platform.isXboxOne).toBe(true);
+            expect(platform.isComcast).toBe(false);
+            expect(platform.isKepler).toBe(false);
             expect(platform.name).toBe("XboxOne");
             expect(platform.model).toBe("Windows.Xbox");
             expect(platform.version).toBe("1.2.3");
