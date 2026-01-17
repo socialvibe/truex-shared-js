@@ -1,7 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import pkg from 'uuid';
-const { v4: uuid } = pkg;
+import { v4 as uuid } from 'uuid';
 import { getRandomValuesFallback } from "../uuid-polyfill.js";
 
 describe('uuid_polyfill-test', () => {

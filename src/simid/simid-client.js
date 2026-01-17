@@ -1,5 +1,4 @@
-import pkg from 'uuid';
-const { v4: uuid } = pkg;
+import { v4 as uuid } from 'uuid';
 
 /**
  * Provides an implementation of the Secure Interactive Media Interface Definition (SIMID) for use in
