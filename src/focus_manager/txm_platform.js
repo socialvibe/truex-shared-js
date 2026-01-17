@@ -1,5 +1,5 @@
-import { inputActions } from './txm_input_actions';
-import { ScriptLoader } from "../utils/loaders";
+import { inputActions } from './txm_input_actions.js';
+import { ScriptLoader } from "../utils/loaders.js";
 
 /**
  * Standard ASCII key codes

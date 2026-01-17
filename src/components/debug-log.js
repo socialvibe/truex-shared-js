@@ -1,6 +1,6 @@
-import { inputActions } from '../focus_manager/txm_input_actions';
+import { inputActions } from '../focus_manager/txm_input_actions.js';
 import debugCss from './debug-log.scss';
-import { TXMFocusManager } from "../focus_manager/txm_focus_manager";
+import { TXMFocusManager } from "../focus_manager/txm_focus_manager.js";
 
 /**
  * Defines a debug log display that overlays the existing application page, typically with the recent contents of the

@@ -1,21 +1,21 @@
-import { GetFileExtension } from '../get_file_extension';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { GetFileExtension } from '../get_file_extension.js';
 
 describe('GetFileExtension', () => {
     it('throws when a filename is not provided', () => {
-        const shouldThrow = () => {
+        assert.throws(() => {
             GetFileExtension();
-        };
-        expect(shouldThrow).toThrow();
+        });
     });
 
     it('throws if the filename given is not a string', () => {
-        const shouldThrow = () => {
+        assert.throws(() => {
             GetFileExtension({});
-        };
-        expect(shouldThrow).toThrow();
+        });
     });
 
     it('returns the file extension', () => {
-        expect(GetFileExtension('foo.js')).toBe('js');
+        assert.strictEqual(GetFileExtension('foo.js'), 'js');
     });
 });

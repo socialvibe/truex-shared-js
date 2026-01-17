@@ -3,33 +3,21 @@
   "version": "1.11.7",
   "description": "Common JS code shared across true[X] repos",
   "private": true,
+  "type": "module",
   "files": [
     "src"
   ],
   "main": "./src/",
   "scripts": {
-    "test": "jest",
-    "test:ci": "jest --ci --reporters=default --reporters=jest-junit",
-    "watch": "jest --watch",
-    "coverage": "jest --coverage"
+    "test": "node --import ./src/__tests__/setup.mjs --test 'src/**/__tests__/*-test*.js'",
+    "test:ci": "node --import ./src/__tests__/setup.mjs --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=test-results/junit.xml 'src/**/__tests__/*-test*.js'",
+    "watch": "node --import ./src/__tests__/setup.mjs --test --watch 'src/**/__tests__/*-test*.js'",
+    "coverage": "node --import ./src/__tests__/setup.mjs --test --experimental-test-coverage 'src/**/__tests__/*-test*.js'"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.14",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "jest-junit": "^16.0.0",
-    "whatwg-fetch": "^3.0.0"
+    "jsdom": "^25.0.0"
   },
   "dependencies": {
     "uuid": "^3.4.0"
-  },
-  "jest-junit": {
-    "outputDirectory": "test-results",
-    "outputName": "junit.xml",
-    "ancestorSeparator": " › ",
-    "uniqueOutputName": "false",
-    "suiteNameTemplate": "{filepath}",
-    "classNameTemplate": "{classname}",
-    "titleTemplate": "{title}"
   }
 }

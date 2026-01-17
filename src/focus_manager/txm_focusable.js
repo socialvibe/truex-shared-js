@@ -1,5 +1,5 @@
-import { inputActions } from './txm_input_actions';
-import { FocusChange } from './txm_focus_change';
+import { inputActions } from './txm_input_actions.js';
+import { FocusChange } from './txm_focus_change.js';
 
 /**
  * Describes the method signatures that should be supported for a component to

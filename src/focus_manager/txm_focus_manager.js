@@ -1,11 +1,12 @@
-import { inputActions } from './txm_input_actions';
-import { keyCodes, TXMPlatform } from './txm_platform';
-import { FocusChange } from './txm_focus_change';
-import { getElementPath } from '../utils/get_element_path';
+import { inputActions } from './txm_input_actions.js';
+import { keyCodes, TXMPlatform } from './txm_platform.js';
+import { FocusChange } from './txm_focus_change.js';
+import { getElementPath } from '../utils/get_element_path.js';
 
-import '../utils/uuid-polyfill';
-import { v4 as uuid } from 'uuid';
-import timedTrace from "../utils/timed_trace";
+import '../utils/uuid-polyfill.js';
+import pkg from 'uuid';
+const { v4: uuid } = pkg;
+import timedTrace from "../utils/timed_trace.js";
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an

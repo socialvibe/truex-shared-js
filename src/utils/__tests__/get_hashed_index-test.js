@@ -1,4 +1,6 @@
-import { getHashedIndex  } from '../get_hashed_index';
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
+import { getHashedIndex } from '../get_hashed_index.js';
 
 describe("getHashedIndex A/B test variants", () => {
     test("test with no variants", () => {
@@ -14,10 +16,10 @@ describe("getHashedIndex A/B test variants", () => {
             ]
         };
 
-        expect(getHashedIndex(vastConfig.user.id, vastConfig.card_configurations.length)).toBe(0);
+        assert.strictEqual(getHashedIndex(vastConfig.user.id, vastConfig.card_configurations.length), 0);
 
         // Tolerate missing config
-        expect(getHashedIndex(undefined)).toBe(0);
+        assert.strictEqual(getHashedIndex(undefined), 0);
     });
 
     test("test with variants", () => {
@@ -38,7 +40,7 @@ describe("getHashedIndex A/B test variants", () => {
             ]
         };
 
-        expect(getHashedIndex(user1, vastConfig.card_configurations.length)).toBe(0);
-        expect(getHashedIndex(user2, vastConfig.card_configurations.length)).toBe(1);
+        assert.strictEqual(getHashedIndex(user1, vastConfig.card_configurations.length), 0);
+        assert.strictEqual(getHashedIndex(user2, vastConfig.card_configurations.length), 1);
     });
 });

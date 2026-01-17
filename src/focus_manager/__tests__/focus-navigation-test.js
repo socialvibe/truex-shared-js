@@ -1,6 +1,8 @@
-import { TXMFocusManager } from "../txm_focus_manager";
-import { Focusable } from "../txm_focusable";
-import { inputActions } from "../txm_input_actions";
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
+import { TXMFocusManager } from "../txm_focus_manager.js";
+import { Focusable } from "../txm_focusable.js";
+import { inputActions } from "../txm_input_actions.js";
 
 describe("complex navigation tests", () => {
 
@@ -41,7 +43,7 @@ describe("complex navigation tests", () => {
     focusManager.setFocus(currFocus);
     focusManager.onInputAction(action);
     if (!newFocus) newFocus = currFocus; // unspecified means no change to focus
-    expect(focusManager.currentFocus).toBe(newFocus);
+    assert.strictEqual(focusManager.currentFocus, newFocus);
   }
 
   function testAllInputs(currFocus, leftFocus, rightFocus, upFocus, downFocus) {

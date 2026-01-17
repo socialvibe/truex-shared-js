@@ -1,3 +1,5 @@
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
+import assert from 'node:assert';
 import {
     BaseLoader,
     ImageLoader,
@@ -6,59 +8,59 @@ import {
     StyleLoader,
     TextLoader,
     GetAssetLoader,
-} from '../loaders';
+} from '../loaders.js';
 
 describe('BaseLoader Class', () => {
     describe('constructor', () => {
         it('throws an error if a url to load is not defined', () => {
-            const willThrow = () => {
+            assert.throws(() => {
                 new BaseLoader();
-            };
-            expect(willThrow).toThrow();
+            });
         });
 
         it('does not throw an error if a url is given', () => {
-            const shouldNotThrow = () => {
+            assert.doesNotThrow(() => {
                 new BaseLoader('myurl');
-            };
-            expect(shouldNotThrow).not.toThrow();
+            });
         });
     });
 
     describe('onload', () => {
         it('saves an onload callback', () => {
             const loader = new BaseLoader('http://google.com/track');
-            const onloadCB = jest.fn();
-            expect(loader.onload).toBeUndefined();
+            const onloadCB = mock.fn();
+            assert.strictEqual(loader.onload, undefined);
             loader.onload = onloadCB;
-            expect(loader.onload).toBeDefined();
+            assert.notStrictEqual(loader.onload, undefined);
         });
     });
 
     describe('onerror', () => {
-        it('saves an onerror callback', () => {
+        it('saves an onerror callback', async () => {
             const loader = new BaseLoader('http://google.com/track');
-            const onerrorCB = jest.fn();
-            expect(loader.onerror).toBeUndefined();
+            const onerrorCB = mock.fn();
+            assert.strictEqual(loader.onerror, undefined);
             loader.onerror = onerrorCB;
-            expect(loader.onerror).toBeDefined();
+            assert.notStrictEqual(loader.onerror, undefined);
 
             const promise = loader.promise;
             const testError = new Error('test error');
             let warning;
+            const origWarn = console.warn;
             console.warn = (...args) => {warning = args.join(' ')};
             loader.__reject(testError, 1, 2);
 
-            return promise
-                .then(() => {
-                    // should not get here
-                    expect(false).toBe(true);
-                })
-                .catch(err => {
-                    expect(err).toBe(testError);
-                    expect(onerrorCB).toHaveBeenCalled();
-                    expect(warning).toEqual('rejected http://google.com/track Error: test error 1 2');
-                });
+            try {
+                await promise;
+                // should not get here
+                assert.strictEqual(false, true);
+            } catch (err) {
+                assert.strictEqual(err, testError);
+                assert.strictEqual(onerrorCB.mock.callCount(), 1);
+                assert.strictEqual(warning, 'rejected http://google.com/track Error: test error 1 2');
+            } finally {
+                console.warn = origWarn;
+            }
         });
     });
 });
@@ -66,76 +68,78 @@ describe('BaseLoader Class', () => {
 describe('ScriptLoader', () => {
     it('creates a new script element', () => {
         const script = new ScriptLoader('http://myscript.js');
-        expect(script.element).toBeDefined();
-        expect(script.element.nodeName).toBe('SCRIPT');
+        assert.notStrictEqual(script.element, undefined);
+        assert.strictEqual(script.element.nodeName, 'SCRIPT');
     });
 });
 
 describe('ImageLoader', () => {
     it('creates a new image element', () => {
         const img = new ImageLoader('myimg.jpeg');
-        expect(img.element).toBeDefined();
-        expect(img.element.nodeName).toBe('IMG');
+        assert.notStrictEqual(img.element, undefined);
+        assert.strictEqual(img.element.nodeName, 'IMG');
     });
 });
 
 describe('IframeLoader', () => {
     it('creates a new iframe element', () => {
         const iframe = new IframeLoader('http://google.com');
-        expect(iframe.element).toBeDefined();
-        expect(iframe.element.nodeName).toBe('IFRAME');
+        assert.notStrictEqual(iframe.element, undefined);
+        assert.strictEqual(iframe.element.nodeName, 'IFRAME');
     });
 });
 
 describe('StyleLoader', () => {
     it('creates a new script element', () => {
         const style = new StyleLoader('http://google.com/mycss.css');
-        expect(style.element).toBeDefined();
-        expect(style.element.nodeName).toBe('LINK');
+        assert.notStrictEqual(style.element, undefined);
+        assert.strictEqual(style.element.nodeName, 'LINK');
     });
 });
 
 describe('GetAssetLoader', () => {
-    const origLog = console.log;
-    // supress console.log
+    let origLog;
+    
     beforeEach(() => {
-        console.log = jest.fn();
+        origLog = console.log;
+        console.log = mock.fn();
     });
+    
     afterEach(() => {
         console.log = origLog;
     });
 
     it('returns a script loader if the filename given ends with .js', () => {
         const loader = GetAssetLoader('myscript.js');
-        expect(loader instanceof ScriptLoader).toBe(true);
+        assert.strictEqual(loader instanceof ScriptLoader, true);
     });
 
     it('returns an image loader if the filename ends with an png, gif, jpg, svg', () => {
         const extensions = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
         extensions.forEach((ext) => {
             const loader = GetAssetLoader(`myimage.${ext}`);
-            expect(loader instanceof ImageLoader).toBe(true);
+            assert.strictEqual(loader instanceof ImageLoader, true);
         });
     });
 
     it('returns a style loader if the filename ends with css', () => {
         const loader = GetAssetLoader('mycss.css');
-        expect(loader instanceof StyleLoader).toBe(true);
+        assert.strictEqual(loader instanceof StyleLoader, true);
     });
 
     it('returns undefined if the file extension is not known', () => {
         const loader = GetAssetLoader('https://google.com/abc/myvideo.mp4');
-        expect(loader).toBeUndefined();
+        assert.strictEqual(loader, undefined);
     });
 
     it('returns a script loader if we pass it a config with type set to "script"', () => {
         const loader = GetAssetLoader({ url: 'myscript', type: 'script' });
-        expect(loader instanceof ScriptLoader).toBe(true);
+        assert.strictEqual(loader instanceof ScriptLoader, true);
     });
 
     it('returns a script loader if we pass it a config with type set to "style"', () => {
         const loader = GetAssetLoader({ url: 'mycss', type: 'style' });
-        expect(loader instanceof StyleLoader).toBe(true);
+        assert.strictEqual(loader instanceof StyleLoader, true);
     });
 
     it('returns an image loader if we pass it a config with type set to "image"', () => {
@@ -143,12 +147,12 @@ describe('GetAssetLoader', () => {
             url: 'http://google.com/my/image',
             type: 'image',
         });
-        expect(loader instanceof ImageLoader).toBe(true);
+        assert.strictEqual(loader instanceof ImageLoader, true);
     });
 
     it('returns a text loader if the filename ends with html', () => {
         const loader = GetAssetLoader('http://google.com/my/page.html');
-        expect(loader instanceof TextLoader).toBe(true);
+        assert.strictEqual(loader instanceof TextLoader, true);
     });
 
     it('returns a text loader if we pass it a config with type set to "html"', () => {
@@ -156,7 +160,7 @@ describe('GetAssetLoader', () => {
             url: 'http://google.com/my/page.html',
             type: 'html',
         });
-        expect(loader instanceof TextLoader).toBe(true);
+        assert.strictEqual(loader instanceof TextLoader, true);
     });
 
     it('returns undefined if an known type is given', () => {
@@ -164,6 +168,6 @@ describe('GetAssetLoader', () => {
             url: 'http://google.com/my/image',
             type: 'cool',
         });
-        expect(loader).toBeUndefined();
+        assert.strictEqual(loader, undefined);
     });
 });

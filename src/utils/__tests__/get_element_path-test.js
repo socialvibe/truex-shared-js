@@ -1,4 +1,6 @@
-import { getElementPath } from '../get_element_path';
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { getElementPath } from '../get_element_path.js';
 
 test('test getElementPath', () => {
     let testDiv1 = document.createElement("div");
@@ -31,14 +33,14 @@ test('test getElementPath', () => {
     testVideo.className = 'hasFocus';
     videoContainer.appendChild(testVideo);
 
-    expect(getElementPath(document.body)).toBe('body');
-    expect(getElementPath(document.body.parentNode)).toBe('html');
+    assert.strictEqual(getElementPath(document.body), 'body');
+    assert.strictEqual(getElementPath(document.body.parentNode), 'html');
 
-    expect(getElementPath(testDiv1)).toBe('#focus1');
-    expect(getElementPath(testDiv2)).toBe('body div[1].actionButton.hasFocus');
-    expect(getElementPath(testDiv4)).toBe('body div[3].actionButton');
-    expect(getElementPath(testDiv5)).toBe('body div[4]');
+    assert.strictEqual(getElementPath(testDiv1), '#focus1');
+    assert.strictEqual(getElementPath(testDiv2), 'body div[1].actionButton.hasFocus');
+    assert.strictEqual(getElementPath(testDiv4), 'body div[3].actionButton');
+    assert.strictEqual(getElementPath(testDiv5), 'body div[4]');
 
-    expect(getElementPath(testImg)).toBe('#videoContainer img');
-    expect(getElementPath(testVideo)).toBe('#videoContainer video.hasFocus');
+    assert.strictEqual(getElementPath(testImg), '#videoContainer img');
+    assert.strictEqual(getElementPath(testVideo), '#videoContainer video.hasFocus');
 });

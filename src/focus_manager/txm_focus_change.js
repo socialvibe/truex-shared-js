@@ -1,4 +1,4 @@
-import { inputActions } from './txm_input_actions';
+import { inputActions } from './txm_input_actions.js';
 
 /**
  * Describes the context of a focus change. Used to allow variations on focus processing

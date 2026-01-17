@@ -1,7 +1,10 @@
-import { inputActions} from "../txm_input_actions";
-import { Focusable} from "../txm_focusable";
-import { TXMFocusManager } from "../txm_focus_manager";
-import { keyCodes } from "../txm_platform";
+import { describe, test, mock, beforeEach } from 'node:test';
+import assert from 'node:assert';
+
+import { inputActions} from "../txm_input_actions.js";
+import { Focusable} from "../txm_focusable.js";
+import { TXMFocusManager } from "../txm_focus_manager.js";
+import { keyCodes } from "../txm_platform.js";
 
 describe("TXMFocusManager", () => {
     let testDiv1 = document.createElement("div");
@@ -30,14 +33,14 @@ describe("TXMFocusManager", () => {
     keyEvent.keyCode = keyCodes.space;
 
     test("Focusable element DOM references", () => {
-        expect(focus1.element).toBe(testDiv1);
-        expect(focus2.element).toBe(testDiv2);
+        assert.strictEqual(focus1.element, testDiv1);
+        assert.strictEqual(focus2.element, testDiv2);
     });
 
     test("Focusable element querySelector string references", () => {
-        expect(new Focusable("#focus1").element).toBe(testDiv1);
-        expect(new Focusable(".coolButton").element).toBe(testDiv2);
-        expect(new Focusable("body").element).toBe(document.body);
+        assert.strictEqual(new Focusable("#focus1").element, testDiv1);
+        assert.strictEqual(new Focusable(".coolButton").element, testDiv2);
+        assert.strictEqual(new Focusable("body").element, document.body);
     });
 
     describe("focus manager current focus", () => {
@@ -45,36 +48,36 @@ describe("TXMFocusManager", () => {
 
         test("test initial focus", () => {
             fm.setFocus(undefined);
-            expect(fm.currentFocus).toBe(undefined);
+            assert.strictEqual(fm.currentFocus, undefined);
         });
 
         test("test focus set", () => {
             fm.setFocus(focus1);
-            expect(fm.currentFocus).toBe(focus1);
-            expect(focus1.element.className).toBe("hasFocus");
-            expect(focus2.element.className).toBe("coolButton");
+            assert.strictEqual(fm.currentFocus, focus1);
+            assert.strictEqual(focus1.element.className, "hasFocus");
+            assert.strictEqual(focus2.element.className, "coolButton");
         });
 
         test("test focus switch", () => {
             fm.setFocus(focus2);
-            expect(fm.currentFocus).toBe(focus2);
-            expect(focus1.element.className).toBe("");
-            expect(focus2.element.className).toBe("coolButton hasFocus");
+            assert.strictEqual(fm.currentFocus, focus2);
+            assert.strictEqual(focus1.element.className, "");
+            assert.strictEqual(focus2.element.className, "coolButton hasFocus");
         });
 
         test("test focus clear", () => {
             fm.setFocus(null);
-            expect(fm.currentFocus).toBe(undefined);
-            expect(focus1.element.className).toBe("");
-            expect(focus2.element.className).toBe("coolButton");
+            assert.strictEqual(fm.currentFocus, undefined);
+            assert.strictEqual(focus1.element.className, "");
+            assert.strictEqual(focus2.element.className, "coolButton");
         });
     });
 
     describe("test focus mouse events", () => {
         const fm = new TXMFocusManager();
 
-        const selectAction = jest.fn();
-        const inputAction = jest.fn();
+        const selectAction = mock.fn();
+        const inputAction = mock.fn();
 
         let focus3 = new Focusable(testDiv3, selectAction, inputAction);
         focus3.addMouseEventListeners(fm);
@@ -85,39 +88,40 @@ describe("TXMFocusManager", () => {
         mouseEnter.screenY = 2;
 
         focus3.element.dispatchEvent(mouseEnter);
-        expect(fm.currentFocus).toBe(focus3);
+        assert.strictEqual(fm.currentFocus, focus3);
 
         const mouseClick = document.createEvent('Event');
         mouseClick.initEvent("click", true, true);
 
         focus3.element.dispatchEvent(mouseClick);
-        expect(selectAction).toHaveBeenCalled();
-        expect(inputAction).not.toHaveBeenCalled();
+        assert.strictEqual(selectAction.mock.callCount(), 1);
+        assert.strictEqual(inputAction.mock.callCount(), 0);
 
-        selectAction.mockClear();
-        inputAction.mockClear();
+        selectAction.mock.resetCalls();
+        inputAction.mock.resetCalls();
 
         focus3.onSelectAction = undefined;
 
         focus3.element.dispatchEvent(mouseClick);
-        expect(selectAction).not.toHaveBeenCalled();
-        expect(inputAction).toHaveBeenCalledWith(inputActions.select, mouseClick);
+        assert.strictEqual(selectAction.mock.callCount(), 0);
+        assert.strictEqual(inputAction.mock.callCount(), 1);
+        assert.deepStrictEqual(inputAction.mock.calls[0].arguments, [inputActions.select, mouseClick]);
 
         // Test via constructor.
         let focus4 = new Focusable(testDiv4, selectAction, inputAction, fm);
 
-        selectAction.mockClear();
-        inputAction.mockClear();
+        selectAction.mock.resetCalls();
+        inputAction.mock.resetCalls();
 
         focus4.element.dispatchEvent(mouseClick);
-        expect(selectAction).toHaveBeenCalled();
-        expect(inputAction).not.toHaveBeenCalled();
+        assert.strictEqual(selectAction.mock.callCount(), 1);
+        assert.strictEqual(inputAction.mock.callCount(), 0);
     });
 
     describe("test focus mouse events enabled/disabled", () => {
         const fm = new TXMFocusManager();
 
-        const selectAction = jest.fn();
+        const selectAction = mock.fn();
 
         var mouseEnabled = true;
 
@@ -147,41 +151,41 @@ describe("TXMFocusManager", () => {
         mouseEnter.screenY = 1;
 
         clickableFocus.element.dispatchEvent(mouseEnter);
-        expect(fm.currentFocus).toBe(clickableFocus);
+        assert.strictEqual(fm.currentFocus, clickableFocus);
 
         // Verify onFocusSet callback args with mouse related focus changes.
-        expect(lastHasFocus).toBe(true);
-        expect(lastFocusChange && lastFocusChange.oldFocus).toBe(undefined);
-        expect(lastFocusChange && lastFocusChange.newFocus).toBe(clickableFocus);
-        expect(lastFocusChange && lastFocusChange.action).toBe(undefined);
-        expect(lastFocusChange && lastFocusChange.event && lastFocusChange.event.type).toBe('mouseenter');
+        assert.strictEqual(lastHasFocus, true);
+        assert.strictEqual(lastFocusChange && lastFocusChange.oldFocus, undefined);
+        assert.strictEqual(lastFocusChange && lastFocusChange.newFocus, clickableFocus);
+        assert.strictEqual(lastFocusChange && lastFocusChange.action, undefined);
+        assert.strictEqual(lastFocusChange && lastFocusChange.event && lastFocusChange.event.type, 'mouseenter');
 
         const mouseClick = document.createEvent('Event');
         mouseClick.initEvent("click", true, true);
 
         clickableFocus.element.dispatchEvent(mouseClick);
-        expect(selectAction).toHaveBeenCalled();
+        assert.strictEqual(selectAction.mock.callCount(), 1);
 
         // Mouse events should now be ignored:
         mouseEnabled = false;
-        selectAction.mockClear();
+        selectAction.mock.resetCalls();
         lastHasFocus = undefined;
         lastFocusChange = undefined;
 
         clickableFocus.element.dispatchEvent(mouseClick);
-        expect(fm.currentFocus).toBe(clickableFocus);
-        expect(selectAction).not.toHaveBeenCalled();
+        assert.strictEqual(fm.currentFocus, clickableFocus);
+        assert.strictEqual(selectAction.mock.callCount(), 0);
 
         fm.setFocus(undefined, 'fake-action');
 
-        expect(lastHasFocus).toBe(false);
-        expect(lastFocusChange && lastFocusChange.oldFocus).toBe(clickableFocus);
-        expect(lastFocusChange && lastFocusChange.newFocus).toBe(undefined);
-        expect(lastFocusChange && lastFocusChange.action).toBe('fake-action');
-        expect(lastFocusChange && lastFocusChange.event).toBe(undefined);
+        assert.strictEqual(lastHasFocus, false);
+        assert.strictEqual(lastFocusChange && lastFocusChange.oldFocus, clickableFocus);
+        assert.strictEqual(lastFocusChange && lastFocusChange.newFocus, undefined);
+        assert.strictEqual(lastFocusChange && lastFocusChange.action, 'fake-action');
+        assert.strictEqual(lastFocusChange && lastFocusChange.event, undefined);
 
         clickableFocus.element.dispatchEvent(mouseEnter);
-        expect(fm.currentFocus).toBe(undefined);
+        assert.strictEqual(fm.currentFocus, undefined);
     });
 
     describe("focus manager optional onSelectAction callback", () => {
@@ -189,56 +193,58 @@ describe("TXMFocusManager", () => {
         fm.keyThrottleDelay = 0; // disable throttling for this test
 
         test("onSelectAction callback should only happen on focus1", () => {
-            focus1.onSelectAction = jest.fn();
-            focus1.onInputAction = jest.fn();
-            focus2.onSelectAction = jest.fn();
+            focus1.onSelectAction = mock.fn();
+            focus1.onInputAction = mock.fn();
+            focus2.onSelectAction = mock.fn();
 
             fm.setFocus(focus1);
             fm.onKeyDown(keyEvent);
 
-            expect(focus1.onSelectAction).toHaveBeenCalledWith(keyEvent);
-            expect(focus1.onInputAction).not.toHaveBeenCalled();
-            expect(focus2.onSelectAction).not.toHaveBeenCalled();
+            assert.strictEqual(focus1.onSelectAction.mock.callCount(), 1);
+            assert.deepStrictEqual(focus1.onSelectAction.mock.calls[0].arguments, [keyEvent]);
+            assert.strictEqual(focus1.onInputAction.mock.callCount(), 0);
+            assert.strictEqual(focus2.onSelectAction.mock.callCount(), 0);
         });
 
         test("switch to focus2, onSelectAction callback should now only happen on focus2", () => {
             fm.setFocus(focus2);
 
-            focus1.onSelectAction = jest.fn();
-            focus2.onSelectAction = jest.fn();
+            focus1.onSelectAction = mock.fn();
+            focus2.onSelectAction = mock.fn();
 
             fm.onKeyDown(keyEvent);
 
-            expect(focus1.onSelectAction).not.toHaveBeenCalled()
-            expect(focus2.onSelectAction).toHaveBeenCalledWith(keyEvent);
+            assert.strictEqual(focus1.onSelectAction.mock.callCount(), 0);
+            assert.strictEqual(focus2.onSelectAction.mock.callCount(), 1);
+            assert.deepStrictEqual(focus2.onSelectAction.mock.calls[0].arguments, [keyEvent]);
         });
 
         test("non-functional onSelectAction should cause a warning, no crash", () => {
             focus2.onSelectAction = "non-function";
             let oldWarn = console.warn;
-            console.warn = jest.fn();
+            console.warn = mock.fn();
 
             fm.onKeyDown(keyEvent);
 
-            expect(console.warn).toHaveBeenCalled()
+            assert.strictEqual(console.warn.mock.callCount(), 1);
 
             console.warn = oldWarn;
         });
     });
 
-    test("key event throttling", ()=> {
+    test("key event throttling", async () => {
         const fm = new TXMFocusManager();
         fm.keyThrottleDelay = 100; // ensure throttling for this test
-        fm.onInputAction = jest.fn();
+        fm.onInputAction = mock.fn();
         fm.onKeyDown(keyEvent);
-        expect(fm.onInputAction).toHaveBeenCalledTimes(1);
-        fm.onKeyDown(keyEvent);
-        fm.onKeyDown(keyEvent);
+        assert.strictEqual(fm.onInputAction.mock.callCount(), 1);
         fm.onKeyDown(keyEvent);
         fm.onKeyDown(keyEvent);
-        expect(fm.onInputAction).toHaveBeenCalledTimes(1);
+        fm.onKeyDown(keyEvent);
+        fm.onKeyDown(keyEvent);
+        assert.strictEqual(fm.onInputAction.mock.callCount(), 1);
 
-        return new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             // Eventually a new key event gets past the threshold and resets the timeouts.
             const keysTimesLeft = [
                 20, 20, 20, 20, 21, // here
@@ -255,7 +261,7 @@ describe("TXMFocusManager", () => {
                         waitForNextKey();
                     }, keyDelay);
                 } else {
-                    expect(fm.onInputAction).toHaveBeenCalledTimes(4);
+                    assert.strictEqual(fm.onInputAction.mock.callCount(), 4);
                     resolve();
                 }
             }
@@ -269,30 +275,30 @@ describe("TXMFocusManager", () => {
         focus1.onSelectAction = undefined;
         focus2.onSelectAction = undefined;
 
-        focus1.onInputAction = jest.fn();
-        focus2.onInputAction = jest.fn();
+        focus1.onInputAction = mock.fn();
+        focus2.onInputAction = mock.fn();
 
         fm.setFocus(focus1);
 
         fm.onKeyDown(keyEvent);
 
-        expect(focus1.onInputAction).toHaveBeenCalledWith(inputActions.select, keyEvent);
-        expect(focus2.onInputAction).not.toHaveBeenCalled();
+        assert.strictEqual(focus1.onInputAction.mock.callCount(), 1);
+        assert.deepStrictEqual(focus1.onInputAction.mock.calls[0].arguments, [inputActions.select, keyEvent]);
+        assert.strictEqual(focus2.onInputAction.mock.callCount(), 0);
 
         fm.setFocus(focus2);
 
-        focus1.onInputAction = jest.fn();
-        focus2.onInputAction = jest.fn();
+        focus1.onInputAction = mock.fn();
+        focus2.onInputAction = mock.fn();
 
         fm.onKeyDown(keyEvent);
 
-        expect(focus1.onInputAction).not.toHaveBeenCalled()
-        expect(focus2.onInputAction).toHaveBeenCalledWith(inputActions.select, keyEvent);
+        assert.strictEqual(focus1.onInputAction.mock.callCount(), 0);
+        assert.strictEqual(focus2.onInputAction.mock.callCount(), 1);
+        assert.deepStrictEqual(focus2.onInputAction.mock.calls[0].arguments, [inputActions.select, keyEvent]);
     });
 
-    test("focus manager action injection", () => {
-        jest.setTimeout(10 * 1000);
-
+    test("focus manager action injection", { timeout: 10000 }, async () => {
         const fm = new TXMFocusManager();
         fm.keyThrottleDelay = 0; // disable throttling for this test
         fm.setFocus(focus1);
@@ -315,52 +321,47 @@ describe("TXMFocusManager", () => {
 
         let verifyDelay = (actual, expected) => {
             const tolerance = 46;
-            expect(actual).toBeGreaterThan(expected - tolerance);
-            expect(actual).toBeLessThan(expected + tolerance);
+            assert.ok(actual > expected - tolerance, `Expected ${actual} > ${expected - tolerance}`);
+            assert.ok(actual < expected + tolerance, `Expected ${actual} < ${expected + tolerance}`);
         };
 
-        return fm.inject(1000, inputActions.select)
-            .then(focusPath => {
-                expect(focusPath).toBe('#focus1');
+        let focusPath = await fm.inject(1000, inputActions.select);
+        assert.strictEqual(focusPath, '#focus1');
 
-                return fm.inject(0, inputActions.moveRight, 0, inputActions.moveLeft)
-            })
-            // verify we can also inject an explicit array
-            .then(() => fm.inject([inputActions.moveLeft, 500, inputActions.moveRight]))
-            .then(() => {
-                fm.setFocus(focus2);
-                return fm.inject(inputActions.moveDown)
-            })
-            .then(focusPath => {
-                expect(focusPath).toBe('#focus2');
-                return fm.inject(500, inputActions.back)
-            })
-            .then(() => {
-                expect(injectedActions).toEqual([
-                    inputActions.select,
-                    inputActions.moveRight, inputActions.moveLeft,
-                    inputActions.moveLeft, inputActions.moveRight,
-                    inputActions.moveDown,
-                    inputActions.back]);
+        await fm.inject(0, inputActions.moveRight, 0, inputActions.moveLeft);
+        // verify we can also inject an explicit array
+        await fm.inject([inputActions.moveLeft, 500, inputActions.moveRight]);
 
-                verifyDelay(injectionDelays[0], 1000);
-                verifyDelay(injectionDelays[1], 0);
-                verifyDelay(injectionDelays[2], 0);
-                verifyDelay(injectionDelays[3], 0);
-                verifyDelay(injectionDelays[4], 500);
-                verifyDelay(injectionDelays[5], 0);
-                verifyDelay(injectionDelays[6], 500);
-            });
+        fm.setFocus(focus2);
+        focusPath = await fm.inject(inputActions.moveDown);
+        assert.strictEqual(focusPath, '#focus2');
+
+        await fm.inject(500, inputActions.back);
+
+        assert.deepStrictEqual(injectedActions, [
+            inputActions.select,
+            inputActions.moveRight, inputActions.moveLeft,
+            inputActions.moveLeft, inputActions.moveRight,
+            inputActions.moveDown,
+            inputActions.back]);
+
+        verifyDelay(injectionDelays[0], 1000);
+        verifyDelay(injectionDelays[1], 0);
+        verifyDelay(injectionDelays[2], 0);
+        verifyDelay(injectionDelays[3], 0);
+        verifyDelay(injectionDelays[4], 500);
+        verifyDelay(injectionDelays[5], 0);
+        verifyDelay(injectionDelays[6], 500);
     });
 
     test("focus manager getCurrentFocusPath", () => {
         // We only need to verify the connection to getElementPath
         const fm = new TXMFocusManager();
 
-        expect(fm.getCurrentFocusPath()).toBe(undefined);
+        assert.strictEqual(fm.getCurrentFocusPath(), undefined);
 
         fm.setFocus(focus1);
-        expect(fm.getCurrentFocusPath()).toBe('#focus1');
+        assert.strictEqual(fm.getCurrentFocusPath(), '#focus1');
     });
 
     test("focus manager onVideoAction callback", () => {
@@ -371,8 +372,8 @@ describe("TXMFocusManager", () => {
             localName: 'video',
             classList: {add: function() {}, remove: function() {}},
             paused: true,
-            play: jest.fn(),
-            pause: jest.fn()
+            play: mock.fn(),
+            pause: mock.fn()
         };
 
         let videoFocus = new Focusable(video);
@@ -380,17 +381,17 @@ describe("TXMFocusManager", () => {
 
         fm.onKeyDown(keyEvent);
 
-        expect(video.play).toHaveBeenCalled();
-        expect(video.pause).not.toHaveBeenCalled();
+        assert.strictEqual(video.play.mock.callCount(), 1);
+        assert.strictEqual(video.pause.mock.callCount(), 0);
 
         video.paused = false;
-        video.play.mockClear();
-        video.pause.mockClear();
+        video.play.mock.resetCalls();
+        video.pause.mock.resetCalls();
 
         fm.onInputAction(inputActions.playPause);
 
-        expect(video.play).not.toHaveBeenCalled();
-        expect(video.pause).toHaveBeenCalled();
+        assert.strictEqual(video.play.mock.callCount(), 0);
+        assert.strictEqual(video.pause.mock.callCount(), 1);
     });
 
     describe("basic navigation", () => {
@@ -448,7 +449,7 @@ describe("TXMFocusManager", () => {
             // Default focus.
             fm.setFocus(undefined);
             fm.onInputAction(inputActions.moveDown);
-            expect(fm.currentFocus).toBe(focuses[1]);
+            assert.strictEqual(fm.currentFocus, focuses[1]);
         });
 
         describe("test current focus not in content or chrome focusables", () => {
@@ -461,14 +462,14 @@ describe("TXMFocusManager", () => {
             fm.setFocus(extraFocusable);
 
             test("extra focus still receives inputs", () => {
-                extraFocusable.onSelectAction = jest.fn();
+                extraFocusable.onSelectAction = mock.fn();
                 fm.onInputAction(inputActions.select);
-                expect(extraFocusable.onSelectAction).toHaveBeenCalled();
+                assert.strictEqual(extraFocusable.onSelectAction.mock.callCount(), 1);
             });
 
             test("navigating from extra focus goes to first focus", () => {
                 fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
         });
 
@@ -476,33 +477,33 @@ describe("TXMFocusManager", () => {
             const fm = new TXMFocusManager();
 
             fm.setContentFocusables([focuses[1], focuses[2], focuses[3]]);
-            expect(fm.currentFocus).toBe(focuses[1]);
+            assert.strictEqual(fm.currentFocus, focuses[1]);
 
             fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[3]);
-            expect(fm.currentFocus).toBe(focuses[3]);
+            assert.strictEqual(fm.currentFocus, focuses[3]);
 
             fm.setContentFocusables([focuses[2], focuses[1]]);
-            expect(fm.currentFocus).toBe(focuses[1]); // defaults to top left visual focus regardless of input order
+            assert.strictEqual(fm.currentFocus, focuses[1]); // defaults to top left visual focus regardless of input order
 
             fm.setContentFocusables([focuses[2], focuses[1]], focuses[2]);
-            expect(fm.currentFocus).toBe(focuses[2]);
+            assert.strictEqual(fm.currentFocus, focuses[2]);
 
             fm.setTopChromeFocusables([focuses[1], focuses[2]]);
             fm.setFocus(focuses[1]);
             fm.setContentFocusables([focuses[3], focuses[4]]);
-            expect(fm.currentFocus).toBe(focuses[1]); // chrome focus unchanged
+            assert.strictEqual(fm.currentFocus, focuses[1]); // chrome focus unchanged
 
             fm.setBottomChromeFocusables([focuses[5], focuses[6]]);
             fm.setFocus(focuses[5]);
             fm.setContentFocusables([focuses[3], focuses[4]]);
-            expect(fm.currentFocus).toBe(focuses[5]); // chrome focus unchanged
+            assert.strictEqual(fm.currentFocus, focuses[5]); // chrome focus unchanged
 
             fm.setFocus(null);
             fm.setContentFocusables([focuses[3], focuses[4]]);
-            expect(fm.currentFocus).toBe(focuses[3]); // now it can take effect
+            assert.strictEqual(fm.currentFocus, focuses[3]); // now it can take effect
 
             fm.setContentFocusables([focuses[3], focuses[4]], focuses[4]);
-            expect(fm.currentFocus).toBe(focuses[4]);
+            assert.strictEqual(fm.currentFocus, focuses[4]);
         });
 
         describe("simple left/right focus navigation", () => {
@@ -511,42 +512,42 @@ describe("TXMFocusManager", () => {
 
             test("No loss of focus moving down off row", () => {
                 fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("basic move right", () => {
                 fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[2]);
+                assert.strictEqual(fm.currentFocus, focuses[2]);
 
                 fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[3]);
+                assert.strictEqual(fm.currentFocus, focuses[3]);
 
                 // Verify onFocusSet callback args.
-                expect(focuses[2].hasFocus).toBe(false);
-                expect(focuses[3].hasFocus).toBe(true);
-                expect(focuses[2].focusChange).toBe(focuses[3].focusChange);
-                expect(focuses[3].focusChange.oldFocus).toBe(focuses[2]);
-                expect(focuses[3].focusChange.newFocus).toBe(focuses[3]);
-                expect(focuses[3].focusChange.action).toBe(inputActions.moveRight);
-                expect(focuses[3].focusChange.event).toBe(undefined);
+                assert.strictEqual(focuses[2].hasFocus, false);
+                assert.strictEqual(focuses[3].hasFocus, true);
+                assert.strictEqual(focuses[2].focusChange, focuses[3].focusChange);
+                assert.strictEqual(focuses[3].focusChange.oldFocus, focuses[2]);
+                assert.strictEqual(focuses[3].focusChange.newFocus, focuses[3]);
+                assert.strictEqual(focuses[3].focusChange.action, inputActions.moveRight);
+                assert.strictEqual(focuses[3].focusChange.event, undefined);
             });
 
             test("No loss of focus moving right off of right side", () => {
                 fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[3]);
+                assert.strictEqual(fm.currentFocus, focuses[3]);
             });
 
             test("basic move left", () => {
                 fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[2]);
+                assert.strictEqual(fm.currentFocus, focuses[2]);
 
                 fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("No loss of focus moving left off of left side", () => {
                 fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
         });
 
@@ -562,58 +563,58 @@ describe("TXMFocusManager", () => {
             ]);
 
             test("default initial focus is first content item", () => {
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("no loss of focus moving up off of the top edge", () => {
                 fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("no loss of focus moving left off of the left edge", () => {
                 fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("no loss of focus moving left off of the left edge", () => {
                 fm.onInputAction(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(focuses[2]);
+                assert.strictEqual(fm.currentFocus, focuses[2]);
             });
 
             test("skip down over middle hole in focusables grid", () => {
-                expect(fm.currentFocus).toBe(focuses[2]);
+                assert.strictEqual(fm.currentFocus, focuses[2]);
                 fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[6]);
+                assert.strictEqual(fm.currentFocus, focuses[6]);
 
                 // moving down along right column doesn't have a hole though
                 fm.setFocus(focuses[3]);
                 fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[5]);
+                assert.strictEqual(fm.currentFocus, focuses[5]);
             });
 
             test("skip left over middle hole in focusables grid", () => {
                 fm.onInputAction(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                assert.strictEqual(fm.currentFocus, focuses[4]);
             });
 
             test("move down and back up left column", () => {
                 fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[6]);
+                assert.strictEqual(fm.currentFocus, focuses[6]);
 
                 fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                assert.strictEqual(fm.currentFocus, focuses[4]);
 
                 fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("loss of context when move down to bottom row from right column and back up left column", () => {
                 fm.setFocus(focuses[5]);
                 fm.onInputAction(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[6]);
+                assert.strictEqual(fm.currentFocus, focuses[6]);
 
                 fm.onInputAction(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                assert.strictEqual(fm.currentFocus, focuses[4]);
             });
         });
 
@@ -630,70 +631,70 @@ describe("TXMFocusManager", () => {
             ]);
 
             test("default initial focus is first content item", () => {
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("default focus on movement is in content area", () => {
                 fm.setFocus(undefined);
                 fm.navigateToNewFocus(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("no loss of focus moving left off the left edge of top chrome", () => {
                 fm.setFocus(topChrome[1]);
                 fm.navigateToNewFocus(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(topChrome[1]);
+                assert.strictEqual(fm.currentFocus, topChrome[1]);
             });
 
             test("move right along top chrome", () => {
                 fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(topChrome[2]);
+                assert.strictEqual(fm.currentFocus, topChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(topChrome[3]);
+                assert.strictEqual(fm.currentFocus, topChrome[3]);
             });
 
             test("no loss of focus moving right or up off the right edge of top chrome", () => {
                 fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(topChrome[3]);
+                assert.strictEqual(fm.currentFocus, topChrome[3]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(topChrome[3]);
+                assert.strictEqual(fm.currentFocus, topChrome[3]);
             });
 
             test("moving down from top chrome goes to first content focus", () => {
                 // establish last saved top focus for later
                 fm.navigateToNewFocus(inputActions.moveLeft);
-                expect(fm.currentFocus).toBe(topChrome[2]);
+                assert.strictEqual(fm.currentFocus, topChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("moving down within content stays within content focusables", () => {
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                assert.strictEqual(fm.currentFocus, focuses[4]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
 
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[4]);
+                assert.strictEqual(fm.currentFocus, focuses[4]);
             });
 
             test("moving down from last content row moves down to first bottom chrome", () => {
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(bottomChrome[1]);
+                assert.strictEqual(fm.currentFocus, bottomChrome[1]);
             });
 
             test("no loss of focus moving down from last bottom chrome row", () => {
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(bottomChrome[1]);
+                assert.strictEqual(fm.currentFocus, bottomChrome[1]);
             });
 
             test("moving within bottom chrome works", () => {
                 fm.navigateToNewFocus(inputActions.moveRight);
-                expect(fm.currentFocus).toBe(bottomChrome[2]);
+                assert.strictEqual(fm.currentFocus, bottomChrome[2]);
             });
 
             test("moving up from bottom chrome moves to last saved content focus", () => {
@@ -702,13 +703,13 @@ describe("TXMFocusManager", () => {
                 fm.setFocus(bottomChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[2]);
+                assert.strictEqual(fm.currentFocus, focuses[2]);
 
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(bottomChrome[2]);
+                assert.strictEqual(fm.currentFocus, bottomChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[2]);
+                assert.strictEqual(fm.currentFocus, focuses[2]);
             });
 
             test("moving up from bottom chrome moves to default content focus", () => {
@@ -717,25 +718,25 @@ describe("TXMFocusManager", () => {
                 fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[3]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[3]);
+                assert.strictEqual(fm.currentFocus, focuses[3]);
 
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(bottomChrome[2]);
+                assert.strictEqual(fm.currentFocus, bottomChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[3]);
+                assert.strictEqual(fm.currentFocus, focuses[3]);
             });
 
             test("moving up from chrome moves to last saved top chrome focus", () => {
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(topChrome[2]);
+                assert.strictEqual(fm.currentFocus, topChrome[2]);
             });
 
             test("moving back down from top chrome moves to last saved content focus again", () => {
                 fm.setFocus(topChrome[1]);
                 fm.setContentFocusables([focuses[1], focuses[2], focuses[3]], focuses[2]);
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[2]);
+                assert.strictEqual(fm.currentFocus, focuses[2]);
             });
         });
 
@@ -751,31 +752,31 @@ describe("TXMFocusManager", () => {
                 fm.setFocus(focuses[1]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(topChrome[2]);
+                assert.strictEqual(fm.currentFocus, topChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("move from content to default bottom chrome focus", () => {
                 fm.setFocus(focuses[1]);
 
                 fm.navigateToNewFocus(inputActions.moveDown);
-                expect(fm.currentFocus).toBe(bottomChrome[2]);
+                assert.strictEqual(fm.currentFocus, bottomChrome[2]);
 
                 fm.navigateToNewFocus(inputActions.moveUp);
-                expect(fm.currentFocus).toBe(focuses[1]);
+                assert.strictEqual(fm.currentFocus, focuses[1]);
             });
 
             test("overall default focus and use customized chrome focusables", () => {
                 fm.setFocus(focuses[3]);
-                expect(fm.getDefaultFocus()).toBe(focuses[3]);
+                assert.strictEqual(fm.getDefaultFocus(), focuses[3]);
 
                 fm.setContentFocusables(undefined);
-                expect(fm.getDefaultFocus()).toBe(topChrome[2]);
+                assert.strictEqual(fm.getDefaultFocus(), topChrome[2]);
 
                 fm.setTopChromeFocusables(undefined);
-                expect(fm.getDefaultFocus()).toBe(bottomChrome[2]);
+                assert.strictEqual(fm.getDefaultFocus(), bottomChrome[2]);
             });
         });
     });

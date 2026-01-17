@@ -1,41 +1,46 @@
-import { SIMIDClient, SIMIDDimensions, SIMIDMessage, SIMIDErrors, SIMIDPlayerConfig } from '../simid-client';
+import { describe, test, mock } from 'node:test';
+import assert from 'node:assert';
+
+import { SIMIDClient, SIMIDDimensions, SIMIDMessage, SIMIDErrors, SIMIDPlayerConfig } from '../simid-client.js';
 
 describe('test simid client', () => {
 
     test('start/stop simid client', async () => {
         const {player, simidClient, playerWindow, adWindow} = newTestState();
-        expect(simidClient._sessionId).toBeUndefined()
+        assert.strictEqual(simidClient._sessionId, undefined);
 
         player.sendPlayerMessage('test', {});
-        expect(playerWindow.lastMessage).toBeUndefined();
-        expect(simidClient.isActive).toBe(false);
-        expect(adWindow.onPostMessage).toBeUndefined();
+        assert.strictEqual(playerWindow.lastMessage, undefined);
+        assert.strictEqual(simidClient.isActive, false);
+        assert.strictEqual(adWindow.onPostMessage, undefined);
 
-        expect(adWindow.lastMessage.type).toBe('test');
+        assert.strictEqual(adWindow.lastMessage.type, 'test');
 
         const startPromise = simidClient.start();
 
-        expect(simidClient.isActive).toBe(true);
-        expect(simidClient._sessionId).toBeDefined();
+        assert.strictEqual(simidClient.isActive, true);
+        assert.notStrictEqual(simidClient._sessionId, undefined);
         let clientMsg = playerWindow.lastMessage;
-        expect(clientMsg).toEqual(expect.objectContaining(
-            {sessionId: simidClient._sessionId, messageId: 0, type: 'createSession', args: {}}));
-        expect(clientMsg?.timestamp).toBeLessThanOrEqual(Date.now());
-        expect(player.sessionId).toEqual(simidClient._sessionId);
+        assert.strictEqual(clientMsg.sessionId, simidClient._sessionId);
+        assert.strictEqual(clientMsg.messageId, 0);
+        assert.strictEqual(clientMsg.type, 'createSession');
+        assert.deepStrictEqual(clientMsg.args, {});
+        assert.ok(clientMsg?.timestamp <= Date.now());
+        assert.strictEqual(player.sessionId, simidClient._sessionId);
 
 
         // Acknowledge the createSession
         player.resolveClientRequest(clientMsg);
 
         await startPromise;
-        expect(adWindow.lastMessage.type).toBe('resolve');
+        assert.strictEqual(adWindow.lastMessage.type, 'resolve');
 
         // Ensure no message processing if not active.
         playerWindow.lastMessage = undefined;
         simidClient.stop();
 
         player.sendPlayerMessage('SIMID:Player:init', {});
-        expect(playerWindow.lastMessage).toBeUndefined();
+        assert.strictEqual(playerWindow.lastMessage, undefined);
     });
 
     test('test initial ad flow', () => {
@@ -45,7 +50,7 @@ describe('test simid client', () => {
         simidClient.start();
 
         // Acknowledge the createSession
-        expect(playerWindow.lastMessage.type).toBe('createSession');
+        assert.strictEqual(playerWindow.lastMessage.type, 'createSession');
         player.resolveClientRequest(playerWindow.lastMessage);
 
         testPlayerRequest(state, 'SIMID:Player:init', new SIMIDPlayerConfig());
@@ -73,15 +78,15 @@ describe('test simid client', () => {
     test('test adSkipped', () => {
         const state = newStartedTestState();
         const {simidClient, adWindow} = state;
-        expect(simidClient.isActive).toBe(true);
-        expect(adWindow.onPostMessage).toBeDefined();
+        assert.strictEqual(simidClient.isActive, true);
+        assert.notStrictEqual(adWindow.onPostMessage, undefined);
 
-        simidClient.onAdSkipped = jest.fn();
+        simidClient.onAdSkipped = mock.fn();
         testPlayerRequest(state, 'SIMID:Player:adSkipped');
-        expect(simidClient.isActive).toBe(true);
-        expect(simidClient.isStopped).toBe(true);
-        expect(simidClient.onAdSkipped).toHaveBeenCalled();
-        expect(adWindow.onPostMessage).toBeUndefined(); // i.e. removeEventListener was called
+        assert.strictEqual(simidClient.isActive, true);
+        assert.strictEqual(simidClient.isStopped, true);
+        assert.strictEqual(simidClient.onAdSkipped.mock.callCount(), 1);
+        assert.strictEqual(adWindow.onPostMessage, undefined); // i.e. removeEventListener was called
     });
 
     test('test adSkipped reject', () => {
@@ -96,7 +101,7 @@ describe('test simid client', () => {
     test('test async adSkipped', async () => {
         const state = newStartedTestState();
         const {simidClient} = state;
-        expect(simidClient.isActive).toBe(true);
+        assert.strictEqual(simidClient.isActive, true);
 
         let responsePromise;
         let resolved = false;
@@ -110,20 +115,20 @@ describe('test simid client', () => {
             return responsePromise;
         };
         await testPlayerRequest(state, 'SIMID:Player:adSkipped', undefined, () => responsePromise);
-        expect(simidClient.isStopped).toBe(true);
-        expect(resolved).toBe(true);
+        assert.strictEqual(simidClient.isStopped, true);
+        assert.strictEqual(resolved, true);
     });
 
     test('test adStopped', () => {
         const state = newStartedTestState();
         const {simidClient} = state;
-        expect(simidClient.isActive).toBe(true);
+        assert.strictEqual(simidClient.isActive, true);
 
-        simidClient.onAdStopped = jest.fn();
+        simidClient.onAdStopped = mock.fn();
         testPlayerRequest(state, 'SIMID:Player:adStopped');
-        expect(simidClient.isActive).toBe(true);
-        expect(simidClient.isStopped).toBe(true);
-        expect(simidClient.onAdStopped).toHaveBeenCalled();
+        assert.strictEqual(simidClient.isActive, true);
+        assert.strictEqual(simidClient.isStopped, true);
+        assert.strictEqual(simidClient.onAdStopped.mock.callCount(), 1);
     });
 
     test('test adStopped reject', () => {
@@ -137,7 +142,7 @@ describe('test simid client', () => {
     test('test async adStopped', async () => {
         const state = newStartedTestState();
         const {simidClient} = state;
-        expect(simidClient.isActive).toBe(true);
+        assert.strictEqual(simidClient.isActive, true);
 
         let responsePromise;
         let resolved = false;
@@ -151,8 +156,8 @@ describe('test simid client', () => {
             return responsePromise;
         };
         await testPlayerRequest(state, 'SIMID:Player:adStopped', undefined, () => responsePromise);
-        expect(simidClient.isStopped).toBe(true);
-        expect(resolved).toBe(true);
+        assert.strictEqual(simidClient.isStopped, true);
+        assert.strictEqual(resolved, true);
     });
 
     test('test logging', () => {
@@ -161,13 +166,14 @@ describe('test simid client', () => {
         simidClient.debug = true; // also see how things log
 
         const playerLogMsg = 'test player log';
-        simidClient.onPlayerLog = jest.fn();
+        simidClient.onPlayerLog = mock.fn();
         player.sendPlayerMessage('SIMID:Player:log', {message: playerLogMsg});
-        expect(simidClient.onPlayerLog).toHaveBeenCalledWith(playerLogMsg);
+        assert.strictEqual(simidClient.onPlayerLog.mock.callCount(), 1);
+        assert.deepStrictEqual(simidClient.onPlayerLog.mock.calls[0].arguments, [playerLogMsg]);
 
         const clientLogMsg = 'test client log';
         simidClient.log(clientLogMsg);
-        expect(playerWindow.lastMessage).toEqual(expect.objectContaining({args: {message: clientLogMsg}}));
+        assert.deepStrictEqual(playerWindow.lastMessage.args, {message: clientLogMsg});
     });
 
     test('test resize', () => {
@@ -177,9 +183,10 @@ describe('test simid client', () => {
         const creativeDimensions = {x: 5, y: 6, width: 7, height: 8};
         const fullscreen = true;
 
-        simidClient.onResize = jest.fn();
+        simidClient.onResize = mock.fn();
         player.sendPlayerMessage('SIMID:Player:resize', {videoDimensions, creativeDimensions, fullscreen});
-        expect(simidClient.onResize).toHaveBeenCalledWith({videoDimensions, creativeDimensions, fullscreen});
+        assert.strictEqual(simidClient.onResize.mock.callCount(), 1);
+        assert.deepStrictEqual(simidClient.onResize.mock.calls[0].arguments, [{videoDimensions, creativeDimensions, fullscreen}]);
     });
 
     test('test resize reject', () => {
@@ -206,13 +213,13 @@ describe('test simid client', () => {
     test('test background/foreground', () => {
         const {player, simidClient} = newStartedTestState();
 
-        simidClient.onAdBackgrounded = jest.fn();
+        simidClient.onAdBackgrounded = mock.fn();
         player.sendPlayerMessage('SIMID:Player:adBackgrounded');
-        expect(simidClient.onAdBackgrounded).toHaveBeenCalled();
+        assert.strictEqual(simidClient.onAdBackgrounded.mock.callCount(), 1);
 
-        simidClient.onAdForegrounded = jest.fn();
+        simidClient.onAdForegrounded = mock.fn();
         player.sendPlayerMessage('SIMID:Player:adForegrounded');
-        expect(simidClient.onAdForegrounded).toHaveBeenCalled();
+        assert.strictEqual(simidClient.onAdForegrounded.mock.callCount(), 1);
     });
 
     test('test backgrounded reject', () => {
@@ -230,12 +237,13 @@ describe('test simid client', () => {
         simidClient.debug = true; // also see how things log
 
         const fatalError = {errorCode: 999, message: 'test player error'};
-        simidClient.onFatalError = jest.fn();
+        simidClient.onFatalError = mock.fn();
         player.sendPlayerMessage('SIMID:Player:fatalError', fatalError);
 
-        expect(simidClient.onFatalError).toHaveBeenCalledWith(fatalError.errorCode, fatalError.message);
-        expect(simidClient.isActive).toBe(true);
-        expect(simidClient.isStopped).toBe(true);
+        assert.strictEqual(simidClient.onFatalError.mock.callCount(), 1);
+        assert.deepStrictEqual(simidClient.onFatalError.mock.calls[0].arguments, [fatalError.errorCode, fatalError.message]);
+        assert.strictEqual(simidClient.isActive, true);
+        assert.strictEqual(simidClient.isStopped, true);
     });
 
     test('test client fatalError', () => {
@@ -243,9 +251,9 @@ describe('test simid client', () => {
 
         const fatalError = {errorCode: 999, message: 'test client error'};
         simidClient.fatalError(fatalError.errorCode, fatalError.message);
-        expect(playerWindow.lastMessage.args).toEqual(fatalError);
-        expect(simidClient.isActive).toBe(true);
-        expect(simidClient.isStopped).toBe(true);
+        assert.deepStrictEqual(playerWindow.lastMessage.args, fatalError);
+        assert.strictEqual(simidClient.isActive, true);
+        assert.strictEqual(simidClient.isStopped, true);
     });
 
     test('test getMediaState', async () => {
@@ -452,22 +460,24 @@ describe('test simid client', () => {
         const {player, simidClient, playerWindow} = newStartedTestState();
 
         function testEvent(event, args) {
-            simidClient.onMediaEvent = jest.fn();
+            simidClient.onMediaEvent = mock.fn();
 
-            const eventListener = jest.fn();
+            const eventListener = mock.fn();
             simidClient.addEventListener(event, eventListener);
 
             player.sendPlayerMessage('SIMID:Media:' + event, args);
-            expect(simidClient.onMediaEvent).toHaveBeenCalledWith(event, args);
+            assert.strictEqual(simidClient.onMediaEvent.mock.callCount(), 1);
+            assert.deepStrictEqual(simidClient.onMediaEvent.mock.calls[0].arguments, [event, args]);
 
             const eventArgs = args || {};
             const expectedEvent = {...eventArgs, type: event};
-            expect(eventListener).toHaveBeenCalledWith(expectedEvent);
+            assert.strictEqual(eventListener.mock.callCount(), 1);
+            assert.deepStrictEqual(eventListener.mock.calls[0].arguments, [expectedEvent]);
 
             // Verify event cleanup
-            expect(simidClient._eventListeners[event].indexOf(eventListener)).toBeGreaterThanOrEqual(0);
+            assert.ok(simidClient._eventListeners[event].indexOf(eventListener) >= 0);
             simidClient.removeEventListener(event, eventListener);
-            expect(simidClient._eventListeners[event].indexOf(eventListener)).toBe(-1);
+            assert.strictEqual(simidClient._eventListeners[event].indexOf(eventListener), -1);
         }
 
         testEvent('durationchange', {duration: 123});
@@ -487,7 +497,7 @@ describe('test simid client', () => {
 function testPlayerRequest(state, type, args, waitForResponse) {
     const {player, playerWindow, simidClient} = state;
 
-    const eventListener = jest.fn();
+    const eventListener = mock.fn();
     const eventType = simidClient._getEventType(type);
     if (eventListener) {
         simidClient.addEventListener(eventType, eventListener);
@@ -504,21 +514,23 @@ function testPlayerRequest(state, type, args, waitForResponse) {
 
     function verifyResponse() {
         const lastMsg = playerWindow.lastMessage;
-        expect(lastMsg).toMatchObject({type: 'resolve', args: {messageId: requestMsg.messageId}});
-        expect(lastMsg.args.value).toBeUndefined();
+        assert.strictEqual(lastMsg.type, 'resolve');
+        assert.strictEqual(lastMsg.args.messageId, requestMsg.messageId);
+        assert.strictEqual(lastMsg.args.value, undefined);
 
         if (eventListener) {
             const eventData = args || {};
             const expectedEvent = {...eventData, type: eventType};
-            expect(eventListener).toHaveBeenCalledWith(expectedEvent);
+            assert.strictEqual(eventListener.mock.callCount(), 1);
+            assert.deepStrictEqual(eventListener.mock.calls[0].arguments, [expectedEvent]);
 
             // Verify event cleanup
             if (simidClient.isStopped) {
-                expect(simidClient._eventListeners).toEqual({});
+                assert.deepStrictEqual(simidClient._eventListeners, {});
             } else {
-                expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBeGreaterThanOrEqual(0);
+                assert.ok(simidClient._eventListeners[eventType].indexOf(eventListener) >= 0);
                 simidClient.removeEventListener(eventType, eventListener);
-                expect(simidClient._eventListeners[eventType].indexOf(eventListener)).toBe(-1);
+                assert.strictEqual(simidClient._eventListeners[eventType].indexOf(eventListener), -1);
             }
         }
     }
@@ -527,7 +539,9 @@ function testPlayerRequest(state, type, args, waitForResponse) {
 function testPlayerReject(state, type, args, errorCode, errMessage) {
     const {player, playerWindow} = state;
     const requestMsg = player.sendPlayerMessage(type, args);
-    expect(playerWindow.lastMessage).toMatchObject({ type: 'reject', args: {messageId: requestMsg.messageId, value: {errorCode, message: errMessage}}});
+    assert.strictEqual(playerWindow.lastMessage.type, 'reject');
+    assert.strictEqual(playerWindow.lastMessage.args.messageId, requestMsg.messageId);
+    assert.deepStrictEqual(playerWindow.lastMessage.args.value, {errorCode, message: errMessage});
 }
 
 async function testClientRequest(state, type, expectedArgs, requestAction, requestResult) {
@@ -538,18 +552,19 @@ async function testClientRequest(state, type, expectedArgs, requestAction, reque
     const requestPromise = requestAction();
 
     const clientMsg = playerWindow.lastMessage;
-    expect(clientMsg).toBeDefined();
-    expect(clientMsg.type).toEqual(type);
-    expect(clientMsg.args).toEqual(expectedArgs);
+    assert.notStrictEqual(clientMsg, null);
+    assert.strictEqual(clientMsg.type, type);
+    assert.deepStrictEqual(clientMsg.args, expectedArgs);
 
     player.resolveClientRequest(clientMsg, requestResult);
 
-    await expect(requestPromise).resolves.toEqual(requestResult);
+    const result = await requestPromise;
+    assert.deepStrictEqual(result, requestResult);
 
     const resolveMsg = adWindow.lastMessage;
-    expect(resolveMsg).toBeDefined();
-    expect(resolveMsg.type).toEqual('resolve');
-    expect(resolveMsg.args).toEqual({messageId: clientMsg.messageId, value: requestResult});
+    assert.notStrictEqual(resolveMsg, null);
+    assert.strictEqual(resolveMsg.type, 'resolve');
+    assert.deepStrictEqual(resolveMsg.args, {messageId: clientMsg.messageId, value: requestResult});
 }
 
 async function testClientReject(state, type, expectedArgs, requestAction, errorCode, errMessage) {
@@ -564,19 +579,26 @@ async function testClientReject(state, type, expectedArgs, requestAction, errorC
     if (!type) {
         // Expect no message to have been sent.
         // Instead the client should have rejected locally.
-        expect(clientMsg).toBeNull();
+        assert.strictEqual(clientMsg, null);
 
     } else {
         player.rejectClientRequest(clientMsg, errorCode, errMessage);
     }
 
-    await expect(requestPromise).rejects.toThrowError({errorCode, message: errMessage, clientRequest: clientMsg});
+    try {
+        await requestPromise;
+        assert.fail('Expected promise to reject');
+    } catch (err) {
+        assert.strictEqual(err.errorCode, errorCode);
+        assert.strictEqual(err.message, errMessage);
+        assert.strictEqual(err.clientRequest, clientMsg);
+    }
 
     if (type) {
         const resolveMsg = adWindow.lastMessage;
-        expect(resolveMsg).toBeDefined();
-        expect(resolveMsg.type).toEqual('reject');
-        expect(resolveMsg.args).toEqual({messageId: clientMsg.messageId, value: {errorCode, message: errMessage}});
+        assert.notStrictEqual(resolveMsg, null);
+        assert.strictEqual(resolveMsg.type, 'reject');
+        assert.deepStrictEqual(resolveMsg.args, {messageId: clientMsg.messageId, value: {errorCode, message: errMessage}});
     }
 }
 

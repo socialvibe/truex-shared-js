@@ -1,5 +1,5 @@
-import { GetFileExtension } from './get_file_extension';
-import StripProtocol from './strip_protocol';
+import { GetFileExtension } from './get_file_extension.js';
+import StripProtocol from './strip_protocol.js';
 
 const APP_PROTOCOL = window.location.protocol === 'https:' ? 'https:' : 'http:';
 
