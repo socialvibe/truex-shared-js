@@ -19,9 +19,8 @@ yarn install
 yarn test
 
 # Run a single test file by pattern
-yarn test -- platform           # matches txm_platform-test.js
-yarn test -- focus_manager      # matches all focus_manager tests
-jest url_params                 # alternative: use jest directly
+yarn test -- --test-name-pattern="platform"    # matches test names containing "platform"
+yarn test -- src/focus_manager                  # run tests in focus_manager directory
 
 # Watch mode (re-run on changes)
 yarn watch
@@ -38,20 +37,22 @@ dependent projects via their own build systems (Babel/Browserify).
 
 ## Testing Guidelines
 
-- **Framework:** Jest with jsdom environment
+- **Framework:** Node.js native test runner with jsdom environment
 - **Test location:** Place tests in `__tests__/` subdirectory next to source files
 - **Test naming:** Use `-test.js` or `-tests.js` suffix (e.g., `url_params-test.js`)
-- **Test pattern:** Jest regex is `__tests__/[^/]+-tests?.js`
+- **Test pattern:** `src/**/__tests__/*-test*.js`
 
 ### Test Structure
 
 ```javascript
-import { MyFunction } from '../my_module';
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
+import { MyFunction } from '../my_module.js';
 
 describe("MyModule", () => {
     describe("MyFunction", () => {
         test("should do something specific", () => {
-            expect(MyFunction(input)).toBe(expectedOutput);
+            assert.strictEqual(MyFunction(input), expectedOutput);
         });
     });
 });
@@ -68,23 +69,23 @@ describe("MyModule", () => {
 ### Language & Modules
 
 - **Language:** Plain JavaScript (ES6+), no TypeScript
-- **Modules:** ES6 `import`/`export` syntax
-- **Node version:** 14.21 (see `.nvmrc`)
+- **Modules:** ES6 `import`/`export` syntax with explicit `.js` extensions
+- **Node version:** 22 (see `.nvmrc`)
 
 ### Imports
 
 ```javascript
-// Named imports preferred
-import { TXMPlatform, keyCodes } from './txm_platform';
-import { parseQueryArgs } from '../utils/url_params';
+// Named imports preferred - always include .js extension for local imports
+import { TXMPlatform, keyCodes } from './txm_platform.js';
+import { parseQueryArgs } from '../utils/url_params.js';
 
 // Default imports when module exports default
-import timedTrace from "../utils/timed_trace";
+import timedTrace from "../utils/timed_trace.js";
 
 // Side-effect imports for polyfills
-import '../utils/uuid-polyfill';
+import '../utils/uuid-polyfill.js';
 
-// External packages
+// External packages (no extension needed)
 import { v4 as uuid } from 'uuid';
 ```
 
@@ -190,9 +191,8 @@ export class MyClass {
 
 ```
 src/
+├── __tests__/         # Test setup files
 ├── components/        # UI components (debug-log, fonts)
-├── deploy/           # Deployment utilities (S3 upload, CDN purge)
-│   └── __tests__/
 ├── events/           # Event definitions (ad events)
 ├── focus_manager/    # CTV focus/input management
 │   └── __tests__/
@@ -214,3 +214,18 @@ src/
 - Update version in `package.json`
 - Document changes in `CHANGELOG.md` with JIRA ticket references
 - Tag releases as `v1.x.x` in git
+
+## Commit Convention
+
+Use conventional commit format with JIRA ticket prefix:
+
+```
+<JIRA-ID>: <type>: <description>
+
+Examples:
+PI-1234: feat: Add new focus navigation algorithm
+PI-1234: fix: Correct key mapping for PS5 platform
+PI-1234: refactor: Simplify URL parameter parsing
+PI-1234: test: Add tests for edge cases in loaders
+PI-1234: docs: Update testing guidelines
+```

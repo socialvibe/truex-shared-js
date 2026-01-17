@@ -1,57 +1,106 @@
-truex-shared-js
-===============
+# truex-shared-js
 
-HTML5/JS Shared Utilities
+Common ES6 JavaScript library shared across true[X] repos. Provides focus management
+for CTV (Connected TV) platforms, SIMID client implementation, platform detection,
+and various utilities.
 
-ES6 based, can be used anywhere that needs them.
-
-This library is intended to be made accessible via the yarn packager with src "as is".
-
-As such, the build steps of this library itself is avoided.
-
-We do want jest unit tests to run however.
+This is a private library consumed via git URL with version tags (not published to npm).
+Source is consumed directly - there is no build step.
 
 ## Setup
 
-### Dependencies
+### Prerequisites
 
-**N & validated Node version**: `npm install -g n && n lts`
+- **Node.js 22** (see `.nvmrc`)
+- **Yarn** package manager
 
-*** n lts is currently `12.14.1` as of 01/10/20. an alternative command to install a validated node version is to use the command:  `n 12.14.1`
+```bash
+# Install the correct Node version (using nvm)
+nvm install
+nvm use
 
-**Yarn**: `npm install -g yarn`
+# Or using n
+n 22
 
-After installing Yarn:
+# Install Yarn if not already installed
+npm install -g yarn
 
-```
+# Install dependencies
 yarn install
 ```
 
-## Building and Testing
+## Development
 
-As this is a reusable library of JS classes and functions, any building/running in this repo is primarily done in the context of unit tests.
+### Running Tests
 
-Please your tests in a __tests__ sub directory of your relevant files. The convention is to add a -test.js suffix for a given source files.
+```bash
+# Run all tests
+yarn test
 
-To run the test suite you can do: `npm test` or `jest`
+# Run tests matching a pattern
+yarn test -- --test-name-pattern="platform"
+yarn test -- src/focus_manager
 
-Or for a single test: `npm test -- platform`
-or: `jest focus_manager`
-i.e. use a test file name pattern that will match the 
+# Watch mode (re-run on changes)
+yarn watch
 
-## Deploying
+# Run with coverage report
+yarn coverage
 
-To make this library available to other repos, be sure to push any changes and follow the normal review process.
-
-Ensure the version number in package.json is updated to a newer value, and be sure to tag your branch in github with 
-the same version, e.g. `v1.0.0` .
-
-In client repos, one should refer to this library using the package name, github repo url, and desired version 
-number, e.g.
+# CI mode (with JUnit XML output)
+yarn test:ci
 ```
-    dependencies: {
-        ...
-        "truex-shared": "git://github.com/socialvibe/truex-shared-js#v1.0.0",
-        ...
+
+### Test Structure
+
+Tests use Node.js native test runner with jsdom for DOM environment.
+Place tests in `__tests__/` subdirectories with `-test.js` suffix.
+
+```javascript
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
+import { MyFunction } from '../my_module.js';
+
+describe("MyModule", () => {
+    test("should do something", () => {
+        assert.strictEqual(MyFunction(input), expected);
+    });
+});
+```
+
+## Project Structure
+
+```
+src/
+├── __tests__/         # Test setup files
+├── components/        # UI components (debug-log, fonts)
+├── events/           # Event definitions (ad events)
+├── focus_manager/    # CTV focus/input management
+├── simid/            # SIMID client implementation
+└── utils/            # General utilities
+```
+
+## Usage in Other Projects
+
+Add to your `package.json` dependencies:
+
+```json
+{
+    "dependencies": {
+        "truex-shared": "git://github.com/socialvibe/truex-shared-js#v1.x.x"
     }
-```  
+}
+```
+
+Replace `v1.x.x` with the desired version tag.
+
+## Versioning & Releases
+
+1. Update version in `package.json`
+2. Document changes in `CHANGELOG.md`
+3. Commit and push changes
+4. Tag the release: `git tag v1.x.x && git push --tags`
+
+## Contributing
+
+See [AGENTS.md](./AGENTS.md) for detailed coding guidelines and conventions.
