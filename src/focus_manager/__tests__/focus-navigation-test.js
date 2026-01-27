@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import { TXMFocusManager } from "../txm_focus_manager.js";
 import { Focusable } from "../txm_focusable.js";
 import { inputActions } from "../txm_input_actions.js";
+import 'global-jsdom/register';
 
 describe("complex navigation tests", () => {
 

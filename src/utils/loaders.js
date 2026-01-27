@@ -1,19 +1,28 @@
 import { GetFileExtension } from './get_file_extension.js';
 import StripProtocol from './strip_protocol.js';
 
-const APP_PROTOCOL = window.location.protocol === 'https:' ? 'https:' : 'http:';
-
 /**
  * BaseLoader - A generic loader class used to load external assets
  */
-
 export class BaseLoader {
-    constructor(url) {
+    /**
+     * @param {string} url
+     * @param { 'http:' | ' https:' | undefined } [protocol]
+     */
+    constructor(url, protocol) {
         if (!url) {
             throw 'url not provided';
         }
 
+        if (!protocol) {
+            protocol = window.location.protocol === 'https:'
+                ? 'https:'
+                : 'http:'
+            ;
+        }
+
         this._url = url;
+        this._protocol = protocol;
         this.__resolve = this.__resolve.bind(this);
         this.__reject = this.__reject.bind(this);
         this._promise = new Promise((resolve, reject) => {
@@ -60,14 +69,14 @@ export class BaseLoader {
 
 /**
  * ScriptLoader - Loads a specified script
- * @constructor {string} url - the script url
  */
-
-/* Can't unit test this so ignore this block in coverage test */
-/* istanbul ignore next */
 export class ScriptLoader extends BaseLoader {
-    constructor(url) {
-        super(url);
+    /**
+     * @param {string} url
+     * @param { 'http' | 'https' | undefined } [protocol]
+     */
+    constructor(url, protocol) {
+        super(url, protocol);
         this._scriptEl = document.createElement('script');
     }
 
@@ -75,12 +84,12 @@ export class ScriptLoader extends BaseLoader {
         return this._scriptEl;
     }
 
-    // Can't unit test the load function so we are ignoring in the coverage test
+    // Can't unit test the load function, so we are ignoring in the coverage test
     /* istanbul ignore next */
     load() {
         const scriptEl = this._scriptEl;
         const head = document.querySelector('head');
-        const scriptURL = APP_PROTOCOL + StripProtocol(this._url);
+        const scriptURL = this._protocol + StripProtocol(this._url);
         head.appendChild(scriptEl);
         scriptEl.onload = this.__resolve;
         scriptEl.onerror = this.__reject;
@@ -98,12 +107,14 @@ export class ScriptLoader extends BaseLoader {
 
 /**
  * ImageLoader - Loads urls using the image tag
- * @constructor {string} url - the url to load
  */
-
 export class ImageLoader extends BaseLoader {
-    constructor(url) {
-        super(url);
+    /**
+     * @param {string} url
+     * @param { 'http' | 'https' | undefined } [protocol]
+     */
+    constructor(url, protocol) {
+        super(url, protocol);
         this._imgEl = new Image();
     }
 
@@ -111,7 +122,7 @@ export class ImageLoader extends BaseLoader {
         return this._imgEl;
     }
 
-    // Can't unit test the load function so we are ignoring in the coverage test
+    // Can't unit test the load function, so we are ignoring in the coverage test
     /* istanbul ignore next */
     load() {
         const img = this._imgEl;
@@ -130,12 +141,14 @@ export class ImageLoader extends BaseLoader {
 
 /**
  * IframeLoader - Loads urls into an invisible iframe
- * @constructor {string} url - the url to load
  */
-
 export class IframeLoader extends BaseLoader {
-    constructor(url) {
-        super(url);
+    /**
+     * @param {string} url
+     * @param { 'http' | 'https' | undefined } [protocol]
+     */
+    constructor(url, protocol) {
+        super(url, protocol);
         this._iframe = document.createElement('iframe');
         this._iframe.width = 1;
         this._iframe.width = 1;
@@ -156,8 +169,12 @@ export class IframeLoader extends BaseLoader {
 }
 
 export class StyleLoader extends BaseLoader {
-    constructor(url) {
-        super(url);
+    /**
+     * @param {string} url
+     * @param { 'http' | 'https' | undefined } [protocol]
+     */
+    constructor(url, protocol) {
+        super(url, protocol);
         this._linkEl = document.createElement('link');
         this._linkEl.rel = 'stylesheet';
         this._linkEl.type = 'text/css';
@@ -167,12 +184,12 @@ export class StyleLoader extends BaseLoader {
         return this._linkEl;
     }
 
-    // Can't unit test the load function so we are ignoring in the coverage test
+    // Can't unit test the load function, so we are ignoring in the coverage test
     /* istanbul ignore next */
     load() {
         const linkEl = this._linkEl;
         const head = document.querySelector('head');
-        const cssURL = APP_PROTOCOL + StripProtocol(this._url);
+        const cssURL = this._protocol + StripProtocol(this._url);
         head.appendChild(linkEl);
 
         linkEl.onload = this.__resolve;
@@ -189,7 +206,7 @@ export class StyleLoader extends BaseLoader {
 }
 
 export class TextLoader extends BaseLoader {
-    // just to fufill the interface.
+    // just to fulfill the interface.
     get element() {
         return document.createElement('template');
     }

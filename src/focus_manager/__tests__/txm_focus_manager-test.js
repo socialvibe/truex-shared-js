@@ -1,10 +1,15 @@
-import { describe, test, mock, beforeEach } from 'node:test';
+import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
 
 import { inputActions} from "../txm_input_actions.js";
 import { Focusable} from "../txm_focusable.js";
 import { TXMFocusManager } from "../txm_focus_manager.js";
 import { keyCodes } from "../txm_platform.js";
+import 'global-jsdom/register';
+
+// overriding Event with jsdom Event.
+// TXFocusManager used to compare received events like `receivedEvent instance Event`
+global.Event = window.Event;
 
 describe("TXMFocusManager", () => {
     let testDiv1 = document.createElement("div");
@@ -118,7 +123,7 @@ describe("TXMFocusManager", () => {
         assert.strictEqual(inputAction.mock.callCount(), 0);
     });
 
-    describe("test focus mouse events enabled/disabled", () => {
+    describe.only("test focus mouse events enabled/disabled", () => {
         const fm = new TXMFocusManager();
 
         const selectAction = mock.fn();
@@ -139,6 +144,7 @@ describe("TXMFocusManager", () => {
         var lastHasFocus;
         var lastFocusChange
         clickableFocus.onFocusSet = function(hasFocus, focusChange) {
+            console.log("onFocusSet(%s) -- element: %s", hasFocus, focusChange?.newFocus?.element?.id);
             lastHasFocus = hasFocus;
             lastFocusChange = focusChange;
         }

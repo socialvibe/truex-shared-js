@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
 import { getElementPath } from '../get_element_path.js';
+import 'global-jsdom/register';
 
 test('test getElementPath', () => {
     let testDiv1 = document.createElement("div");

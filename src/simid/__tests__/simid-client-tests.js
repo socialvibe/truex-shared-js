@@ -1,7 +1,14 @@
 import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
-
-import { SIMIDClient, SIMIDDimensions, SIMIDMessage, SIMIDErrors, SIMIDPlayerConfig } from '../simid-client.js';
+import {
+    SIMIDClient,
+    SIMIDDimensions,
+    SIMIDMessage,
+    SIMIDErrors,
+    SIMIDPlayerConfig,
+    SIMIDMediaState
+} from '../simid-client.js';
+import 'global-jsdom/register';
 
 describe('test simid client', () => {
 
@@ -179,14 +186,15 @@ describe('test simid client', () => {
     test('test resize', () => {
         const {player, simidClient} = newStartedTestState();
 
-        const videoDimensions = {x: 1, y: 2, width: 3, height: 4};
-        const creativeDimensions = {x: 5, y: 6, width: 7, height: 8};
+        const videoDimensions = { x: 1, y: 2, width: 3, height: 4 };
+        const creativeDimensions = { x: 5, y: 6, width: 7, height: 8 };
         const fullscreen = true;
 
         simidClient.onResize = mock.fn();
-        player.sendPlayerMessage('SIMID:Player:resize', {videoDimensions, creativeDimensions, fullscreen});
+        player.sendPlayerMessage('SIMID:Player:resize', { videoDimensions, creativeDimensions, fullscreen });
         assert.strictEqual(simidClient.onResize.mock.callCount(), 1);
-        assert.deepStrictEqual(simidClient.onResize.mock.calls[0].arguments, [{videoDimensions, creativeDimensions, fullscreen}]);
+        assert.strictEqual(simidClient.onResize.mock.calls[0].arguments.length, 1);
+        assert.deepEqual(simidClient.onResize.mock.calls[0].arguments[0], { videoDimensions, creativeDimensions, fullscreen });
     });
 
     test('test resize reject', () => {
@@ -258,7 +266,7 @@ describe('test simid client', () => {
 
     test('test getMediaState', async () => {
         const state = newStartedTestState();
-        const {simidClient} = state;
+        const { simidClient } = state;
 
         const result = {
             currentSrc: 'https://media.truex.com/some-video.mp4',
@@ -271,7 +279,13 @@ describe('test simid client', () => {
             fullscreen: false
         };
 
-        await testClientRequest(state, 'SIMID:Creative:getMediaState', undefined, () => simidClient.getMediaState(), result);
+        await testClientRequest(
+            state,
+            'SIMID:Creative:getMediaState',
+            undefined,
+            () => simidClient.getMediaState(),
+            result
+        );
     });
 
     test('test reportTracking', async () => {
@@ -537,7 +551,7 @@ function testPlayerRequest(state, type, args, waitForResponse) {
 }
 
 function testPlayerReject(state, type, args, errorCode, errMessage) {
-    const {player, playerWindow} = state;
+    const { player, playerWindow } = state;
     const requestMsg = player.sendPlayerMessage(type, args);
     assert.strictEqual(playerWindow.lastMessage.type, 'reject');
     assert.strictEqual(playerWindow.lastMessage.args.messageId, requestMsg.messageId);
@@ -545,9 +559,9 @@ function testPlayerReject(state, type, args, errorCode, errMessage) {
 }
 
 async function testClientRequest(state, type, expectedArgs, requestAction, requestResult) {
-    const {player, simidClient, playerWindow, adWindow} = state;
-    playerWindow.lastMessage = null;
-    adWindow.lastMessage = null;
+    const { player, playerWindow, adWindow } = state;
+    playerWindow.lastMessage = undefined;
+    adWindow.lastMessage = undefined;
 
     const requestPromise = requestAction();
 
@@ -559,18 +573,26 @@ async function testClientRequest(state, type, expectedArgs, requestAction, reque
     player.resolveClientRequest(clientMsg, requestResult);
 
     const result = await requestPromise;
-    assert.deepStrictEqual(result, requestResult);
+    assert.deepEqual(result, requestResult);
 
     const resolveMsg = adWindow.lastMessage;
     assert.notStrictEqual(resolveMsg, null);
     assert.strictEqual(resolveMsg.type, 'resolve');
-    assert.deepStrictEqual(resolveMsg.args, {messageId: clientMsg.messageId, value: requestResult});
+
+    // because resolvedMsg will be pushed via postMessage ( i.e., json serialization )
+    // properties with `undefined` as a value will be omitted from the resolvedMsg
+    // `JSON.stringify({ a: undefined, b: 'super' }); // will output {"b":"super"}`
+    const expectedResolvedArgs = JSON.parse(JSON.stringify(
+        { messageId: clientMsg.messageId, value: requestResult }
+    ));
+
+    assert.deepStrictEqual(resolveMsg.args, expectedResolvedArgs);
 }
 
 async function testClientReject(state, type, expectedArgs, requestAction, errorCode, errMessage) {
-    const {player, simidClient, playerWindow, adWindow} = state;
-    playerWindow.lastMessage = null;
-    adWindow.lastMessage = null;
+    const { player, playerWindow, adWindow } = state;
+    playerWindow.lastMessage = undefined;
+    adWindow.lastMessage = undefined;
 
     const requestPromise = requestAction();
 
@@ -578,9 +600,8 @@ async function testClientReject(state, type, expectedArgs, requestAction, errorC
 
     if (!type) {
         // Expect no message to have been sent.
-        // Instead the client should have rejected locally.
-        assert.strictEqual(clientMsg, null);
-
+        // Instead, the client should have rejected locally.
+        assert.strictEqual(clientMsg, undefined);
     } else {
         player.rejectClientRequest(clientMsg, errorCode, errMessage);
     }
@@ -591,14 +612,17 @@ async function testClientReject(state, type, expectedArgs, requestAction, errorC
     } catch (err) {
         assert.strictEqual(err.errorCode, errorCode);
         assert.strictEqual(err.message, errMessage);
-        assert.strictEqual(err.clientRequest, clientMsg);
+        assert.partialDeepStrictEqual(err.clientRequest, clientMsg);
     }
 
     if (type) {
         const resolveMsg = adWindow.lastMessage;
         assert.notStrictEqual(resolveMsg, null);
         assert.strictEqual(resolveMsg.type, 'reject');
-        assert.deepStrictEqual(resolveMsg.args, {messageId: clientMsg.messageId, value: {errorCode, message: errMessage}});
+        assert.partialDeepStrictEqual(resolveMsg.args, {
+            messageId: clientMsg.messageId,
+            value: { errorCode, message: errMessage }
+        });
     }
 }
 
@@ -620,13 +644,13 @@ class WindowStub {
     }
 
     addEventListener(type, listener) {
-        if (type == 'message') {
+        if (type === 'message') {
             this.onPostMessage = listener;
         }
     }
 
     removeEventListener(type, listener) {
-        if (type == 'message' && this.onPostMessage === listener) {
+        if (type === 'message' && this.onPostMessage === listener) {
             this.onPostMessage = undefined;
         }
     }
@@ -657,23 +681,23 @@ class PlayerStub {
 
     onPostMessage(event) {
         const eventData = event.data;
-        if (!eventData || typeof eventData != 'string') return;
+        if (!eventData || typeof eventData !== 'string') return;
 
         const message = JSON.parse(eventData);
-        const {sessionId, messageId, type, args} = message;
+        const { sessionId, messageId, type } = message;
         if (!sessionId || isNaN(messageId) || !type) return;
 
-        if (type == 'createSession') {
+        if (type === 'createSession') {
             this.sessionId = sessionId;
         }
     }
 
     resolveClientRequest(clientMsg, value) {
-        this.sendPlayerMessage('resolve', {messageId: clientMsg.messageId, value});
+        this.sendPlayerMessage('resolve', { messageId: clientMsg.messageId, value });
     }
 
     rejectClientRequest(clientMsg, errorCode, errMessage) {
-        this.sendPlayerMessage('reject', {messageId: clientMsg.messageId, value: {errorCode, message: errMessage}});
+        this.sendPlayerMessage('reject', { messageId: clientMsg.messageId, value: { errorCode, message: errMessage }});
     }
 }
 

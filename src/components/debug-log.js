@@ -22,12 +22,12 @@ export class DebugLog {
 
         // Focus support:
         this.onInputAction = action => {
-            if (action == inputActions.back) {
+            if (action === inputActions.back) {
                 this.hide();
 
             } else {
-                let direction = action == inputActions.moveUp ? -1
-                    : action == inputActions.moveDown ? 1
+                let direction = action === inputActions.moveUp ? -1
+                    : action === inputActions.moveDown ? 1
                         : 0;
                 if (direction) {
                     scrollDebugLog(direction);

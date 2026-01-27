@@ -1,12 +1,11 @@
-import { describe, test } from 'node:test';
-import assert from 'node:assert';
+import { describe, mock, test } from 'node:test';
 import { inputActions } from "../txm_input_actions.js";
-import { TXMPlatform } from "../txm_platform.js";
+import { TXMPlatform, keyCodes } from "../txm_platform.js";
+import assert from 'node:assert';
 
 describe("TXMPlatform", () => {
-
     describe("Unknown (desktop) platform tests", () => {
-        let platform = new TXMPlatform();
+        const platform = new TXMPlatform(undefined, createWindowMockForDesktop());
 
         test("recognize the Unknown platform", () => {
             assert.strictEqual(platform.isUnknown, true);
@@ -25,7 +24,6 @@ describe("TXMPlatform", () => {
         });
 
         test("unknown key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -38,7 +36,6 @@ describe("TXMPlatform", () => {
         });
 
         test("key mapping override", () => {
-            let keyCodes = platform.keyCodes;
             platform.applyInputKeyMap({
                 select: [keyCodes.D, keyCodes.space],
                 back: keyCodes.B,
@@ -69,7 +66,14 @@ describe("TXMPlatform", () => {
     });
 
     describe("FireTV Tests", () => {
-        let platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 5.1.1) AFTT Build/LVY48F; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0");
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    userAgent: "Mozilla/5.0 (Linux; Android 5.1.1) AFTT Build/LVY48F; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0",
+                }
+            }),
+        );
 
         test("recognize the FireTV platform", () => {
             assert.strictEqual(platform.isUnknown, false);
@@ -96,7 +100,6 @@ describe("TXMPlatform", () => {
         });
 
         test("FireTV key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(18), inputActions.menu);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -111,7 +114,15 @@ describe("TXMPlatform", () => {
         });
 
         test("test firetv edition model", () => {
-            const platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 7.1.2; AFTJMST12 Build/NS6271; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0");
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: {
+                        userAgent: "Mozilla/5.0 (Linux; Android 7.1.2; AFTJMST12 Build/NS6271; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/70.0.3538.110 Mobile Safari/537.36 cordova-amazon-fireos/3.4.0 AmazonWebAppPlatform/3.4.0;2.0",
+                    },
+                }),
+            );
+
             assert.strictEqual(platform.isFireTV, true);
             assert.strictEqual(platform.name, "FireTV");
             assert.strictEqual(platform.model, "Fire TV Edition - Insignia 4K (2018)");
@@ -121,10 +132,19 @@ describe("TXMPlatform", () => {
     });
 
     describe("Android TV Tests", () => {
-        // Shield TV:
-        const platform = new TXMPlatform("Mozilla/5.0 (Linux; U; Android 5.1; SHIELD Android TV Build/LMY47D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/10.5.2.582 U3/0.8.0 Mobile Safari/534.30");
 
         test("recognize the AndroidTV platform", () => {
+            // Shield TV:
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: {
+                        userAgent: "Mozilla/5.0 (Linux; U; Android 5.1; SHIELD Android TV Build/LMY47D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/10.5.2.582 U3/0.8.0 Mobile Safari/534.30",
+                        maxTouchPoints: 0,
+                    },
+                }),
+            );
+
             assert.strictEqual(platform.isUnknown, false);
             assert.strictEqual(platform.isFireTV, false);
             assert.strictEqual(platform.isAndroidTV, true);
@@ -147,7 +167,16 @@ describe("TXMPlatform", () => {
         });
 
         test("AndroidTV key mapping", () => {
-            const keyCodes = platform.keyCodes;
+            // Shield TV:
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: {
+                        userAgent: "Mozilla/5.0 (Linux; U; Android 5.1; SHIELD Android TV Build/LMY47D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/10.5.2.582 U3/0.8.0 Mobile Safari/534.30"
+                    },
+                }),
+            );
+
             assert.strictEqual(platform.getInputAction(82), inputActions.menu);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -158,8 +187,17 @@ describe("TXMPlatform", () => {
 
         test("test MIBOX is an AndroidTV", () => {
             // The MIBOX is mobile hardware! It supports touch, has "Mobile" in its user agent, and yet it is actually
-            // a set top box. Cheap hardware for the win!
-            const platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 9; MIBOX4 Build/PI; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/99.0.4844.73 Mobile Safari/537.36");
+            // a set-top box. Cheap hardware for the win!
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: {
+                        userAgent: "Mozilla/5.0 (Linux; Android 9; MIBOX4 Build/PI; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/99.0.4844.73 Mobile Safari/537.36",
+                        maxTouchPoints: 1,
+                    },
+                    ontouchstart: mock.fn(),
+                }),
+            );
             assert.strictEqual(platform.isAndroidTV, true);
             assert.strictEqual(platform.isAndroid, true);
             assert.strictEqual(platform.isAndroidMobile, false);
@@ -168,10 +206,17 @@ describe("TXMPlatform", () => {
     });
 
     describe("Android Phone Tests", () => {
-        navigator.maxTouchPoints = 1; // touch support is the key to determine mobile vs TV
-
-        // Nokia example:
-        let platform = new TXMPlatform("Mozilla/5.0 (Linux; U; Android 4.2; ru-ru; Nokia_X Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.2 Mobile Safari/E7FBAF");
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    // Nokia example:
+                    userAgent: "Mozilla/5.0 (Linux; U; Android 4.2; ru-ru; Nokia_X Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.2 Mobile Safari/E7FBAF",
+                    // touch support is the key to determine mobile vs TV
+                    maxTouchPoints: 1,
+                }
+            })
+        );
 
         test("recognize the Android mobile platform", () => {
             assert.strictEqual(platform.isUnknown, false);
@@ -198,10 +243,17 @@ describe("TXMPlatform", () => {
 
 
     describe("Android Tablet Tests", () => {
-        navigator.maxTouchPoints = 1; // touch support is the key to determine mobile vs TV
-
-        // Samsung Galaxy Tablet:
-        let platform = new TXMPlatform("Mozilla/5.0 (Linux; Android 7.1.1; SM-T555 Build/NMF26X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.96 Safari/537.36");
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    // Samsung Galaxy Tablet:
+                    userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; SM-T555 Build/NMF26X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.96 Safari/537.36",
+                    // touch support is the key to determine mobile vs TV
+                    maxTouchPoints: 1,
+                },
+            }),
+        );
 
         test("recognize the Android mobile platform", () => {
             assert.strictEqual(platform.isUnknown, false);
@@ -227,8 +279,13 @@ describe("TXMPlatform", () => {
     });
 
     describe("Vizio Tests", () => {
-        let platform = new TXMPlatform(
-            "Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36 CrKey/1.0.999999 VIZIO SmartCast(Conjure/SX7A-2.0.9.0 FW/9.0.5.2 Model/E50x-E1)"
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    userAgent: "Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36 CrKey/1.0.999999 VIZIO SmartCast(Conjure/SX7A-2.0.9.0 FW/9.0.5.2 Model/E50x-E1)",
+                },
+            }),
         );
 
         test("recognize the Vizio platform", () => {
@@ -250,7 +307,6 @@ describe("TXMPlatform", () => {
         });
 
         test("vizio key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -264,19 +320,19 @@ describe("TXMPlatform", () => {
     });
 
     describe("Comcast Tests", () => {
-
-        window.$badger = {
-            deviceInfo(callback) {
-                callback({modelNameAscii: "Comcast Fake Model", version: "1.2.3"});
-            }
-        };
-
-
-        let platform = new TXMPlatform(
-          "Mozilla/5.0 (Linux; x86_64 GNU/Linux) AppleWebKit/601.1 (KHTML, like Gecko) Version/8.0 Safari/601.1 WPE"
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    userAgent: "Mozilla/5.0 (Linux; x86_64 GNU/Linux) AppleWebKit/601.1 (KHTML, like Gecko) Version/8.0 Safari/601.1 WPE",
+                },
+                $badger: {
+                    deviceInfo(callback) {
+                        callback({modelNameAscii: "Comcast Fake Model", version: "1.2.3"});
+                    }
+                },
+            }),
         );
-
-        delete window.$badger;
 
         test("recognize the Comcast platform", () => {
             assert.strictEqual(platform.isUnknown, false);
@@ -296,7 +352,6 @@ describe("TXMPlatform", () => {
         });
 
         test("comcast key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -310,9 +365,13 @@ describe("TXMPlatform", () => {
     });
 
     describe("Kepler Tests", () => {
-
-        let platform = new TXMPlatform(
-            "Mozilla/5.0 (Linux; Kepler 1.1; AFTCA002 user-external/4418; wv) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Chrome/132.0.6834.209 Safari/537.36"
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    userAgent: "Mozilla/5.0 (Linux; Kepler 1.1; AFTCA002 user-external/4418; wv) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Chrome/132.0.6834.209 Safari/537.36",
+                },
+            }),
         );
 
         test("recognize the Kepler platform", () => {
@@ -334,7 +393,6 @@ describe("TXMPlatform", () => {
         });
 
         test("Kepler key mapping", () => {
-            const keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -349,19 +407,18 @@ describe("TXMPlatform", () => {
     });
 
     describe("LG Tests", () => {
-        // Mock LG OS API
-        window.PalmSystem = new Object();
-        window.webOS = {
-            deviceInfo(callback) {
-                callback({modelNameAscii: "LG Fake Model", version: "1.2.3"});
-            }
-        };
-
-        let platform = new TXMPlatform();
-
-        // Should no longer be needed. Clean up to prevent affecting future tests.
-        delete window.PalmSystem;
-        delete window.webOS;
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                // Mock LG OS API
+                PalmSystem: {},
+                webOS: {
+                    deviceInfo(callback) {
+                        callback({modelNameAscii: "LG Fake Model", version: "1.2.3"});
+                    },
+                },
+            }),
+        );
 
         test("recognize the LG platform", () => {
             assert.strictEqual(platform.isUnknown, false);
@@ -382,7 +439,6 @@ describe("TXMPlatform", () => {
         });
 
         test("LG key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -398,8 +454,13 @@ describe("TXMPlatform", () => {
     });
 
     describe("Tizen Tests", () => {
-        let platform = new TXMPlatform(
-            "Mozilla/5.0 (SMART-TV; LINUX; Tizen 4.0) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 TV Safari/537.36"
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    userAgent: "Mozilla/5.0 (SMART-TV; LINUX; Tizen 4.0) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 TV Safari/537.36",
+                },
+            }),
         );
 
         test("recognize the Tizen platform", () => {
@@ -421,7 +482,6 @@ describe("TXMPlatform", () => {
         });
 
         test("Tizen key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -437,8 +497,13 @@ describe("TXMPlatform", () => {
 
     describe("PS4 Tests", () => {
         test("recognize the PS4 platform, old version", () => {
-            let platform = new TXMPlatform(
-                "Mozilla/5.0 (PlayStation 4 5.05) AppleWebKit/601.2 (KHTML, like Gecko)"
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: {
+                        userAgent: "Mozilla/5.0 (PlayStation 4 5.05) AppleWebKit/601.2 (KHTML, like Gecko)",
+                    },
+                }),
             );
             assert.strictEqual(platform.isUnknown, false);
             assert.strictEqual(platform.isFireTV, false);
@@ -457,8 +522,13 @@ describe("TXMPlatform", () => {
             assert.strictEqual(platform.isConsole, true);
         });
 
-        let platform = new TXMPlatform(
-            "Mozilla/5.0 (PlayStation 4 WebMAF) AppleWebKit/601.2 (KHTML, like Gecko) WebMAF/v1.2.30.4-gd34FFEE something extra"
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    userAgent: "Mozilla/5.0 (PlayStation 4 WebMAF) AppleWebKit/601.2 (KHTML, like Gecko) WebMAF/v1.2.30.4-gd34FFEE something extra",
+                },
+            }),
         );
 
         test("recognize the PS4 platform, new version", () => {
@@ -480,7 +550,6 @@ describe("TXMPlatform", () => {
         });
 
         test("PS4 key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -495,8 +564,13 @@ describe("TXMPlatform", () => {
     });
 
     describe("PS5 Tests", () => {
-        let platform = new TXMPlatform(
-            "Mozilla/5.0 (PlayStation; PlayStation 5/1.05) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/6.05.1.15"
+        const platform = new TXMPlatform(
+            undefined,
+            createWindowMockForCTV({
+                navigator: {
+                    userAgent: "Mozilla/5.0 (PlayStation; PlayStation 5/1.05) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/6.05.1.15",
+                },
+            }),
         );
 
         test("recognize the PS5 platform", () => {
@@ -519,7 +593,6 @@ describe("TXMPlatform", () => {
         });
 
         test("PS5 key mapping", () => {
-            let keyCodes = platform.keyCodes;
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(keyCodes.downArrow), inputActions.moveDown);
             assert.strictEqual(platform.getInputAction(keyCodes.leftArrow), inputActions.moveLeft);
@@ -534,10 +607,13 @@ describe("TXMPlatform", () => {
     });
 
     describe("XboxOne Tests", () => {
-        const xboxUserAgent = "need just 'Xbox' in the user agent";
-
         test("recognize the XboxOne platform without Windows.* API", () => {
-            let platform = new TXMPlatform(xboxUserAgent);
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: { userAgent: "need just 'Xbox' in the user agent" },
+                }),
+            );
 
             assert.strictEqual(platform.isUnknown, false);
             assert.strictEqual(platform.isFireTV, false);
@@ -557,24 +633,25 @@ describe("TXMPlatform", () => {
         });
 
         test("recognize the XboxOne platform with the Windows.* API", () => {
-            // Mock Window API objects
-            window.Windows = {
-                System: {
-                    Profile: {
-                        AnalyticsInfo: {
-                            versionInfo: {
-                                deviceFamily: "Windows.Xbox",
-                                deviceFamilyVersion: "1.2.3"
-                            }
-                        }
-                    }
-                }
-            };
-
-            let platform = new TXMPlatform(xboxUserAgent);
-
-            // Should no longer be needed.
-            delete window.Windows;
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: { userAgent: "need just 'Xbox' in the user agent" },
+                    // Mock Window API objects
+                    Windows: {
+                        System: {
+                            Profile: {
+                                AnalyticsInfo: {
+                                    versionInfo: {
+                                        deviceFamily: "Windows.Xbox",
+                                        deviceFamilyVersion: "1.2.3",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+            );
 
             assert.strictEqual(platform.isUnknown, false);
             assert.strictEqual(platform.isFireTV, false);
@@ -594,8 +671,13 @@ describe("TXMPlatform", () => {
         });
 
         test("XboxOne key mapping", () => {
-            let platform = new TXMPlatform(xboxUserAgent);
-            let keyCodes = platform.keyCodes;
+            const platform = new TXMPlatform(
+                undefined,
+                createWindowMockForCTV({
+                    navigator: { userAgent: "need just 'Xbox' in the user agent" },
+                }),
+            );
+
             assert.strictEqual(platform.getInputAction(keyCodes.upArrow), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(211), inputActions.moveUp);
             assert.strictEqual(platform.getInputAction(203), inputActions.moveUp);
@@ -611,3 +693,89 @@ describe("TXMPlatform", () => {
         });
     });
 });
+
+/**
+ * @param {Partial<Window>} [overrides]
+ * @returns {DeviceSpecificWindowExtensions & Window}
+ */
+function createWindowMockForDesktop(overrides = {}) {
+    const navigator = /** @type {Navigator} */ ({
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+        maxTouchPoints: 0,
+        ...overrides.navigator,
+    });
+
+    const documentElement = {
+        clientWidth: 1920,
+        clientHeight: 1080,
+        ...overrides.document?.documentElement,
+    };
+
+    const document = {
+        addEventListener: mock.fn(),
+        removeEventListener: mock.fn(),
+        documentElement,
+        ...overrides.document,
+    };
+
+    const result = /** @type {Partial<Window>} */ ({
+        localStorage: undefined,
+        close: mock.fn(),
+        location: 'https://unit-tests.truex.com',
+        ...overrides,
+        navigator,
+        document,
+    });
+
+    return /** @type {DeviceSpecificWindowExtensions & Window} */ (result);
+}
+
+/**
+ * @param {Partial<Window>} [overrides]
+ * @returns {DeviceSpecificWindowExtensions & Window}
+ */
+function createWindowMockForCTV(overrides = {}) {
+    const navigator = /** @type {Navigator} */ ({
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+        maxTouchPoints: 0,
+        ...overrides.navigator,
+    });
+
+    const documentElement = {
+        clientWidth: 1920,
+        clientHeight: 1080,
+        ...overrides.document?.documentElement,
+    };
+
+    const document = {
+        addEventListener: mock.fn(),
+        removeEventListener: mock.fn(),
+        documentElement,
+        ...overrides.document,
+    };
+
+    const result = /** @type {Partial<Window>} */ ({
+        localStorage: undefined,
+        close: mock.fn(),
+        location: 'https://unit-tests.truex.com',
+        ...overrides,
+        navigator,
+        document,
+    });
+
+    return /** @type {DeviceSpecificWindowExtensions & Window} */ (result);
+}
+
+/**
+ * @typedef {{
+ *   PalmSystem: undefined,
+ *   webOS: undefined,
+ *   tizen: undefined,
+ *   VIZIO: undefined,
+ *   Windows: undefined,
+ *   $badger: undefined,
+ *   androidApp: undefined,
+ *   fireTVApp: undefined,
+ *   AmazonAdvertising: undefined,
+ * }} DeviceSpecificWindowExtensions
+ */

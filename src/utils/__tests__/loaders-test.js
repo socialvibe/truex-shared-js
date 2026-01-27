@@ -9,6 +9,7 @@ import {
     TextLoader,
     GetAssetLoader,
 } from '../loaders.js';
+import 'global-jsdom/register';
 
 describe('BaseLoader Class', () => {
     describe('constructor', () => {

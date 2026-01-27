@@ -1,6 +1,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
 import { AppStorage } from "../app-storage.js";
+import 'global-jsdom/register';
 
 describe("AppStorage", () => {
   const appStorage = new AppStorage();

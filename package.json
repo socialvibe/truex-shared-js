@@ -1,7 +1,7 @@
 {
-  "name": "@truex/shared",
+  "name": "@socialvibe/shared",
   "version": "1.11.7",
-  "description": "Common ES6 JavaScript library shared across true[X] repos",
+  "description": "Common ES6 JavaScript library shared across TrueX repos",
   "private": true,
   "type": "module",
   "files": [
@@ -9,15 +9,19 @@
   ],
   "main": "./src/",
   "scripts": {
-    "test": "node --import ./src/__tests__/setup.mjs --test 'src/**/__tests__/*-test*.js'",
-    "test:ci": "node --import ./src/__tests__/setup.mjs --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=test-results/junit.xml 'src/**/__tests__/*-test*.js'",
-    "watch": "node --import ./src/__tests__/setup.mjs --test --watch 'src/**/__tests__/*-test*.js'",
-    "coverage": "node --import ./src/__tests__/setup.mjs --test --experimental-test-coverage 'src/**/__tests__/*-test*.js'"
+    "test:only": "node --test --test-only",
+    "test:single": "node --test",
+    "test": "node --test 'src/**/__tests__/*-test*.js'",
+    "test:ci": "node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=test-results/junit.xml 'src/**/__tests__/*-test*.js'",
+    "watch": "node --test --watch 'src/**/__tests__/*-test*.js'",
+    "coverage": "node --test --experimental-test-coverage 'src/**/__tests__/*-test*.js'"
   },
   "devDependencies": {
-    "jsdom": "^25.0.0"
+    "@types/node": "^25.0.10",
+    "global-jsdom": "^27.0.0",
+    "jsdom": "^27.4.0"
   },
   "dependencies": {
-    "uuid": "^11.0.0"
+    "uuid": "^13.0.0"
   }
 }

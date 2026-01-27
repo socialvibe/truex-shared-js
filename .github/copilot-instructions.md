@@ -19,8 +19,14 @@ yarn install
 yarn test
 
 # Run a single test file by pattern
-yarn test -- --test-name-pattern="platform"    # matches test names containing "platform"
-yarn test -- src/focus_manager                  # run tests in focus_manager directory
+yarn test --test-name-pattern="platform"     # matches test names containing "platform"
+yarn test src/focus_manager                  # run tests in focus_manager directory
+
+# Run a single test file
+yarn test:single src/utils/__test__/url_params.test.js  # run tests in url_params.test.js
+
+# Run .only test cases from a single file
+yarn test:only src/utils/__test__/url_params.test.js    # run only .only test cases
 
 # Watch mode (re-run on changes)
 yarn watch
@@ -61,8 +67,7 @@ describe("MyModule", () => {
 - Use `describe` blocks to group related tests
 - Use `test` (not `it`) for individual test cases
 - Test names should be descriptive: "should do X when Y"
-- For platform-specific tests, construct with user agent override:
-  `new TXMPlatform("Mozilla/5.0 ...")`
+
 
 ## Code Style Guidelines
 
@@ -70,7 +75,7 @@ describe("MyModule", () => {
 
 - **Language:** Plain JavaScript (ES6+), no TypeScript
 - **Modules:** ES6 `import`/`export` syntax with explicit `.js` extensions
-- **Node version:** 22 (see `.nvmrc`)
+- **Node version:** 24 (see `.nvmrc`)
 
 ### Imports
 
@@ -209,23 +214,18 @@ src/
 - **Platform detection:** Extend `TXMPlatform` class in `txm_platform.js`
 - **New module category:** Create new directory under `src/` with `__tests__/` subdirectory
 
-### Versioning
-
-- Update version in `package.json`
-- Document changes in `CHANGELOG.md` with JIRA ticket references
-- Tag releases as `v1.x.x` in git
 
 ## Commit Convention
 
 Use conventional commit format with JIRA ticket prefix:
 
 ```
-<JIRA-ID>: <type>: <description>
+<JIRA-ID> - <type>: <description>
 
 Examples:
-PI-1234: feat: Add new focus navigation algorithm
-PI-1234: fix: Correct key mapping for PS5 platform
-PI-1234: refactor: Simplify URL parameter parsing
-PI-1234: test: Add tests for edge cases in loaders
-PI-1234: docs: Update testing guidelines
+PI-1234 - feat: Add new focus navigation algorithm
+PI-1234 - fix: Correct key mapping for PS5 platform
+PI-1234 - refactor: Simplify URL parameter parsing
+PI-1234 - test: Add tests for edge cases in loaders
+PI-1234 - docs: Update testing guidelines
 ```

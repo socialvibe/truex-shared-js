@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
  * Player with a currently playing ad video (as specified by the associated VAST <MediaFile> element). The SIMID Player is then the
  * producer of the SIMID messages.
  *
- * @see https://interactiveadvertisingbureau.github.io/SIMID
+ * @see {@link https://interactiveadvertisingbureau.github.io/SIMID}
  */
 export class SIMIDClient {
     isActive;
@@ -86,7 +86,7 @@ export class SIMIDClient {
     }
 
     clickThru({ x, y, uri }) {
-        const playerHandles = this._playerConfig?.environmentData.navigationSupport == 'playerHandles';
+        const playerHandles = this._playerConfig?.environmentData.navigationSupport === 'playerHandles';
         return this._sendClientRequest('SIMID:Creative:clickThru', {x, y, playerHandles, uri });
     }
 
@@ -181,8 +181,8 @@ export class SIMIDClient {
     }
 
     /**
-     * @param {{x, y, width, height }} mediaDimensions
-     * @param {{x, y, width, height }} creativeDimensions
+     * @param {{ x, y, width, height }} mediaDimensions
+     * @param {{ x, y, width, height }} creativeDimensions
      * @return {Promise<unknown>}
      */
     requestResize({ mediaDimensions, creativeDimensions }) {
@@ -717,6 +717,9 @@ export class SIMIDDimensions {
     width;
     height;
 
+    /**
+     * @param {{ x?: number, y?: number, width?: number, height?: number }} [dimensions]
+     */
     constructor(dimensions) {
         const {x, y, width, height} = dimensions || {};
 
@@ -741,6 +744,21 @@ export class SIMIDMediaState {
     volume;
     fullscreen;
 
+    /**
+     * Creates an instance of the media state manager, initializing the state of the media playback.
+     *
+     * @param {{
+     *     currentSrc?: string,
+     *     currentTime?: number,
+     *     duration?: number,
+     *     ended?: boolean,
+     *     muted?: boolean,
+     *     paused?: boolean,
+     *     volume?: number,
+     *     fullscreen?: boolean
+     * }} [mediaState] - An object representing the initial state of the media.
+     * @return {void}
+     */
     constructor(mediaState) {
         const {
             currentSrc,
