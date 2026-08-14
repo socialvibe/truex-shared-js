@@ -2,7 +2,45 @@ import { inputActions } from './txm_input_actions.js';
 import { ScriptLoader } from "../utils/loaders.js";
 
 /**
- * Standard ASCII key codes
+ * Standard ASCII key codes.
+ * @type {{
+ *   readonly space: number,
+ *   readonly tab: number,
+ *   readonly enter: number,
+ *   readonly esc: number,
+ *   readonly del: number,
+ *   readonly backspace: number,
+ *   readonly zero: number,
+ *   readonly one: number,
+ *   readonly two: number,
+ *   readonly three: number,
+ *   readonly four: number,
+ *   readonly five: number,
+ *   readonly six: number,
+ *   readonly seven: number,
+ *   readonly eight: number,
+ *   readonly nine: number,
+ *   readonly A: number,
+ *   readonly B: number,
+ *   readonly C: number,
+ *   readonly D: number,
+ *   readonly E: number,
+ *   readonly F: number,
+ *   readonly S: number,
+ *   readonly L: number,
+ *   readonly M: number,
+ *   readonly O: number,
+ *   readonly P: number,
+ *   readonly Q: number,
+ *   readonly W: number,
+ *   readonly X: number,
+ *   readonly Y: number,
+ *   readonly Z: number,
+ *   readonly leftArrow: number,
+ *   readonly rightArrow: number,
+ *   readonly upArrow: number,
+ *   readonly downArrow: number,
+ * }}
  */
 export const keyCodes = {
     space: 32,
@@ -121,13 +159,19 @@ export class TXMPlatform {
         this._configure(userAgent);
     }
 
+    /** @returns {boolean} */
     get isAndroid() { return this.isAndroidMobile || this.isAndroidTV }
+    /** @returns {boolean} */
     get isAndroidOrFireTV() { return this.isAndroidTV || this.isFireTV }
 
+    /** @returns {boolean} */
     get isHandheld() { return this.isIPhone || this.isAndroidMobile && /Mobile/.test(this.userAgent) }
+    /** @returns {boolean} */
     get isTablet() { return this.isIPad || this.isAndroidMobile && !this.isHandheld }
 
+    /** @returns {boolean} */
     get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV || this.isComcast || this.isKepler }
+    /** @returns {boolean} */
     get isConsole() { return this.isXboxOne || this.isPS4 || this.isPS5 || this.isNintendoSwitch }
 
     /**
@@ -151,12 +195,15 @@ export class TXMPlatform {
         };
     }
 
+    /** @returns {typeof keyCodes} */
     get keyCodes() {
         return keyCodes;
     }
 
     /**
      * Maps a key event's keycode into a platform-independent input action.
+     * @param {number} keyCode
+     * @returns {string | undefined}
      */
     getInputAction(keyCode) {
         const action = this._inputKeyMap[keyCode];
@@ -165,6 +212,9 @@ export class TXMPlatform {
         return action;
     }
 
+    /**
+     * @param {Record<string, number | number[]>} actionKeyCodes
+     */
     applyInputKeyMap(actionKeyCodes) {
         for (const action in actionKeyCodes) {
             const actionCodes = actionKeyCodes[action];
@@ -181,7 +231,9 @@ export class TXMPlatform {
 
     /**
      * Tolerates platform-specific error description differences to show reasonably readable error messages.
-     * @return {String}
+     * @param {unknown} err
+     * @param {boolean} [showStack]
+     * @returns {string}
      */
     describeError(err, showStack) {
         if (typeof err == "string" || typeof(err) == "number" || !err) return err;
@@ -219,10 +271,15 @@ export class TXMPlatform {
         return msg;
     }
 
+    /**
+     * @param {unknown} error
+     * @returns {string}
+     */
     describeErrorWithStack(error) {
         return this.describeError(error, true);
     }
 
+    /** Exit the app on platforms that support it; otherwise close/blank the window. */
     exitApp() {
         if (this.isTizen && this.window.tizen) {
             this.window.tizen.application.getCurrentApplication().exit();
@@ -745,7 +802,7 @@ export class TXMPlatform {
      * undefined if the advertising id is either not available or else the user has opted out of
      * being tracked for advertising on their device.
      *
-     * @return {Promise<String>}
+     * @returns {Promise<string | undefined>}
      */
     async getUserAdvertisingId() {
         if (!this.supportsUserAdvertisingId) {
@@ -759,6 +816,9 @@ export class TXMPlatform {
         return undefined; // fallback
     }
 
+    /**
+     * @returns {Promise<string | undefined>}
+     */
     async getFireTVAdvertisingId() {
         let AmazonAdvertising = this.window.AmazonAdvertising;
         if (!AmazonAdvertising) {

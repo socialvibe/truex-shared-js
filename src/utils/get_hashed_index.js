@@ -1,10 +1,9 @@
 /**
  * Returns an index within 0..count-1 by hashing over the characters in the name.
  *
- * @param {String} The name to hash over.
- * @param {Number} count the user id to use for hashing to the choice card index. Defaults to the
- *   VAST config's user.id property if missing.
- * @return {Number}
+ * @param {string} [name] string to hash over
+ * @param {number} count number of buckets; returns 0 unless count > 1
+ * @returns {number} index in `0..count-1`
  */
 export function getHashedIndex(name, count) {
     if (name && count > 1) {

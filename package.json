@@ -1,13 +1,16 @@
 {
   "name": "@socialvibe/shared",
-  "version": "1.11.7",
+  "version": "1.12.0",
   "description": "Common ES6 JavaScript library shared across TrueX repos",
-  "private": true,
   "type": "module",
   "files": [
     "src"
   ],
   "main": "./src/",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "scripts": {
     "test:only": "node --test --test-only",
     "test:single": "node --test",

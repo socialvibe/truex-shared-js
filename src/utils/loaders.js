@@ -230,6 +230,14 @@ export class TextLoader extends BaseLoader {
     }
 }
 
+/**
+ * @typedef {{ url: string, type: string }} AssetDescriptor
+ */
+
+/**
+ * @param {string | AssetDescriptor} asset
+ * @returns {BaseLoader | undefined}
+ */
 export function GetAssetLoader(asset) {
     let url;
     let condition;

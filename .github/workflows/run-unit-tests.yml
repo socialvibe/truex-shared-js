@@ -1,41 +1,43 @@
-name: Run Unit Tests
+name: CI/CD - Unit Tests
 
-# Run tests on pushes and PRs targeting develop
+# Run tests on PRs targeting `develop`. Pushes to develop are tested in the Release workflow.
 on:
-  push:
-    branches: [ "develop" ]
-
   pull_request:
-    branches: [ "develop" ]
+    branches:
+      - develop
 
   workflow_dispatch:
 
 jobs:
   unit-test:
     runs-on: ubuntu-latest
-    environment: qa
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-
-      - name: Install Yarn
-        run: npm install -g yarn
+          cache: npm
 
       - name: Install Dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Run Unit Tests
-        run: yarn run test:ci
+        run: npm run test:ci
+
+      - name: Upload Test Summary
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-summary
+          path: test-results/junit.xml
 
       - name: Test Report
-        uses: dorny/test-reporter@v2
-        if: success() || failure()
+        uses: dorny/test-reporter@v3
+        if: always()
         with:
           name: Unit Tests
           path: test-results/junit.xml

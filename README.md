@@ -4,15 +4,18 @@ Common ES6 JavaScript library shared across true[X] repos. Provides focus manage
 for CTV (Connected TV) platforms, SIMID client implementation, platform detection,
 and various utilities.
 
-This is a private library consumed via git URL with version tags (not published to npm).
+This is a private library published as `@socialvibe/shared` to GitHub Packages.
 Source is consumed directly - there is no build step.
+
+Consumer install instructions live in [README_NPM.md](./README_NPM.md). That file
+replaces this README at publish time and is not included in the package.
 
 ## Setup
 
 ### Prerequisites
 
-- **Node.js 22** (see `.nvmrc`)
-- **Yarn** package manager
+- **Node.js 24** (see `.nvmrc`)
+- **npm** (comes with Node)
 
 ```bash
 # Install the correct Node version (using nvm)
@@ -20,13 +23,10 @@ nvm install
 nvm use
 
 # Or using n
-n 22
-
-# Install Yarn if not already installed
-npm install -g yarn
+n 24
 
 # Install dependencies
-yarn install
+npm install
 ```
 
 ## Development
@@ -35,20 +35,20 @@ yarn install
 
 ```bash
 # Run all tests
-yarn test
+npm test
 
 # Run tests matching a pattern
-yarn test -- --test-name-pattern="platform"
-yarn test -- src/focus_manager
+npm test -- --test-name-pattern="platform"
+npm test -- src/focus_manager
 
 # Watch mode (re-run on changes)
-yarn watch
+npm run watch
 
 # Run with coverage report
-yarn coverage
+npm run coverage
 
 # CI mode (with JUnit XML output)
-yarn test:ci
+npm run test:ci
 ```
 
 ### Test Structure
@@ -72,34 +72,25 @@ describe("MyModule", () => {
 
 ```
 src/
-├── __tests__/         # Test setup files
-├── components/        # UI components (debug-log, fonts)
+├── components/        # UI components (fonts)
 ├── events/           # Event definitions (ad events)
 ├── focus_manager/    # CTV focus/input management
 ├── simid/            # SIMID client implementation
 └── utils/            # General utilities
 ```
 
-## Usage in Other Projects
-
-Add to your `package.json` dependencies:
-
-```json
-{
-    "dependencies": {
-        "truex-shared": "git://github.com/socialvibe/truex-shared-js#v1.x.x"
-    }
-}
-```
-
-Replace `v1.x.x` with the desired version tag.
-
 ## Versioning & Releases
 
-1. Update version in `package.json`
-2. Document changes in `CHANGELOG.md`
-3. Commit and push changes
-4. Tag the release: `git tag v1.x.x && git push --tags`
+Every PR targeting `develop` must increment the version in `package.json`
+and add a `CHANGELOG.md` entry. CI does not bump the version after merge.
+
+1. Create a branch: `feature/<TICKET>[/<short-description>]` or `bugfix/<TICKET>[/<short-description>]`
+2. Bump the patch version in `package.json` (minor/major when the change warrants it)
+3. Document the change in `CHANGELOG.md` under the same `## vX.Y.Z` heading as that version. If the heading already exists, append there — do not add a second heading for the same increment.
+4. Implement the change, commit, push, open a PR
+5. CI runs unit tests and checks that the version was incremented
+6. After merge to `develop`, CI runs unit tests, publishes `@socialvibe/shared`
+   to GitHub Packages, tags `vX.Y.Z`, and creates a GitHub release
 
 ## Contributing
 

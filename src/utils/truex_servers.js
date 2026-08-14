@@ -1,4 +1,8 @@
 
+/**
+ * @param {string | undefined} url
+ * @returns {boolean}
+ */
 export function isTruexProductionUrl(url) {
     if (url) {
         const m = url.match(/^(https?:\/\/)?([a-zA-Z0-9\-_]+).truex.com/);
@@ -13,6 +17,10 @@ export function isTruexProductionUrl(url) {
  * Describes various qa vs production versions of some key truex backend servers
  */
 export class TruexServers {
+    /**
+     * @param {boolean | string | Record<string, unknown>} [vastConfigOrUrlOrFlag]
+     *   `true`/`false` for prod vs qa, a URL to inspect, or a VAST config object
+     */
     constructor(vastConfigOrUrlOrFlag) {
         var isProd = false; // by default
 

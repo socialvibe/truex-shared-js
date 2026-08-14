@@ -1,6 +1,8 @@
 /**
  * Gives a textual description of a DOM element, similar to the CSS selector.
  * Useful for testing to verify expected focus changes.
+ * @param {Element | null | undefined} element
+ * @returns {string}
  */
 function getElementPath(element) {
     if (!element) return ''; // no DOM element, no path

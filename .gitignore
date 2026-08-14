@@ -1,7 +1,7 @@
 .DS_Store
 logs
 /node_modules/
-yarn-error.log
+npm-debug.log
 
 **/dist/
 /concat/

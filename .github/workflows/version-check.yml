@@ -1,0 +1,51 @@
+name: CI/CD - Version Check
+
+# Ensure package.json version was incremented on every PR targeting develop
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Verify package.json version was incremented
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+          git show origin/${{ github.event.pull_request.base.ref }}:package.json > /tmp/base-package.json
+          node -e '
+            const fs = require("fs");
+            const base = require("/tmp/base-package.json").version.split(".").map(Number);
+            const headVersion = require("./package.json").version;
+            const head = headVersion.split(".").map(Number);
+            const cmp = head[0]-base[0] || head[1]-base[1] || head[2]-base[2];
+            if (cmp <= 0) {
+              console.error(`package.json version must be incremented (base: ${base.join(".")}, head: ${head.join(".")})`);
+              process.exit(1);
+            }
+            const heading = "## v" + headVersion;
+            const changelog = fs.readFileSync("CHANGELOG.md", "utf8");
+            if (!changelog.includes(heading)) {
+              console.error("CHANGELOG.md must have a " + heading + " section matching package.json");
+              process.exit(1);
+            }
+            const headingCount = changelog.split(heading).length - 1;
+            if (headingCount !== 1) {
+              console.error("CHANGELOG.md must have exactly one " + heading + " heading, found " + headingCount);
+              process.exit(1);
+            }
+            console.log("version OK: " + base.join(".") + " -> " + head.join("."));
+          '

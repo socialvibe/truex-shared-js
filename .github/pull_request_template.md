@@ -19,5 +19,6 @@ OPTIONAL_ADD_PR_LINKS
 ### Checks
 - [ ] Includes unit test coverage _(if applicable)_
 - [ ] Includes functional test coverage _(at feature-level, if applicable)_
-- [ ] Proposed commit messages follow [team conventions](https://github.com/socialvibe/adlabs-wiki/blob/develop/git/README.md#commits)
+- [ ] Updated [CHANGELOG.md](../CHANGELOG.md) under the same `## vX.Y.Z` heading as `package.json`
+- [ ] Incremented the version in [package.json](../package.json)
 
