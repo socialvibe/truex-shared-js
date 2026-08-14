@@ -123,7 +123,7 @@ describe("TXMFocusManager", () => {
         assert.strictEqual(inputAction.mock.callCount(), 0);
     });
 
-    describe.only("test focus mouse events enabled/disabled", () => {
+    describe("test focus mouse events enabled/disabled", () => {
         const fm = new TXMFocusManager();
 
         const selectAction = mock.fn();

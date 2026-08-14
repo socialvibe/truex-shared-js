@@ -820,36 +820,35 @@ export class TXMPlatform {
      * @returns {Promise<string | undefined>}
      */
     async getFireTVAdvertisingId() {
-        let AmazonAdvertising = this.window.AmazonAdvertising;
-        if (!AmazonAdvertising) {
+        let amazonAdvertising = this.window.AmazonAdvertising;
+        if (!amazonAdvertising) {
             const apiLoader = new ScriptLoader("https://resources.amazonwebapps.com/v1/latest/Amazon-Web-App-API.min.js");
             apiLoader.load();
             await apiLoader.promise;
-            AmazonAdvertising = await new Promise(resolve => {
-                this.window.document.addEventListener('amazonPlatformReady', onApiReady);
-
-                function onApiReady() {
+            amazonAdvertising = await new Promise(resolve => {
+                const onApiReady = () => {
                     this.window.document.removeEventListener('amazonPlatformReady', onApiReady);
                     resolve(this.window.AmazonAdvertising);
-                }
+                };
+                this.window.document.addEventListener('amazonPlatformReady', onApiReady);
             });
-            if (!AmazonAdvertising) {
+            if (!amazonAdvertising) {
                 throw new Error("AmazonAdvertising API not available");
             }
         }
         const adIdPromise = new Promise((resolve, reject) => {
-            AmazonAdvertising.getAdvertisingId(resolve, errMsg => {
+            amazonAdvertising.getAdvertisingId(resolve, errMsg => {
                 console.error(`getAdvertisingId: ${errMsg}`);
                 resolve(undefined);
             })
         });
         const adTrackingPromise = new Promise((resolve, reject) => {
-            AmazonAdvertising.getLimitAdTrackingPreference(resolve, errMsg => {
+            amazonAdvertising.getLimitAdTrackingPreference(resolve, errMsg => {
                 console.error(`getLimitAdTrackingPreference: ${errMsg}`);
                 resolve(false);
             })
         });
-        return Promise.all([adIdPromise, adTrackingPromise])
+        return Promise.all([ adIdPromise, adTrackingPromise ])
         .then(results => {
             const adId = results[0];
             const limitTracking = results[1];

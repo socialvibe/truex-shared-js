@@ -7,7 +7,7 @@ import StripProtocol from './strip_protocol.js';
 export class BaseLoader {
     /**
      * @param {string} url
-     * @param { 'http:' | ' https:' | undefined } [protocol]
+     * @param {'http:' | 'https:'} [protocol]
      */
     constructor(url, protocol) {
         if (!url) {
@@ -73,7 +73,7 @@ export class BaseLoader {
 export class ScriptLoader extends BaseLoader {
     /**
      * @param {string} url
-     * @param { 'http' | 'https' | undefined } [protocol]
+     * @param {'http:' | 'https:'} [protocol]
      */
     constructor(url, protocol) {
         super(url, protocol);
@@ -111,7 +111,7 @@ export class ScriptLoader extends BaseLoader {
 export class ImageLoader extends BaseLoader {
     /**
      * @param {string} url
-     * @param { 'http' | 'https' | undefined } [protocol]
+     * @param {'http:' | 'https:'} [protocol]
      */
     constructor(url, protocol) {
         super(url, protocol);
@@ -145,7 +145,7 @@ export class ImageLoader extends BaseLoader {
 export class IframeLoader extends BaseLoader {
     /**
      * @param {string} url
-     * @param { 'http' | 'https' | undefined } [protocol]
+     * @param {'http:' | 'https:'} [protocol]
      */
     constructor(url, protocol) {
         super(url, protocol);
@@ -171,7 +171,7 @@ export class IframeLoader extends BaseLoader {
 export class StyleLoader extends BaseLoader {
     /**
      * @param {string} url
-     * @param { 'http' | 'https' | undefined } [protocol]
+     * @param {'http:' | 'https:'} [protocol]
      */
     constructor(url, protocol) {
         super(url, protocol);
