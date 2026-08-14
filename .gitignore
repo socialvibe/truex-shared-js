@@ -6,7 +6,7 @@ npm-debug.log
 **/dist/
 /concat/
 /coverage/
-/test-results/
+/junit.xml
 
 .vscode
 
