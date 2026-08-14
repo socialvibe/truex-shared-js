@@ -1,25 +1,27 @@
-import { isTruexProductionUrl, TruexServers } from '../truex_servers';
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
+import { isTruexProductionUrl, TruexServers } from '../truex_servers.js';
 
 describe("truex_servers testing", () => {
     test("isTruexProductionUrl", () => {
-        expect(isTruexProductionUrl()).toBe(false);
-        expect(isTruexProductionUrl("127.0.0.1")).toBe(false);
-        expect(isTruexProductionUrl("http://localhost:8080")).toBe(false);
-        expect(isTruexProductionUrl("http://media.truex.com")).toBe(true);
-        expect(isTruexProductionUrl("https://media.truex.com")).toBe(true);
-        expect(isTruexProductionUrl("https://measure.truex.com")).toBe(true);
-        expect(isTruexProductionUrl("https://server.truex.com")).toBe(true);
-        expect(isTruexProductionUrl("http://qa-media.truex.com")).toBe(false);
-        expect(isTruexProductionUrl("https://qa-media.truex.com")).toBe(false);
-        expect(isTruexProductionUrl("https://qa-server.truex.com")).toBe(false);
-        expect(isTruexProductionUrl("https://media.somewhere.else.com")).toBe(false);
-        expect(isTruexProductionUrl("https://qa-rtb-tf.truex.com")).toBe(false);
+        assert.strictEqual(isTruexProductionUrl(), false);
+        assert.strictEqual(isTruexProductionUrl("127.0.0.1"), false);
+        assert.strictEqual(isTruexProductionUrl("http://localhost:8080"), false);
+        assert.strictEqual(isTruexProductionUrl("http://media.truex.com"), true);
+        assert.strictEqual(isTruexProductionUrl("https://media.truex.com"), true);
+        assert.strictEqual(isTruexProductionUrl("https://measure.truex.com"), true);
+        assert.strictEqual(isTruexProductionUrl("https://server.truex.com"), true);
+        assert.strictEqual(isTruexProductionUrl("http://qa-media.truex.com"), false);
+        assert.strictEqual(isTruexProductionUrl("https://qa-media.truex.com"), false);
+        assert.strictEqual(isTruexProductionUrl("https://qa-server.truex.com"), false);
+        assert.strictEqual(isTruexProductionUrl("https://media.somewhere.else.com"), false);
+        assert.strictEqual(isTruexProductionUrl("https://qa-rtb-tf.truex.com"), false);
 
-        expect(isTruexProductionUrl("qa-media.truex.com")).toBe(false);
-        expect(isTruexProductionUrl("media.truex.com")).toBe(true);
+        assert.strictEqual(isTruexProductionUrl("qa-media.truex.com"), false);
+        assert.strictEqual(isTruexProductionUrl("media.truex.com"), true);
 
-        expect(isTruexProductionUrl("http://engage.truex.com")).toBe(true);
-        expect(isTruexProductionUrl("http://qa-engage.truex.com")).toBe(false);
+        assert.strictEqual(isTruexProductionUrl("http://engage.truex.com"), true);
+        assert.strictEqual(isTruexProductionUrl("http://qa-engage.truex.com"), false);
     });
 
     test("truex servers", () => {
@@ -51,29 +53,29 @@ describe("truex_servers testing", () => {
         verifyServers(new TruexServers(demoConfig), true);
 
         function verifyServers(servers, isProd) {
-            expect(servers.isProduction).toBe(isProd);
+            assert.strictEqual(servers.isProduction, isProd);
 
-            expect(servers.serverUrlOf("something.elsewhere.com")).toBe("https://something.elsewhere.com");
-            expect(servers.serverUrlOf("http://localhost:8080")).toBe("http://localhost:8080");
-            expect(servers.serverUrlOf("qa-media.truex.com")).toBe("https://qa-media.truex.com");
-            expect(servers.serverUrlOf("//qa-media.truex.com")).toBe("https://qa-media.truex.com");
-            expect(servers.serverUrlOf("http://qa-media.truex.com")).toBe("http://qa-media.truex.com");
-            expect(servers.serverUrlOf("https://qa-media.truex.com")).toBe("https://qa-media.truex.com");
+            assert.strictEqual(servers.serverUrlOf("something.elsewhere.com"), "https://something.elsewhere.com");
+            assert.strictEqual(servers.serverUrlOf("http://localhost:8080"), "http://localhost:8080");
+            assert.strictEqual(servers.serverUrlOf("qa-media.truex.com"), "https://qa-media.truex.com");
+            assert.strictEqual(servers.serverUrlOf("//qa-media.truex.com"), "https://qa-media.truex.com");
+            assert.strictEqual(servers.serverUrlOf("http://qa-media.truex.com"), "http://qa-media.truex.com");
+            assert.strictEqual(servers.serverUrlOf("https://qa-media.truex.com"), "https://qa-media.truex.com");
 
             if (isProd) {
-                expect(servers.truexServerUrl).toBe("https://serve.truex.com");
-                expect(servers.mediaServerUrl).toBe("https://media.truex.com");
-                expect(servers.measureServerUrl).toBe("https://measure.truex.com");
-                expect(servers.engageServerUrl).toBe("https://engage.truex.com");
-                expect(servers.serverUrlOf("something.truex.com")).toBe("https://something.truex.com");
-                expect(servers.qrCodeServerUrl).toBe("https://qr.truex.com");
+                assert.strictEqual(servers.truexServerUrl, "https://serve.truex.com");
+                assert.strictEqual(servers.mediaServerUrl, "https://media.truex.com");
+                assert.strictEqual(servers.measureServerUrl, "https://measure.truex.com");
+                assert.strictEqual(servers.engageServerUrl, "https://engage.truex.com");
+                assert.strictEqual(servers.serverUrlOf("something.truex.com"), "https://something.truex.com");
+                assert.strictEqual(servers.qrCodeServerUrl, "https://qr.truex.com");
             } else {
-                expect(servers.truexServerUrl).toBe("https://qa-serve.truex.com");
-                expect(servers.mediaServerUrl).toBe("https://qa-media.truex.com");
-                expect(servers.measureServerUrl).toBe("https://qa-measure.truex.com");
-                expect(servers.engageServerUrl).toBe("https://qa-engage.truex.com");
-                expect(servers.qrCodeServerUrl).toBe("https://qa-qr.truex.com");
-                expect(servers.serverUrlOf("something.truex.com")).toBe("https://qa-something.truex.com");
+                assert.strictEqual(servers.truexServerUrl, "https://qa-serve.truex.com");
+                assert.strictEqual(servers.mediaServerUrl, "https://qa-media.truex.com");
+                assert.strictEqual(servers.measureServerUrl, "https://qa-measure.truex.com");
+                assert.strictEqual(servers.engageServerUrl, "https://qa-engage.truex.com");
+                assert.strictEqual(servers.qrCodeServerUrl, "https://qa-qr.truex.com");
+                assert.strictEqual(servers.serverUrlOf("something.truex.com"), "https://qa-something.truex.com");
             }
         }
     });

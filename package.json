@@ -1,49 +1,30 @@
 {
-  "name": "truex-shared",
-  "version": "1.11.7",
-  "description": "Common JS code shared across true[X] repos",
-  "private": true,
+  "name": "@socialvibe/shared",
+  "version": "1.12.0",
+  "description": "Common ES6 JavaScript library shared across TrueX repos",
+  "type": "module",
   "files": [
     "src"
   ],
   "main": "./src/",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "scripts": {
-    "test": "jest",
-    "test:ci": "jest --ci --reporters=default --reporters=jest-junit",
-    "watch": "jest --watch",
-    "coverage": "jest --coverage"
+    "test:only": "node --test --test-only",
+    "test:single": "node --test",
+    "test": "node --test 'src/**/__tests__/*-test*.js'",
+    "test:ci": "node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml 'src/**/__tests__/*-test*.js'",
+    "watch": "node --test --watch 'src/**/__tests__/*-test*.js'",
+    "coverage": "node --test --experimental-test-coverage 'src/**/__tests__/*-test*.js'"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.3",
-    "@babel/preset-env": "^7.4.1",
-    "@babel/runtime": "^7.4.1",
-    "@types/jest": "^29.5.14",
-    "babel-jest": "^25.1.0",
-    "core-js": "3.20.3",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "jest-junit": "^16.0.0",
-    "whatwg-fetch": "^3.0.0"
+    "@types/node": "^25.0.10",
+    "global-jsdom": "^27.0.0",
+    "jsdom": "^27.4.0"
   },
   "dependencies": {
-    "aws-sdk": "^2.260.1",
-    "edgecast-purge": "^0.1.1",
-    "node-fetch": "^2.6.1",
-    "uuid": "^3.4.0",
-    "whatwg-fetch": "^3.0.0"
-  },
-  "browserify": {
-    "transform": [
-      "babelify"
-    ]
-  },
-  "jest-junit": {
-    "outputDirectory": "test-results",
-    "outputName": "junit.xml",
-    "ancestorSeparator": " › ",
-    "uniqueOutputName": "false",
-    "suiteNameTemplate": "{filepath}",
-    "classNameTemplate": "{classname}",
-    "titleTemplate": "{title}"
+    "uuid": "^13.0.0"
   }
 }

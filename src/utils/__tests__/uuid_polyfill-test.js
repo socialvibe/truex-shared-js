@@ -1,5 +1,7 @@
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
 import { v4 as uuid } from 'uuid';
-import { getRandomValuesFallback } from "../uuid-polyfill";
+import { getRandomValuesFallback } from "../uuid-polyfill.js";
 
 describe('uuid_polyfill-test', () => {
 
@@ -17,7 +19,7 @@ describe('uuid_polyfill-test', () => {
     test('initial uuid test in node', () => {
         // uuid 7.0.3 does in fact run in node, just not when built for the web browser in TAR
         const v = uuid();
-        expect(isUuid(v)).toBe(true);
+        assert.strictEqual(isUuid(v), true);
 
         const crypto = global.crypto;
 
@@ -26,31 +28,31 @@ describe('uuid_polyfill-test', () => {
         if (hasCrypto) return;
 
         // Ensure polyfill is in NOT place.
-        expect(!crypto || !crypto.getRandomValues).toBe(true);
+        assert.strictEqual(!crypto || !crypto.getRandomValues, true);
     });
 
-    test('with uuid polyfilled', () => {
+    test('with uuid polyfilled', async () => {
         const crypto = global.crypto;
 
         // Tolerate polyfill already being in place, due to updated dependencies
         const hasCrypto = crypto && !!crypto.getRandomValues;
         if (hasCrypto) return;
 
-        const { getRandomValuesFallback } = require('../uuid-polyfill');
-        const { TXMFocusManager }  = require('../../focus_manager/txm_focus_manager');
+        const { getRandomValuesFallback } = await import('../uuid-polyfill.js');
+        const { TXMFocusManager } = await import('../../focus_manager/txm_focus_manager.js');
 
         // Ensure polyfill is in now place.
-        expect(crypto && getRandomValuesFallback == crypto.getRandomValues).toBe(true);
+        assert.strictEqual(crypto && getRandomValuesFallback == crypto.getRandomValues, true);
 
         const v = uuid();
-        expect(isUuid(v)).toBe(true);
+        assert.strictEqual(isUuid(v), true);
 
         const fm1 = new TXMFocusManager();
-        expect(isUuid(fm1.id)).toBe(true);
+        assert.strictEqual(isUuid(fm1.id), true);
 
         const fm2 = new TXMFocusManager();
-        expect(isUuid(fm2.id)).toBe(true);
+        assert.strictEqual(isUuid(fm2.id), true);
 
-        expect(fm1.id == fm2.id).toBe(false);
+        assert.strictEqual(fm1.id == fm2.id, false);
     });
 });

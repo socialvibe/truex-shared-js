@@ -3,6 +3,12 @@
  * It needs to fall back using Cookie instead.
  */
 export class AppStorage {
+  /**
+   * @param {string} key
+   * @param {string} value
+   * @param {number} [daysValid] cookie lifetime when falling back from localStorage
+   * @param {string} [domain]
+   */
   setItem(key, value, daysValid, domain) {
     if (localStorage) {
       localStorage.setItem(key, value);
@@ -11,6 +17,10 @@ export class AppStorage {
     }
   }
 
+  /**
+   * @param {string} key
+   * @returns {string | null}
+   */
   getItem(key) {
     if (localStorage) {
       return localStorage.getItem(key);
@@ -19,6 +29,10 @@ export class AppStorage {
     }
   }
 
+  /**
+   * @param {string} key
+   * @param {string} [domain]
+   */
   removeItem(key, domain) {
     if (localStorage) {
       localStorage.removeItem(key);

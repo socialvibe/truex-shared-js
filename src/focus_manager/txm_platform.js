@@ -1,8 +1,46 @@
-import { inputActions } from './txm_input_actions';
-import { ScriptLoader } from "../utils/loaders";
+import { inputActions } from './txm_input_actions.js';
+import { ScriptLoader } from "../utils/loaders.js";
 
 /**
- * Standard ASCII key codes
+ * Standard ASCII key codes.
+ * @type {{
+ *   readonly space: number,
+ *   readonly tab: number,
+ *   readonly enter: number,
+ *   readonly esc: number,
+ *   readonly del: number,
+ *   readonly backspace: number,
+ *   readonly zero: number,
+ *   readonly one: number,
+ *   readonly two: number,
+ *   readonly three: number,
+ *   readonly four: number,
+ *   readonly five: number,
+ *   readonly six: number,
+ *   readonly seven: number,
+ *   readonly eight: number,
+ *   readonly nine: number,
+ *   readonly A: number,
+ *   readonly B: number,
+ *   readonly C: number,
+ *   readonly D: number,
+ *   readonly E: number,
+ *   readonly F: number,
+ *   readonly S: number,
+ *   readonly L: number,
+ *   readonly M: number,
+ *   readonly O: number,
+ *   readonly P: number,
+ *   readonly Q: number,
+ *   readonly W: number,
+ *   readonly X: number,
+ *   readonly Y: number,
+ *   readonly Z: number,
+ *   readonly leftArrow: number,
+ *   readonly rightArrow: number,
+ *   readonly upArrow: number,
+ *   readonly downArrow: number,
+ * }}
  */
 export const keyCodes = {
     space: 32,
@@ -49,14 +87,18 @@ export const keyCodes = {
 export class TXMPlatform {
 
     /**
-     * Allow user agent overrides for testing. Defaults to standard one if not provided.
-     * @param userAgentOverride
+     * Allow user agent overrides for testing. Defaults to a standard one if not provided.
+     * @param {string} [userAgentOverride]
+     * @param {Window} [currentWindow=window]
      */
-    constructor(userAgentOverride) {
+    constructor(userAgentOverride, currentWindow = window) {
         this.name = "Unknown";
         this.model = "Unknown";
         this.version = "Unknown";
         this.isUnknown = false;
+
+        /** @private */
+        this.window = currentWindow;
 
         this.isIOS = false;
         this.isTVOS = false;
@@ -89,16 +131,16 @@ export class TXMPlatform {
         this.useWindowScroll = true;
 
         this.supportsMouse = false;
-        this.supportsTouch = (navigator.maxTouchPoints || 'ontouchstart' in document.documentElement);
+        this.supportsTouch = (this.window.navigator.maxTouchPoints || 'ontouchstart' in this.window.document.documentElement);
 
         this.supportsGyro = false; // on all platforms except perhaps for the Switch?
 
         // Indicates if the platform player can start playback directly at a specified time position.
-        // If false then one needs to start playback first before seeking works.
+        // If false, then one needs to start playback first before seeking works.
         this.supportsInitialVideoSeek = true;
 
         // Most platforms allow http: image GETs when running under https:, even the latest Chrome.
-        // AndroidTV/FireTV does not however.
+        // AndroidTV/FireTV does not, however.
         this.supportsHttpImagesWithHttps = true;
 
         // If true, use history.back() and popstate processing to process back actions,
@@ -109,7 +151,7 @@ export class TXMPlatform {
 
         this._inputKeyMap = {};
 
-        let userAgent = userAgentOverride || window.navigator.userAgent;
+        let userAgent = userAgentOverride || this.window.navigator.userAgent;
         this.userAgent = userAgent;
 
         this.supportsUserAdvertisingId = false;
@@ -117,17 +159,25 @@ export class TXMPlatform {
         this._configure(userAgent);
     }
 
+    /** @returns {boolean} */
     get isAndroid() { return this.isAndroidMobile || this.isAndroidTV }
+    /** @returns {boolean} */
     get isAndroidOrFireTV() { return this.isAndroidTV || this.isFireTV }
 
+    /** @returns {boolean} */
     get isHandheld() { return this.isIPhone || this.isAndroidMobile && /Mobile/.test(this.userAgent) }
+    /** @returns {boolean} */
     get isTablet() { return this.isIPad || this.isAndroidMobile && !this.isHandheld }
 
+    /** @returns {boolean} */
     get isCTV() { return this.isLG || this.isVizio || this.isTizen || this.isAndroidTV || this.isFireTV || this.isComcast || this.isKepler }
+    /** @returns {boolean} */
     get isConsole() { return this.isXboxOne || this.isPS4 || this.isPS5 || this.isNintendoSwitch }
 
-
-    // Otherwise the fallback scroll approach is to absolutely position a page's content div within its parent.
+    /**
+     * Otherwise the fallback scroll approach is to absolutely position a page's content div within its parent.
+     * @returns {boolean}
+     */
     get useContentScroll() {
         return !this.useWindowScroll && !this.useScrollTop
             // Tizen had auto-scroll bars showing that we want to avoid.
@@ -135,27 +185,36 @@ export class TXMPlatform {
             || this.isTizen;
     }
 
+    /**
+     * @returns {{ width: number, height: number }}
+     */
     get screenSize() {
-        var root = document.documentElement;
-        var w = root.clientWidth;
-        var h = root.clientHeight;
-        return {width: w, height: h};
+        return {
+            width: this.window.document.documentElement.clientWidth,
+            height: this.window.document.documentElement.clientHeight,
+        };
     }
 
+    /** @returns {typeof keyCodes} */
     get keyCodes() {
         return keyCodes;
     }
 
     /**
-     * Maps a key event's keycode into a platform independent input action.
+     * Maps a key event's keycode into a platform-independent input action.
+     * @param {number} keyCode
+     * @returns {string | undefined}
      */
     getInputAction(keyCode) {
         const action = this._inputKeyMap[keyCode];
         // for exploring new keystrokes
-        //console.log(`getInputAction: key code: ${keyCode} action: ${action}`);
+        // console.log(`getInputAction: key code: ${keyCode} action: ${action}`);
         return action;
     }
 
+    /**
+     * @param {Record<string, number | number[]>} actionKeyCodes
+     */
     applyInputKeyMap(actionKeyCodes) {
         for (const action in actionKeyCodes) {
             const actionCodes = actionKeyCodes[action];
@@ -171,8 +230,10 @@ export class TXMPlatform {
     }
 
     /**
-     * Tolerates platform specific error description differences to show reasonbly readable error messages.
-     * @return {String}
+     * Tolerates platform-specific error description differences to show reasonably readable error messages.
+     * @param {unknown} err
+     * @param {boolean} [showStack]
+     * @returns {string}
      */
     describeError(err, showStack) {
         if (typeof err == "string" || typeof(err) == "number" || !err) return err;
@@ -210,28 +271,33 @@ export class TXMPlatform {
         return msg;
     }
 
+    /**
+     * @param {unknown} error
+     * @returns {string}
+     */
     describeErrorWithStack(error) {
         return this.describeError(error, true);
     }
 
+    /** Exit the app on platforms that support it; otherwise close/blank the window. */
     exitApp() {
-        if (this.isTizen && window.tizen) {
-            window.tizen.application.getCurrentApplication().exit();
+        if (this.isTizen && this.window.tizen) {
+            this.window.tizen.application.getCurrentApplication().exit();
             return;
         }
 
-        if (this.isVizio && window.VIZIO && window.VIZIO.isSmartCastDevice) {
+        if (this.isVizio && this.window.VIZIO && this.window.VIZIO.isSmartCastDevice) {
             // we're using a smart cast TV do their exit call
-            window.VIZIO.exitApplication();
+            this.window.VIZIO.exitApplication();
             return;
         }
 
         // Fall back to something reasonable.
         try {
-            window.close();
+            this.window.close();
         } catch (err) {}
         try {
-            window.location = "about:blank";
+            this.window.location = "about:blank";
         } catch (err) {}
     }
 
@@ -240,7 +306,7 @@ export class TXMPlatform {
         const actionKeyCodes = {};
 
         // Detect which platform we are running on.
-        if (window.PalmSystem) {
+        if (this.window.PalmSystem) {
             configureForLgWebOs();
 
         } else if (/Tizen/i.test(userAgent)) {
@@ -273,9 +339,9 @@ export class TXMPlatform {
         } else if (/Kepler/.test(userAgent)) {
             configureForKepler();
 
-        } else if (/Linux/.test(userAgent) && (window.$badger || !window.localStorage)) {
+        } else if (/Linux/.test(userAgent) && (self.window.$badger || !self.window.localStorage)) {
             // "Real" comcast apps uses the badger lib.
-            // When running running from test apps like Skyline this will not have been set up, so
+            // When running from test apps like Skyline this will not have been set up, so
             // we use a hack for detecting the known comcast limitation. If we ever encounter another platform
             // that also is missing localStorage (unlikely), then we will have to distinguish between them then.
             configureForComcast();
@@ -295,7 +361,7 @@ export class TXMPlatform {
 
             self.supportsMouse = true;
 
-            var webOS = window.webOS;
+            const webOS = self.window.webOS;
             if (webOS) {
                 webOS.deviceInfo(device => {
                     self.model = device.modelNameAscii;
@@ -306,8 +372,8 @@ export class TXMPlatform {
             // use scrollTop changes instead of window.scrollTo() on LG
             self.useWindowScroll = false;
 
-            // This ensure the scroll wheel on remote control to work.
-            // This may cause the lower resolution to have scrollbar.
+            // This ensures the scroll wheel on remote control to work.
+            // This may cause the lower resolution to have a scrollbar.
             self.useScrollTop = true;
 
             // LG uses history back actions by default instead of the explicit back key event,
@@ -357,10 +423,10 @@ export class TXMPlatform {
             actionKeyCodes[inputActions.back].push(65385); // soft keyboard cancel
 
             // TODO: is tizen api available or not?
-            var inputdevice = window.tizen && (tizen.tvinputdevice || tizen.inputdevice);
+            const inputdevice = self.window.tizen?.tvinputdevice || self.window.tizen?.inputdevice;
             if (inputdevice) {
                 // Register keys to enable them.
-                var keyNames = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Exit",
+                const keyNames = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Exit",
                     "MediaFastForward", "MediaPause", "MediaPlay", "MediaPlayPause", "MediaRewind",
                     "MediaStop", "MediaTrackNext", "MediaTrackPrevious", "Search", "Extra", "Caption"
                 ];
@@ -427,7 +493,7 @@ export class TXMPlatform {
 
             let versionMatch = userAgent.match(/(WebMAF\/v([0-9]+\.)+[0-9]+)/);
             if (!versionMatch) {
-                // Not found, fallback to older user agent pattern.
+                // Not found, fallback to an older user agent pattern.
                 versionMatch = userAgent.match(/PlayStation 4 ([^\s)]+)\)/);
             }
             if (versionMatch) self.version = versionMatch[1];
@@ -490,26 +556,14 @@ export class TXMPlatform {
 
             // The Windows API is available only to UWP web apps, not regular web pages (or web views within a C# UWP app).
             // We want to tolerate both ways of making web apps for the Xbox.
-            var winApi = window.Windows;
-            if (winApi) {
-                var system = Windows.System;
-                if (system) {
-                    var profile = system.Profile;
-                    if (profile) {
-                        var analytics = profile.AnalyticsInfo;
-                        if (analytics) {
-                            var versionInfo = analytics.versionInfo;
-                            if (versionInfo) {
-                                self.model = versionInfo.deviceFamily;
-                                self.version = versionInfo.deviceFamilyVersion;
-                            }
-                        }
-                    }
-                }
+            const versionInfo = self.window.Windows?.System?.Profile?.AnalyticsInfo?.versionInfo;
+            if (versionInfo) {
+                self.model = versionInfo.deviceFamily;
+                self.version = versionInfo.deviceFamilyVersion;
             }
 
             // Change navigation mode from 'mouse' to 'keyboard' (which supports Xbox Controllers)
-            window.navigator.gamepadInputEmulation = "keyboard";
+            self.window.navigator.gamepadInputEmulation = "keyboard";
 
             addDefaultKeyMap();
             addTestingKeyCodes();
@@ -549,24 +603,58 @@ export class TXMPlatform {
             // NOTE: watch out for duplicates!
             const knownModels = {
                 AFTA: "Fire TV Cube (Gen 1)",
+                AFTANNA0: "Fire TV Edition - Xiaomi F2 4K (2022)",
                 AFTB: "Fire TV (Gen 1)",
                 AFTBAMR311: "Fire TV Edition - Toshiba HD (2018-2020)",
-                AFTDCT31: "Fire TV Edition - 4K UHD (2020)",
+                AFTBR92D74: "Fire TV Edition - Xiaomi 4K HDR (2026)",
+                AFTBU001: "Fire TV Edition - AmazonBasics HD/FHD (2020)",
+                AFTCA002: "Fire TV Stick 4K Select",
+                AFTCU864A2: "Fire TV 2-Series",
+                AFTCUD6595: "Fire TV 2-Series",
+                AFTDCT31: "Fire TV Edition - Toshiba 4K UHD (2020)",
+                AFTDEC012E: "Fire TV Edition - TCL S4/S5/Q5/Q6 Series (2024)",
                 AFTEAMR311: "Fire TV Edition - Insignia HD (2018-2020)",
                 AFTEU011: "Fire TV Edition - Grundig Vision 6 HD (2019)",
                 AFTEU014: "Fire TV Edition - Grundig Vision 7 4K (2019)",
                 AFTEUFF014: "Fire TV Edition - Grundig OLED 4K (2019)",
+                AFTGAZL: "Fire TV Cube (Gen 3)",
+                AFTHA001: "Fire TV Edition - Toshiba 4K UHD (2021)",
+                AFTHA002: "Fire TV Edition - Toshiba V35 Series LED FHD/HD (2021)",
+                AFTHA003: "Fire TV Edition - Toshiba 4K Far-field UHD (2021)",
+                AFTHA004: "Fire TV Edition - Toshiba 4K UHD (2022)",
                 AFTJMST12: "Fire TV Edition - Insignia 4K (2018)",
+                AFTJULI1: "Fire TV Edition - JVC 4K with Freeview Play (2021)",
+                AFTKA: "Fire TV Stick 4K Max (Gen 1)",
+                AFTKA002: "Fire TV 2-Series (2023)",
+                AFTKAUK002: "Fire TV 2-Series (2023)",
+                AFTKM: "Fire TV Stick 4K (Gen 2)",
                 AFTKMST12: "Fire TV Edition - Toshiba 4K (2018/2019)",
+                AFTKRT: "Fire TV Stick 4K Max (Gen 2)",
                 AFTLE: "Fire TV Edition - Onida HD (2019)",
                 AFTM: "Fire TV Stick (Gen 1)",
-                AFTMM: "Fire TV Stick 4K",
+                AFTMA08C15: "Fire TV Stick 4K Plus",
+                AFTMA475B1: "Fire TV Edition - TCL 4K QLED",
+                AFTMD001: "Fire TV Edition - TCL S4/Q6 Series (2023)",
+                AFTMD002: "Fire TV Edition - TCL S3 Class (2023)",
+                AFTMM: "Fire TV Stick 4K (Gen 1)",
                 AFTN: "Fire TV (Gen 3)",
+                AFTNA1322D: "Fire TV 4-Series",
+                AFTNA67200: "Fire TV 4-Series",
+                AFTPO9D4D7: "Fire TV Omni QLED Series",
+                AFTPOC9BD3: "Fire TV Omni QLED Series",
+                AFTPOF46A5: "Fire TV Edition - 4K Ultra HD Smart TV (2024)",
                 AFTR: "Fire TV Cube (Gen 2)",
                 AFTRS: "Fire TV Edition - Element 4K (2017)",
                 AFTS: "Fire TV (Gen 2)",
+                AFTSH3F7EF: "Fire TV Edition - Regal 4K LED/QLED",
                 AFTSO001: "Fire TV Edition - JVC 4K (2019)",
-                AFTT: "Fire TV Stick (Gen 2)"
+                AFTSS: "Fire TV Stick (Gen 3) / Fire TV Stick Lite",
+                AFTSSS: "Fire TV Stick (Gen 3)",
+                AFTTOR001: "Fire TV Edition - Panasonic Z95/Z90 Series OLED",
+                AFTT: "Fire TV Stick (Gen 2)",
+                AFTWI001: "Fire TV Edition - ok 4K (2020)",
+                AFTWMST22: "Fire TV Edition - JVC 2K (2020)",
+                AFTWYM01: "Fire TV Edition - JVC/Panasonic 4K UHD LCD"
             };
             self.model = knownModels[modelId] || "Fire TV";
             self.modelId = modelId;
@@ -626,14 +714,14 @@ export class TXMPlatform {
             // still occurs regardless.
             self.useHistoryBackActions = true;
 
-            const androidApp = window.androidApp || window.fireTVApp;
+            const androidApp = self.window.androidApp || self.window.fireTVApp;
             if (androidApp) {
-                var detailString = androidApp.getAndroidDetails();
-                var details = detailString.split(',');
+                const detailString = androidApp.getAndroidDetails();
+                const details = detailString.split(',');
                 self.model = details[1];
                 self.version = details[2];
             } else {
-                var match = userAgent.match(/Android ([0-9](\.[0-9])*)/);
+                const match = userAgent.match(/Android ([0-9](\.[0-9])*)/);
                 if (match) {
                     self.version = match[1];
                 }
@@ -714,7 +802,7 @@ export class TXMPlatform {
      * undefined if the advertising id is either not available or else the user has opted out of
      * being tracked for advertising on their device.
      *
-     * @return {Promise<String>}
+     * @returns {Promise<string | undefined>}
      */
     async getUserAdvertisingId() {
         if (!this.supportsUserAdvertisingId) {
@@ -728,37 +816,39 @@ export class TXMPlatform {
         return undefined; // fallback
     }
 
+    /**
+     * @returns {Promise<string | undefined>}
+     */
     async getFireTVAdvertisingId() {
-        let AmazonAdvertising = window.AmazonAdvertising;
-        if (!AmazonAdvertising) {
+        let amazonAdvertising = this.window.AmazonAdvertising;
+        if (!amazonAdvertising) {
             const apiLoader = new ScriptLoader("https://resources.amazonwebapps.com/v1/latest/Amazon-Web-App-API.min.js");
             apiLoader.load();
             await apiLoader.promise;
-            AmazonAdvertising = await new Promise(resolve => {
-                document.addEventListener('amazonPlatformReady', onApiReady);
-
-                function onApiReady() {
-                    document.removeEventListener('amazonPlatformReady', onApiReady);
-                    resolve(window.AmazonAdvertising);
-                }
+            amazonAdvertising = await new Promise(resolve => {
+                const onApiReady = () => {
+                    this.window.document.removeEventListener('amazonPlatformReady', onApiReady);
+                    resolve(this.window.AmazonAdvertising);
+                };
+                this.window.document.addEventListener('amazonPlatformReady', onApiReady);
             });
-            if (!AmazonAdvertising) {
+            if (!amazonAdvertising) {
                 throw new Error("AmazonAdvertising API not available");
             }
         }
         const adIdPromise = new Promise((resolve, reject) => {
-            AmazonAdvertising.getAdvertisingId(resolve, errMsg => {
+            amazonAdvertising.getAdvertisingId(resolve, errMsg => {
                 console.error(`getAdvertisingId: ${errMsg}`);
                 resolve(undefined);
             })
         });
         const adTrackingPromise = new Promise((resolve, reject) => {
-            AmazonAdvertising.getLimitAdTrackingPreference(resolve, errMsg => {
+            amazonAdvertising.getLimitAdTrackingPreference(resolve, errMsg => {
                 console.error(`getLimitAdTrackingPreference: ${errMsg}`);
                 resolve(false);
             })
         });
-        return Promise.all([adIdPromise, adTrackingPromise])
+        return Promise.all([ adIdPromise, adTrackingPromise ])
         .then(results => {
             const adId = results[0];
             const limitTracking = results[1];

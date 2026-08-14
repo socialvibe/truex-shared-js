@@ -1,11 +1,15 @@
 /**
+ * @typedef {Record<string, string | undefined>} QueryParams
+ * @typedef {Record<string, unknown>} UrlParams
+ */
+
+/**
  * Parses the query args from a given url. Both #..&.. hash args as well as ?..&.. query args are supported.
- * @param {string} url - the url to parse the query args from
- * @param {object} params - key/value parameters to include as query args
- * @param {string} separatorString - string to separate the query args by
- * @param {string} paramChar - string to split the url from the query args
- * @param {boolean} decodeArgs - if true, decodes the query arg string first (useful for encoded hash args)
- * @returns {object} - object map of key/value query arg pairs
+ * @param {string} url
+ * @param {string} [separatorString]
+ * @param {string} [paramChar]
+ * @param {boolean} [decodeArgs] if true, decodes the query arg string first (useful for encoded hash args)
+ * @returns {QueryParams}
  */
 export function parseQueryArgs(url, separatorString = "&", paramChar = "?", decodeArgs = false) {
     const argsStart = url.indexOf(paramChar);
@@ -19,11 +23,11 @@ export function parseQueryArgs(url, separatorString = "&", paramChar = "?", deco
 /**
  * Includes the specified parameters in the url's query args, replacing existing args as needed, adding them if missing.
  * Both #..&.. hash args as well as ?..&.. query args are supported.
- * @param {string} url - the url with possible existing query args to update
- * @param {Object} params - key/value parameters to include as query args
- * @param {string} separatorString - string to separate the query args by
- * @param {string} paramChar - string to split the url from the query args
- * @returns {string} - the updated url
+ * @param {string} url
+ * @param {UrlParams} [params]
+ * @param {string} [separatorString]
+ * @param {string} [paramChar]
+ * @returns {string}
  */
 export function updateQueryArgs(url, params, separatorString = "&", paramChar = "?") {
     const existingArgs = parseQueryArgs(url, separatorString, paramChar);
@@ -34,11 +38,11 @@ export function updateQueryArgs(url, params, separatorString = "&", paramChar = 
 
 /**
  * Sets the url's query args to the specified values. Both #..&.. hash args as well as ?..&.. query args are supported.
- * @param {string} url - the url with possible existing query args to replace
- * @param {Object} params - key/value parameters to include as query args
- * @param {string} separatorString - string to separate the query args by
- * @param {string} paramChar - string to split the url from the query args
- * @returns {string} - the updated url
+ * @param {string} url
+ * @param {UrlParams} [params]
+ * @param {string} [separatorString]
+ * @param {string} [paramChar]
+ * @returns {string}
  */
 export function setQueryArgs(url, params, separatorString = "&", paramChar = "?") {
     if (!params) params = {};
@@ -51,9 +55,9 @@ export function setQueryArgs(url, params, separatorString = "&", paramChar = "?"
 
 /**
  * parseArgs - converts a string of query args into an object
- * @param {string} queryArgs - string of separated query args to parse
- * @param {string} separatorString - string to separate the query args by
- * @returns {object} - object map of key/value query arg pairs
+ * @param {string | false | undefined} queryArgs
+ * @param {string} [separatorString]
+ * @returns {QueryParams}
  */
 export function parseArgs(queryArgs, separatorString = '&') {
     const result = {};
@@ -76,10 +80,10 @@ export function parseArgs(queryArgs, separatorString = '&') {
 
 /**
  * Converts a key/value pairs into a url encoded query arg string, usable in urls.
- * @param {object} params - key/value parameters to use as query args
- * @param keyPrefix - optional key prefix to apply to each query arg name
- * @param {string} separatorString - string to separate the query args by
- * @returns {string} - url encoded query string
+ * @param {UrlParams} params
+ * @param {string} [keyPrefix] prefix applied to each query arg name (used for nested objects)
+ * @param {string} [separatorString]
+ * @returns {string}
  */
 export function encodeUrlParams(params, keyPrefix = undefined, separatorString = "&") {
   const pairs = [];

@@ -1,5 +1,9 @@
-import { inputActions } from './txm_input_actions';
-import { FocusChange } from './txm_focus_change';
+import { inputActions } from './txm_input_actions.js';
+import { FocusChange } from './txm_focus_change.js';
+
+/**
+ * @typedef {import('./txm_focus_manager.js').TXMFocusManager} TXMFocusManager
+ */
 
 /**
  * Describes the method signatures that should be supported for a component to
@@ -21,13 +25,12 @@ import { FocusChange } from './txm_focus_change';
 export class Focusable {
 
     /**
-     * Convenience constructor to allow for component view model JS instances to be associated with
-     * @param elementRef an optional DOM element reference or query selector string used to refer to the associated DOM
-     *   element associated with the component.
-     *   If the element is a <video> and no select or input actions are supplied the onVideoAction is used.
-     * @param selectAction if present, overrides the onSelectAction implementation.
-     * @param inputAction if present, overrides the onInputAction implementation.
-     * @param focusManager if present, use to register mouse events for setting focus on hover, and invoking input actions
+     * Convenience constructor to allow for component view model JS instances to be associated with a DOM element.
+     * If the element is a `<video>` and no select or input actions are supplied, `onVideoAction` is used.
+     * @param {HTMLElement | string} [elementRef] DOM element or query selector for the component
+     * @param {() => void} [selectAction] if present, overrides `onSelectAction`
+     * @param {(action: string, event?: Event) => boolean | void} [inputAction] if present, overrides `onInputAction`
+     * @param {TXMFocusManager} [focusManager] if present, registers mouse events for hover focus and click
      */
     constructor(elementRef, selectAction, inputAction, focusManager) {
         this._elementRef = elementRef;
@@ -46,9 +49,8 @@ export class Focusable {
     /**
      * If the associated element present, adds mouseEnter and click event listeners to
      * set the focus (for mouseEnter event), or invoke the select action (for click event).
-     * @param focusManager the focus manager to use for setting the current focus in the mouseEnter listener.
-     * @param testMouseEnabled optional function to return true if mouse events are to be allowed. Mouse events are
-     *   ignored if false.
+     * @param {{ setFocus: (focusable: Focusable, event?: Event) => void, lastMouseX?: number, lastMouseY?: number }} focusManager
+     * @param {() => boolean} [testMouseEnabled] return true if mouse events are allowed; ignored if false
      */
     addMouseEventListeners(focusManager, testMouseEnabled) {
         const elmt = this.element;
@@ -83,7 +85,7 @@ export class Focusable {
     /**
      * The DOM element associated with this component. Can be undefined if the component implements components
      * with another approach, e.g. knockout or React.
-     * @return {HTMLElement}
+     * @returns {HTMLElement | null | undefined}
      */
     get element() {
         let ref = this._elementRef;
@@ -98,8 +100,8 @@ export class Focusable {
      * Override as appropriate. The default implementation sets/removes the .hasFocus CSS class on the associated
      * DOM element.
      *
-     * @param hasFocus has focus if true, false if otherwise.
-     * @param {FocusChange} focusChange describe the detailed context of the focus change, such as
+     * @param {boolean} hasFocus has focus if true, false otherwise
+     * @param {FocusChange} [focusChange] detailed context of the focus change, such as
      *   old vs new focusables, the input action or event. This allows for mouse vs keyboard specific processing.
      *   E.g. auto-scrolling new focuses is usually desirable with keyboard navigation, but not with mouse hovering
      *   causing focus changes.
@@ -119,11 +121,10 @@ export class Focusable {
      * If not handled, the focus manager's default action handling is invoked instead, notably
      * for the moveUp/Down/Left/Right input actions.
      *
-     * @param action input action name
-     * @param event associated key event, can be missing for non-key events,
+     * @param {string} action input action name
+     * @param {Event} [event] associated key event; missing for non-key events,
      *   e.g. voice (Alexa), test driver input injections, etc.
-     *
-     * @return true if the action was handled, otherwise false or undefined.
+     * @returns {boolean | void} true if the action was handled, otherwise false or undefined
      */
     onInputAction(action, event) {
         const element = this.element;
@@ -137,7 +138,9 @@ export class Focusable {
      * Specifies the default action handler for <video> elements.
      * The default implementation is to simply toggle play vs pause for the 'select' and 'playPause' input actions.
      *
-     * @param action
+     * @param {string} action
+     * @param {Event} [event]
+     * @returns {boolean | void}
      */
     onVideoAction(action, event) {
         const video = this.element;

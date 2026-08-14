@@ -1,11 +1,16 @@
-import { inputActions } from './txm_input_actions';
-import { keyCodes, TXMPlatform } from './txm_platform';
-import { FocusChange } from './txm_focus_change';
-import { getElementPath } from '../utils/get_element_path';
+import { inputActions } from './txm_input_actions.js';
+import { keyCodes, TXMPlatform } from './txm_platform.js';
+import { FocusChange } from './txm_focus_change.js';
+import { getElementPath } from '../utils/get_element_path.js';
 
-import '../utils/uuid-polyfill';
+import '../utils/uuid-polyfill.js';
 import { v4 as uuid } from 'uuid';
-import timedTrace from "../utils/timed_trace";
+import timedTrace from "../utils/timed_trace.js";
+
+/**
+ * @typedef {import('./txm_focus_change.js').FocusableLike} FocusableLike
+ * @typedef {import('./txm_platform.js').TXMPlatform} TXMPlatform
+ */
 
 /**
  * Defines a focus manager suitable for fielding remote control or keyboard events and directing them to an
@@ -13,6 +18,9 @@ import timedTrace from "../utils/timed_trace";
  */
 export class TXMFocusManager {
 
+    /**
+     * @param {TXMPlatform} [platformOverride]
+     */
     constructor(platformOverride) {
         this.platform = platformOverride || new TXMPlatform();
 
@@ -49,20 +57,26 @@ export class TXMFocusManager {
         this.debug = false; // in case we need to debug focus manager processing
     }
 
+    /**
+     * @param {string} msg
+     */
     debugLog(msg) {
         if (this.debug) {
             timedTrace(`${this.id} focusManager: ${msg}`);
         }
     }
 
+    /**
+     * @returns {FocusableLike | undefined}
+     */
     get currentFocus() {
         return this._focus;
     }
 
     /**
      * Sets the current focus, invoking onFocusSet(false) on the old focus, onFocusSet(true) on the new focus.
-     * @param newFocus the new focusable item
-     * @param fromInputActionOrEvent optional, indicates the focus is set from an input action string or mouse event.
+     * @param {FocusableLike} [newFocus] the new focusable item
+     * @param {string | Event} [fromInputActionOrEvent] input action name or mouse event that caused the change
      */
     setFocus(newFocus, fromInputActionOrEvent) {
         let oldFocus = this.currentFocus;
@@ -97,6 +111,7 @@ export class TXMFocusManager {
     /**
      * Gives a textual description of the current focus, similar to the CSS selector.
      * Useful for test scripts to verify expected focus changes.
+     * @returns {string | undefined}
      */
     getCurrentFocusPath() {
         const focus = this.currentFocus;
@@ -104,6 +119,9 @@ export class TXMFocusManager {
         return getElementPath(focus.element);
     }
 
+    /**
+     * @param {HTMLElement} [toElement] defaults to `document.body`
+     */
     addKeyEventListener(toElement) {
         this.removeKeyEventListener();
         if (!toElement) toElement = document.body;
@@ -126,9 +144,8 @@ export class TXMFocusManager {
      *
      * {cleanup} should be called when complete to restore the keyboard focus to the original active element.
      *
-     * @param {HTMLElement} withElement the element to set the keyboard focus to.
-     * @param {Function} onBackAction optional callback to invoke when the user hits the back action key
-     *  or history back is otherwise invoked.
+     * @param {HTMLElement} withElement the element to set the keyboard focus to
+     * @param {() => void} [onBackAction] invoked when the user hits back or history.back() runs
      */
     captureKeyboardFocus(withElement, onBackAction) {
         if (!withElement) throw new Error("captureKeyboardFocus: missing element arg");
@@ -169,9 +186,9 @@ export class TXMFocusManager {
      * Note: some platforms like the FireTV do not allow the back action key event to be fielded at all,
      * forcing history management approaches via the window's "popstate" event.
      *
-     * @param mapHistoryBackToInputAction if true, every explicit or implicit history.back() also injects
+     * @param {boolean} [mapHistoryBackToInputAction] if true, every explicit or implicit history.back() also injects
      *   an inputActions.back action into this focus manager's onInputAction method, allowing for a consistent
-     *   and portable approach to managing back actions.
+     *   and portable approach to managing back actions
      */
     blockBackActions(mapHistoryBackToInputAction) {
         this.mapHistoryBackToInputAction = mapHistoryBackToInputAction;
@@ -220,6 +237,9 @@ export class TXMFocusManager {
         this.debugLog('pushBackActionStub: pushed');
     }
 
+    /**
+     * @param {PopStateEvent} event
+     */
     onPopState(event) {
         // We only need to do anything if the user navigated back from the back action stub.
         const state = history.state;
@@ -253,6 +273,10 @@ export class TXMFocusManager {
         this.pushBackActionStub(); // ensure the back action is blocked again
     }
 
+    /**
+     * @param {KeyboardEvent} event
+     * @returns {boolean} false if the browser should stop processing the event
+     */
     onKeyDown(event) {
         let keyCode = event.keyCode;
         let handled = false;
@@ -330,7 +354,9 @@ export class TXMFocusManager {
      * If the focused component does not handle the action at all, and the action is a movement action, the
      * focus manager attempts to find the new focus via the navigateToNewFocus() method.
      *
-     * @return {Boolean} true if the action was handled, false otherwise.
+     * @param {string} action
+     * @param {Event} [event]
+     * @returns {boolean} true if the action was handled, false otherwise
      */
     onInputAction(action, event) {
         if (!action) return false;
@@ -413,7 +439,7 @@ export class TXMFocusManager {
      * Similarly, moving up from the bottom chrome focusables move into the content focusables, if they exist,
      * otherwise moving into the top chrome focusables.
      *
-     * @param action one of inputActions.moveLeft, .moveRight, moveUp, .moveDown
+     * @param {string} action one of inputActions.moveLeft, .moveRight, moveUp, .moveDown
      */
     navigateToNewFocus(action) {
         if (!inputActions.isMovementAction(action)) return;
@@ -482,10 +508,9 @@ export class TXMFocusManager {
      *
      * This is to support the simulation of user inputs via test scripts.
      *
-     * @param actionsAndDelays set of items to process.
-     *
-     * @return {Promise} a promise that completes when all of the inputs have been injected, all waits completed.
-     *   The current focus path is used as the promise result, via {#getCurrentFocusPath}.
+     * @param {...(string | number | Array<string | number>)} actionsAndDelays items to process
+     * @returns {Promise<string | undefined>} completes when all inputs have been injected and waits finished.
+     *   The current focus path is the result, via {@link TXMFocusManager#getCurrentFocusPath}.
      */
     async inject(...actionsAndDelays) {
         if (actionsAndDelays.length > 0 && Array.isArray(actionsAndDelays[0])) {
@@ -514,7 +539,8 @@ export class TXMFocusManager {
     /**
      * Convenience promise-based delay helper for test scripts.
      *
-     * @param {Number} # of milliseconds to delay, where < 0 Means no delay.
+     * @param {number} delay milliseconds to delay; values < 0 mean no delay
+     * @returns {Promise<void>}
      */
     wait(delay) {
         return new Promise(resolve => {
@@ -529,9 +555,8 @@ export class TXMFocusManager {
 
     /**
      * Used by the true[X] framework to specify the focusable control buttons along the top of the current page.
-     * @param focusables array of focusable components, typically extending the {Focusable} class
-     * @param defaultTopFocus optional, if present, it indicates which top chrome focusable to move to when
-     *   moving up from the content area.
+     * @param {FocusableLike | FocusableLike[]} focusables
+     * @param {FocusableLike} [defaultTopFocus] top chrome focusable when moving up from content
      */
     setTopChromeFocusables(focusables, defaultTopFocus) {
         this._topChromeFocusables = this.sortVisually(this.flattenArray(focusables));
@@ -540,9 +565,8 @@ export class TXMFocusManager {
 
     /**
      * Used by the true[X] framework to specify the focusable control buttons along the bottom of the current page.
-     * @param focusables array of focusable components, typically extending the {Focusable} class
-     * @param defaultBottomFocus optional, if present, it indicates which bottom chrome focusable to move to when
-     *   moving down from the content area.
+     * @param {FocusableLike | FocusableLike[]} focusables
+     * @param {FocusableLike} [defaultBottomFocus] bottom chrome focusable when moving down from content
      */
     setBottomChromeFocusables(focusables, defaultBottomFocus) {
         this._bottomChromeFocusables = this.sortVisually(this.flattenArray(focusables));
@@ -553,9 +577,8 @@ export class TXMFocusManager {
      * Used by the page developer to specify the focusable control items in the main content area of the page.
      * It is the developer's responsibility to call this during their page loading initialization.
      *
-     * @param focusables array of focusable components, typically extending the {Focusable} class
-     * @param defaultFocus specifies which focusable should be the initial current focus.
-     *   If not specified, the first focusable is used.
+     * @param {FocusableLike | FocusableLike[]} focusables
+     * @param {FocusableLike} [defaultFocus] initial current focus; first focusable if omitted
      */
     setContentFocusables(focusables, defaultFocus) {
         // Reset the current focus unless it is in the top or bottom chrome.
@@ -579,6 +602,9 @@ export class TXMFocusManager {
         }
     }
 
+    /**
+     * @returns {FocusableLike | undefined}
+     */
     getDefaultFocus() {
         let focus = this._lastContentFocus || this.getFirstFocusIn(this._contentFocusables);
         if (!focus) focus = this._lastTopFocus || this.getFirstFocusIn(this._topChromeFocusables);
@@ -586,6 +612,10 @@ export class TXMFocusManager {
         return focus;
     }
 
+    /**
+     * @param {FocusableLike[]} focusables
+     * @returns {FocusableLike | undefined}
+     */
     getFirstFocusIn(focusables) {
         if (Array.isArray(focusables)) {
             for (let index in focusables) {
@@ -596,6 +626,9 @@ export class TXMFocusManager {
         return undefined;
     }
 
+    /**
+     * @returns {FocusableLike | undefined}
+     */
     getLastFocus() {
         let focus = this.getLastFocusIn(this._contentFocusables);
         if (!focus) focus = this.getLastFocusIn(this._bottomChromeFocusables);
@@ -603,6 +636,10 @@ export class TXMFocusManager {
         return focus;
     }
 
+    /**
+     * @param {FocusableLike[]} focusables
+     * @returns {FocusableLike | undefined}
+     */
     getLastFocusIn(focusables) {
         if (Array.isArray(focusables)) {
             for (let index = focusables.length - 1; index >= 0; index--) {
@@ -613,18 +650,36 @@ export class TXMFocusManager {
         return undefined;
     }
 
+    /**
+     * @param {FocusableLike | undefined} focusable
+     * @returns {boolean}
+     */
     isInTopChrome(focusable) {
         return this._topChromeFocusables.indexOf(focusable) >= 0;
     }
 
+    /**
+     * @param {FocusableLike | undefined} focusable
+     * @returns {boolean}
+     */
     isInContent(focusable) {
         return this._contentFocusables.indexOf(focusable) >= 0;
     }
 
+    /**
+     * @param {FocusableLike | undefined} focusable
+     * @returns {boolean}
+     */
     isInBottomChrome(focusable) {
         return this._bottomChromeFocusables.indexOf(focusable) >= 0;
     }
 
+    /**
+     * @param {FocusableLike | undefined} fromFocus
+     * @param {string} forAction
+     * @param {FocusableLike[]} inFocusables
+     * @returns {FocusableLike | undefined}
+     */
     findNextFocus(fromFocus, forAction, inFocusables) {
         if (!fromFocus) return;
 
@@ -782,6 +837,10 @@ export class TXMFocusManager {
         }
     }
 
+    /**
+     * @param {FocusableLike[]} focusables
+     * @returns {FocusableLike[]}
+     */
     sortVisually(focusables) {
         focusables.sort((f1, f2) => {
             const bounds1 = f1.element && f1.element.getBoundingClientRect();
@@ -805,6 +864,10 @@ export class TXMFocusManager {
         return focusables;
     }
 
+    /**
+     * @param {unknown} array
+     * @returns {FocusableLike[]}
+     */
     flattenArray(array) {
         const result = [];
         traverse(array);

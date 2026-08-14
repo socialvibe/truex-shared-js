@@ -1,57 +1,97 @@
-truex-shared-js
-===============
+# truex-shared-js
 
-HTML5/JS Shared Utilities
+Common ES6 JavaScript library shared across true[X] repos. Provides focus management
+for CTV (Connected TV) platforms, SIMID client implementation, platform detection,
+and various utilities.
 
-ES6 based, can be used anywhere that needs them.
+This is a private library published as `@socialvibe/shared` to GitHub Packages.
+Source is consumed directly - there is no build step.
 
-This library is intended to be made accessible via the yarn packager with src "as is".
-
-As such, the build steps of this library itself is avoided.
-
-We do want jest unit tests to run however.
+Consumer install instructions live in [README_NPM.md](./README_NPM.md). That file
+replaces this README at publish time and is not included in the package.
 
 ## Setup
 
-### Dependencies
+### Prerequisites
 
-**N & validated Node version**: `npm install -g n && n lts`
+- **Node.js 24** (see `.nvmrc`)
+- **npm** (comes with Node)
 
-*** n lts is currently `12.14.1` as of 01/10/20. an alternative command to install a validated node version is to use the command:  `n 12.14.1`
+```bash
+# Install the correct Node version (using nvm)
+nvm install
+nvm use
 
-**Yarn**: `npm install -g yarn`
+# Or using n
+n 24
 
-After installing Yarn:
+# Install dependencies
+npm install
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests matching a pattern
+npm test -- --test-name-pattern="platform"
+npm test -- src/focus_manager
+
+# Watch mode (re-run on changes)
+npm run watch
+
+# Run with coverage report
+npm run coverage
+
+# CI mode (with JUnit XML output)
+npm run test:ci
+```
+
+### Test Structure
+
+Tests use Node.js native test runner with jsdom for DOM environment.
+Place tests in `__tests__/` subdirectories with `-test.js` suffix.
+
+```javascript
+import { describe, test } from 'node:test';
+import assert from 'node:assert';
+import { MyFunction } from '../my_module.js';
+
+describe("MyModule", () => {
+    test("should do something", () => {
+        assert.strictEqual(MyFunction(input), expected);
+    });
+});
+```
+
+## Project Structure
 
 ```
-yarn install
+src/
+├── components/        # UI components (fonts)
+├── events/           # Event definitions (ad events)
+├── focus_manager/    # CTV focus/input management
+├── simid/            # SIMID client implementation
+└── utils/            # General utilities
 ```
 
-## Building and Testing
+## Versioning & Releases
 
-As this is a reusable library of JS classes and functions, any building/running in this repo is primarily done in the context of unit tests.
+Every PR targeting `develop` must increment the version in `package.json`
+and add a `CHANGELOG.md` entry. CI does not bump the version after merge.
 
-Please your tests in a __tests__ sub directory of your relevant files. The convention is to add a -test.js suffix for a given source files.
+1. Create a branch: `feature/<TICKET>[/<short-description>]` or `bugfix/<TICKET>[/<short-description>]`
+2. Bump the patch version in `package.json` (minor/major when the change warrants it)
+3. Document the change in `CHANGELOG.md` under the same `## vX.Y.Z` heading as that version. If the heading already exists, append there — do not add a second heading for the same increment.
+4. Implement the change, commit, push, open a PR
+5. CI runs unit tests and checks that the version was incremented
+6. After merge to `develop`, CI runs unit tests, publishes `@socialvibe/shared`
+   to GitHub Packages, tags `vX.Y.Z`, and creates a GitHub release
 
-To run the test suite you can do: `npm test` or `jest`
+## Contributing
 
-Or for a single test: `npm test -- platform`
-or: `jest focus_manager`
-i.e. use a test file name pattern that will match the 
-
-## Deploying
-
-To make this library available to other repos, be sure to push any changes and follow the normal review process.
-
-Ensure the version number in package.json is updated to a newer value, and be sure to tag your branch in github with 
-the same version, e.g. `v1.0.0` .
-
-In client repos, one should refer to this library using the package name, github repo url, and desired version 
-number, e.g.
-```
-    dependencies: {
-        ...
-        "truex-shared": "git://github.com/socialvibe/truex-shared-js#v1.0.0",
-        ...
-    }
-```  
+See [AGENTS.md](./AGENTS.md) for detailed coding guidelines and conventions.

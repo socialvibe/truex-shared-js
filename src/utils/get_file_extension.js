@@ -1,3 +1,7 @@
+/**
+ * @param {string} fileName
+ * @returns {string} last `.`-separated segment of the filename
+ */
 const GetFileExtension = (fileName) => {
     if (!fileName) {
         throw 'filename not provided';

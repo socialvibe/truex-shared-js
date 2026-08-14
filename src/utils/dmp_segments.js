@@ -1,6 +1,11 @@
 
 export class DMPSegements {
-  constructor(placement_hash, network_user_id, server_url) {
+    /**
+     * @param {string} placement_hash
+     * @param {string} network_user_id
+     * @param {string} [server_url]
+     */
+    constructor(placement_hash, network_user_id, server_url) {
         this._placementHash = placement_hash;
         this._networkUserId = network_user_id;
         this._serverUrl = server_url || 'serve.truex.com';
@@ -14,6 +19,9 @@ export class DMPSegements {
         this._exelateSegments = null;
     }
 
+    /**
+     * @param {() => void} callback
+     */
     loadSegments(callback) {
         this._callback = callback;
 
@@ -48,10 +56,16 @@ export class DMPSegements {
         setTimeout(this._onSegmentDataTimeout.bind(this), 300);
     }
 
+    /**
+     * @returns {string[] | null}
+     */
     quantcastSegments() {
         return this._quantcastSegments;
     }
 
+    /**
+     * @returns {string[] | null}
+     */
     exelateSegments() {
         return this._exelateSegments;
     }
@@ -97,6 +111,9 @@ export class DMPSegements {
         return protocol;
     }
 
+    /**
+     * @param {() => void} callback
+     */
     loadQuantcastTag(callback) {
         var tagCallbackName = 'truex_qc_callback';
 
@@ -113,6 +130,9 @@ export class DMPSegements {
     }
 
 
+    /**
+     * @param {() => void} callback
+     */
     loadExelateTag(callback) {
         // new eXelate tag
         //this._createScript('//loadus.exelator.com/load/?p=204&g=87&buid=' + this._networkUserId);
@@ -159,27 +179,43 @@ export class DMPSegements {
         pixel.src = this._getLocationProtocol() + "//tags.bluekai.com/site/28311?id=" + this._networkUserId + "%3A" + this._placementHash;
     }
 
+    /**
+     * @param {string} partnerId
+     */
     loadNeustarTag(partnerId) {
         var pixel = new Image();
         pixel.src = this._getLocationProtocol() + "//aa.agkn.com/adscores/g.pixel?sid=9212300858&puid=" + partnerId + "-" + this._networkUserId;
     }
 
+    /**
+     * @param {string} partnerId
+     */
     loadAudienceManagerTag(partnerId) {
         var pixel = new Image();
         pixel.src = this._getLocationProtocol() + "//dpm.demdex.net/ibs:dpid=66013&dpuuid=" + partnerId + "-" + this._networkUserId;
     }
 
+    /**
+     * @param {string} partnerId
+     */
     loadLiverampTag(partnerId) {
         var pixel = new Image();
         pixel.src = "https://idsync.rlcdn.com/466426.gif?partner_uid=" + partnerId + "-" + this._networkUserId;
     }
 
     // fired for all 'fillable' impressions.  PQR = Possible Qualified Request
+    /**
+     * @param {string} placementHash
+     * @param {string} [dimension1]
+     */
     loadNielsenDAR(placementHash, dimension1) {
         var pixel = new Image();
         pixel.src = "https://secure-gl.imrworldwide.com/cgi-bin/m?ca=nlsn273685&cr=creative&ce=truex&pc=" + placementHash + "_" + (dimension1 || "") + "&ci=nlsnci799&am=4&at=view&rt=banner&st=image&r=" + (new Date()).getTime();
     }
 
+    /**
+     * @param {string} partnerId
+     */
     loadTapaddPixel(partnerId) {
       var pixel = new Image();
           pixel.src = "https://pixel.tapad.com/idsync/ex/receive?partner_id=3296&partner_device_id=" + partnerId + "-" + this._networkUserId;

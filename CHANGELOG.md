@@ -1,5 +1,21 @@
 # Changelog
 
+Add new entries under a single `## vX.Y.Z` heading that matches `package.json`.
+If that heading already exists, append bullets there — do not create another heading for the same increment.
+At least one top-level bullet per ticket (a PR may include more than one ticket).
+
+## v1.12.0
+* [PI-3515](https://infillion.atlassian.net/browse/PI-3515): publish `@socialvibe/shared` to GitHub Packages
+  * require a version bump on every PR (no auto patch bump after merge)
+  * switch package manager from Yarn to npm
+  * export `TruexAdEventType` from ad events
+  * add TypeScript declaration files next to each public module
+  * remove `DebugLog` component
+  * type public APIs with JSDoc (TypeScript syntax) and a single `src/common.d.ts` for ambient leftovers
+  * fix FireTV advertising-id listener `this` (use an arrow so it is not `document`)
+  * fix loader protocol JSDoc; drop leftover `describe.only` in focus manager tests
+  * default `TXMPlatform` window to `window` instead of `global.window`
+
 ## v1.11.7
 * [PI-3307](https://infillion.atlassian.net/browse/PI-3307): TAR Kepler: main video "flashes thru" videos playing in webview
   * add Kepler as a recognized platform 
