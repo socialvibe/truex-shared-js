@@ -89,16 +89,16 @@ export class TXMPlatform {
     /**
      * Allow user agent overrides for testing. Defaults to a standard one if not provided.
      * @param {string} [userAgentOverride]
-     * @param {Window} [currentWindow]
+     * @param {Window} [currentWindow=window]
      */
-    constructor(userAgentOverride, currentWindow) {
+    constructor(userAgentOverride, currentWindow = window) {
         this.name = "Unknown";
         this.model = "Unknown";
         this.version = "Unknown";
         this.isUnknown = false;
 
         /** @private */
-        this.window = currentWindow ?? global.window;
+        this.window = currentWindow;
 
         this.isIOS = false;
         this.isTVOS = false;

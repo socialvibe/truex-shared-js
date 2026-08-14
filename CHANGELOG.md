@@ -14,6 +14,7 @@ At least one top-level bullet per ticket (a PR may include more than one ticket)
   * type public APIs with JSDoc (TypeScript syntax) and a single `src/common.d.ts` for ambient leftovers
   * fix FireTV advertising-id listener `this` (use an arrow so it is not `document`)
   * fix loader protocol JSDoc; drop leftover `describe.only` in focus manager tests
+  * default `TXMPlatform` window to `window` instead of `global.window`
 
 ## v1.11.7
 * [PI-3307](https://infillion.atlassian.net/browse/PI-3307): TAR Kepler: main video "flashes thru" videos playing in webview
