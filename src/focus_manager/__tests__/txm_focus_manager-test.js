@@ -238,40 +238,42 @@ describe("TXMFocusManager", () => {
         });
     });
 
-    test("key event throttling", async () => {
+    test("key event throttling", (t) => {
+        // onKeyDown throttles with Date.now(), not setTimeout — fake Date, then tick.
+        t.mock.timers.enable({ apis: ['Date'] });
+
         const fm = new TXMFocusManager();
-        fm.keyThrottleDelay = 100; // ensure throttling for this test
+        fm.keyThrottleDelay = 100;
         fm.onInputAction = mock.fn();
+
         fm.onKeyDown(keyEvent);
         assert.strictEqual(fm.onInputAction.mock.callCount(), 1);
+
         fm.onKeyDown(keyEvent);
         fm.onKeyDown(keyEvent);
         fm.onKeyDown(keyEvent);
         fm.onKeyDown(keyEvent);
         assert.strictEqual(fm.onInputAction.mock.callCount(), 1);
 
-        await new Promise((resolve, reject) => {
-            // Eventually a new key event gets past the threshold and resets the timeouts.
-            const keysTimesLeft = [
-                20, 20, 20, 20, 21, // here
-                101, // here
-                10, 10, 10, 10, 10, 10, 10, 10, 10, 11 // here
-            ];
-            waitForNextKey();
+        t.mock.timers.tick(100);
+        fm.onKeyDown(keyEvent);
+        assert.strictEqual(fm.onInputAction.mock.callCount(), 1);
 
-            function waitForNextKey() {
-                const keyDelay = keysTimesLeft.shift();
-                if (keyDelay) {
-                    setTimeout(() => {
-                        fm.onKeyDown(keyEvent);
-                        waitForNextKey();
-                    }, keyDelay);
-                } else {
-                    assert.strictEqual(fm.onInputAction.mock.callCount(), 4);
-                    resolve();
-                }
-            }
-        });
+        t.mock.timers.tick(1);
+        fm.onKeyDown(keyEvent);
+        assert.strictEqual(fm.onInputAction.mock.callCount(), 2);
+
+        t.mock.timers.tick(101);
+        fm.onKeyDown(keyEvent);
+        assert.strictEqual(fm.onInputAction.mock.callCount(), 3);
+
+        t.mock.timers.tick(10);
+        fm.onKeyDown(keyEvent);
+        assert.strictEqual(fm.onInputAction.mock.callCount(), 3);
+
+        t.mock.timers.tick(91);
+        fm.onKeyDown(keyEvent);
+        assert.strictEqual(fm.onInputAction.mock.callCount(), 4);
     });
 
     test("focus manager onInputAction callback", () => {
