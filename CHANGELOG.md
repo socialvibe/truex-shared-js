@@ -4,6 +4,9 @@ Add new entries under a single `## vX.Y.Z` heading that matches `package.json`.
 If that heading already exists, append bullets there — do not create another heading for the same increment.
 At least one top-level bullet per ticket (a PR may include more than one ticket).
 
+## v1.12.1
+* [PI-3515](https://infillion.atlassian.net/browse/PI-3515): replace the `uuid` package with a local RFC 4122 v4 helper (Chrome 4 / PS4 safe)
+
 ## v1.12.0
 * [PI-3515](https://infillion.atlassian.net/browse/PI-3515): publish `@socialvibe/shared` to GitHub Packages
   * require a version bump on every PR (no auto patch bump after merge)
