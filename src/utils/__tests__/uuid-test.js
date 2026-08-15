@@ -34,4 +34,22 @@ describe('uuidv4', () => {
             });
         }
     });
+
+    test('still produces v4 ids when crypto exists but Uint8Array does not', () => {
+        const originalUint8Array = globalThis.Uint8Array;
+        Object.defineProperty(globalThis, 'Uint8Array', {
+            configurable: true,
+            value: undefined
+        });
+        try {
+            assert.strictEqual(typeof crypto?.getRandomValues, 'function');
+            const value = uuidv4();
+            assert.match(value, UUID_V4);
+        } finally {
+            Object.defineProperty(globalThis, 'Uint8Array', {
+                configurable: true,
+                value: originalUint8Array
+            });
+        }
+    });
 });
