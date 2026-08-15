@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { uuidv4 } from '../utils/uuid.js';
 
 /**
  * Provides an implementation of the Secure Interactive Media Interface Definition (SIMID) for use in
@@ -45,7 +45,7 @@ export class SIMIDClient {
         this.isActive = true;
         this._contentWindow.addEventListener('message', this._onPlayerMessage);
         this._nextMessageId = 0;
-        this._sessionId = uuid();
+        this._sessionId = uuidv4();
         this._playerConfig = undefined;
         this._pendingClientRequests = {};
         return this._sendClientRequest('createSession', {});

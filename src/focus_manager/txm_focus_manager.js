@@ -3,8 +3,7 @@ import { keyCodes, TXMPlatform } from './txm_platform.js';
 import { FocusChange } from './txm_focus_change.js';
 import { getElementPath } from '../utils/get_element_path.js';
 
-import '../utils/uuid-polyfill.js';
-import { v4 as uuid } from 'uuid';
+import { uuidv4 } from '../utils/uuid.js';
 import timedTrace from "../utils/timed_trace.js";
 
 /**
@@ -53,7 +52,7 @@ export class TXMFocusManager {
         this.onInputAction = this.onInputAction.bind(this);
         this.onPopState = this.onPopState.bind(this);
 
-        this.id = uuid(); // ensure a unique id for proper guards in back action blocking
+        this.id = uuidv4(); // ensure a unique id for proper guards in back action blocking
         this.debug = false; // in case we need to debug focus manager processing
     }
 

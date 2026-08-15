@@ -25,13 +25,13 @@ Then add the dependency:
 ```json
 {
   "dependencies": {
-    "@socialvibe/shared": "1.12.0"
+    "@socialvibe/shared": "1.12.1"
   }
 }
 ```
 
 ```bash
-npm install @socialvibe/shared@1.12.0
+npm install @socialvibe/shared@1.12.1
 ```
 
 ## Features
