@@ -29,9 +29,11 @@ import { ScriptLoader } from "../utils/loaders.js";
  *   readonly S: number,
  *   readonly L: number,
  *   readonly M: number,
+ *   readonly N: number,
  *   readonly O: number,
  *   readonly P: number,
  *   readonly Q: number,
+ *   readonly R: number,
  *   readonly W: number,
  *   readonly X: number,
  *   readonly Y: number,
@@ -68,9 +70,11 @@ export const keyCodes = {
     S: 83,
     L: 76,
     M: 77,
+    N: 78,
     O: 79,
     P: 80,
     Q: 81,
+    R: 82,
     W: 87,
     X: 88,
     Y: 89,
@@ -94,6 +98,7 @@ export class TXMPlatform {
     constructor(userAgentOverride, currentWindow = window) {
         this.name = "Unknown";
         this.model = "Unknown";
+        this.modelId = "Unknown";
         this.version = "Unknown";
         this.isUnknown = false;
 
@@ -149,6 +154,7 @@ export class TXMPlatform {
         // halted, thereby causing double back action processing.
         this.useHistoryBackActions = false;
 
+        /** @type {Record<string, string} */
         this._inputKeyMap = {};
 
         let userAgent = userAgentOverride || this.window.navigator.userAgent;
@@ -231,14 +237,21 @@ export class TXMPlatform {
 
     /**
      * Tolerates platform-specific error description differences to show reasonably readable error messages.
-     * @param {unknown} err
+     * @param {*} err
      * @param {boolean} [showStack]
      * @returns {string}
      */
     describeError(err, showStack) {
-        if (typeof err == "string" || typeof(err) == "number" || !err) return err;
+        if (!err) {
+            return '';
+        }
 
-        var msg;
+        if (typeof err === "string" || typeof err === "number") {
+            return String(err);
+        }
+
+        let msg;
+
         if (err instanceof Error || err.stack) {
             msg = err.toString();
 
@@ -281,7 +294,7 @@ export class TXMPlatform {
 
     /** Exit the app on platforms that support it; otherwise close/blank the window. */
     exitApp() {
-        if (this.isTizen && this.window.tizen) {
+        if (this.isTizen && this.window.tizen?.application) {
             this.window.tizen.application.getCurrentApplication().exit();
             return;
         }
@@ -301,8 +314,14 @@ export class TXMPlatform {
         } catch (err) {}
     }
 
+    /**
+     * @param {string} userAgent
+     * @returns {void}
+     */
     _configure(userAgent) {
         const self = this;
+
+        /** @type {Record<string, number | number[]>} */
         const actionKeyCodes = {};
 
         // Detect which platform we are running on.
@@ -364,7 +383,7 @@ export class TXMPlatform {
             const webOS = self.window.webOS;
             if (webOS) {
                 webOS.deviceInfo(device => {
-                    self.model = device.modelNameAscii;
+                    self.model = device.modelNameAscii ?? device.modelName;
                     self.version = device.version;
                 });
             }
@@ -419,8 +438,8 @@ export class TXMPlatform {
 
             addDefaultKeyMap();
             actionKeyCodes[inputActions.select] = [keyCodes.enter, /* soft keyboard done: */ 65376];
-            actionKeyCodes[inputActions.back].push(10009); // Tizen remote, but also support USB keyboard,
-            actionKeyCodes[inputActions.back].push(65385); // soft keyboard cancel
+            /** @type {number[]} */ (actionKeyCodes[inputActions.back]).push(10009); // Tizen remote, but also support USB keyboard,
+            /** @type {number[]} */ (actionKeyCodes[inputActions.back]).push(65385); // soft keyboard cancel
 
             // TODO: is tizen api available or not?
             const inputdevice = self.window.tizen?.tvinputdevice || self.window.tizen?.inputdevice;
@@ -597,10 +616,11 @@ export class TXMPlatform {
 
             // From: https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
             const modelMatch = userAgent.match(/\bAFT[A-Z0-9]+\b/);
-            const modelId = modelMatch && modelMatch[0];
+            const modelId = modelMatch?.[0] ?? '';
 
             // Derived from https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
             // NOTE: watch out for duplicates!
+            /** @type {Record<string, string>} */
             const knownModels = {
                 AFTA: "Fire TV Cube (Gen 1)",
                 AFTANNA0: "Fire TV Edition - Xiaomi F2 4K (2022)",
@@ -671,7 +691,7 @@ export class TXMPlatform {
         }
 
         function configureForAndroid() {
-            self.model = null; // to be filled in below
+            self.model = ''; // to be filled in below
 
             configureForAndroidBase();
 
@@ -693,7 +713,9 @@ export class TXMPlatform {
                 self.name = "AndroidTV";
             }
 
-            if (!self.model) self.model = self.name;
+            if (!self.model) {
+                self.model = self.name;
+            }
         }
 
         function configureForAndroidBase() {

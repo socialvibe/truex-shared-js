@@ -414,7 +414,7 @@ describe("TXMPlatform", () => {
                 PalmSystem: {},
                 webOS: {
                     deviceInfo(callback) {
-                        callback({modelNameAscii: "LG Fake Model", version: "1.2.3"});
+                        callback({ modelName: "LG Fake Model", version: "1.2.3" });
                     },
                 },
             }),

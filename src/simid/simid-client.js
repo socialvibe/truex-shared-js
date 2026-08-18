@@ -656,6 +656,13 @@ export class SIMIDMessage {
     type;
     args;
 
+    /**
+     *
+     * @param {string} sessionId
+     * @param {string} messageId
+     * @param {*} type
+     * @param {unknown[]} args
+     */
     constructor(sessionId, messageId, type, args) {
         this.sessionId = sessionId;
         this.messageId = messageId;

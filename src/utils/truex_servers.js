@@ -1,6 +1,6 @@
 
 /**
- * @param {string | undefined} url
+ * @param {string | undefined} [url]
  * @returns {boolean}
  */
 export function isTruexProductionUrl(url) {
@@ -22,50 +22,51 @@ export class TruexServers {
      *   `true`/`false` for prod vs qa, a URL to inspect, or a VAST config object
      */
     constructor(vastConfigOrUrlOrFlag) {
-        var isProd = false; // by default
+        this.env = this._resolveEnvironment(vastConfigOrUrlOrFlag);
+        this.isProduction = this.env === 'prod';
 
-        if (typeof vastConfigOrUrlOrFlag == 'boolean') {
-            isProd = vastConfigOrUrlOrFlag;
+        const prefix = this.isProduction ? '' : 'qa-';
 
-        } else if (typeof vastConfigOrUrlOrFlag == 'string') {
-            isProd = isTruexProductionUrl(vastConfigOrUrlOrFlag);
-
-        } else if (vastConfigOrUrlOrFlag) {
-            const vc = vastConfigOrUrlOrFlag;
-            const firstAd = vc && vc.ads && vc.ads[0];
-            isProd = isTruexProductionUrl(firstAd && firstAd.window_url || vc.card_creative_url || vc.service_url);
-        }
-
-        this.isProduction = isProd;
-
-        this.engageServerUrl = serverUrlOf('engage.truex.com');
-        this.mediaServerUrl = serverUrlOf('media.truex.com');
-        this.measureServerUrl = serverUrlOf('measure.truex.com');
-        this.qrCodeServerUrl = serverUrlOf('qr.truex.com');
+        this.rtbServerUrl     = `https://${prefix}qa.truex.com`;
+        this.engageServerUrl  = `https://${prefix}engage.truex.com`;
+        this.mediaServerUrl   = `https://${prefix}media.truex.com`;
+        this.measureServerUrl = `https://${prefix}measure.truex.com`;
+        this.qrCodeServerUrl  = `https://${prefix}qr.truex.com`;
 
         /**
-         * @deprecated use engage.truex.com instead. serve.truex.com is now just a redirect to it.
+         * @deprecated use {@link TruexServers#engageServerUrl} instead.
+         * "serve.truex.com" is now just a redirect to it.
          */
-        this.truexServerUrl = serverUrlOf('serve.truex.com');
+        this.truexServerUrl   = `https://${prefix}serve.truex.com`;
+    }
 
-        this.serverUrlOf = serverUrlOf;
+    /**
+     * @param {boolean | string | Record<string, unknown>} [vastConfigOrUrlOrFlag]
+     * @returns { 'qa' | 'prod' }
+     */
+    _resolveEnvironment(vastConfigOrUrlOrFlag) {
+        let isProd = false;
 
-        function serverUrlOf(host) {
-            var result = host;
-            const qaPrefix = 'qa-';
-            const hasProtocol = host.match(/^[a-zA-Z]+:\/\//);
-            const hasImplicitProtocol = host.match(/^\/\//);
-            if (!isProd && !hasProtocol && !hasImplicitProtocol
-                && !host.startsWith(qaPrefix) && host.indexOf('truex.com') >= 0) {
-                result = qaPrefix + host;
-            }
-            if (!hasProtocol) {
-                if (!hasImplicitProtocol) {
-                    result = '//' + result;
-                }
-                result = 'https:' + result;
-            }
-            return result;
+        if (typeof vastConfigOrUrlOrFlag === 'boolean') {
+            isProd = vastConfigOrUrlOrFlag === true;
+        } else if (typeof vastConfigOrUrlOrFlag === 'string') {
+            isProd = isTruexProductionUrl(vastConfigOrUrlOrFlag);
+        } else if (vastConfigOrUrlOrFlag) {
+            const vc = /** @type {VastConfigLike} */ (vastConfigOrUrlOrFlag);
+            const firstAd = vc && vc.ads && vc.ads[0];
+            isProd = isTruexProductionUrl(firstAd && firstAd.window_url || vc.service_url);
         }
+
+        return isProd ? 'prod' : 'qa';
     }
 }
+
+/**
+ * @typedef {{
+ *   service_url: string,
+ *   ads: {
+ *      window_url: string,
+ *      service_url: string,
+ *   }[]
+ * }} VastConfigLike
+ */

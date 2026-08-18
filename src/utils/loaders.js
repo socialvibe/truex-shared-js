@@ -239,9 +239,13 @@ export class TextLoader extends BaseLoader {
  * @returns {BaseLoader | undefined}
  */
 export function GetAssetLoader(asset) {
-    let url;
+    /** @type {string | undefined} */
+    let url = undefined;
+    /** @type {string| undefined} */
     let condition;
+    /** @type {BaseLoader | undefined} */
     let loader;
+
     if (typeof asset === 'string') {
         url = asset;
         condition = GetFileExtension(asset).toLowerCase();
@@ -250,6 +254,10 @@ export function GetAssetLoader(asset) {
     if (typeof asset === 'object' && asset.url && asset.type) {
         url = asset.url;
         condition = asset.type;
+    }
+
+    if (!url || !condition) {
+        return;
     }
 
     switch (condition) {

@@ -13,14 +13,18 @@ export class DMPSegements {
         this._quantcastLoaded = false;
         this._exelateLoaded = false;
         this._segmentsTimedOut = false;
-        this._callback = null;
+
+        /** @type {() => unknown} */
+        this._callback = () => {
+            throw new Error("Callback was not provided");
+        };
 
         this._quantcastSegments = null;
         this._exelateSegments = null;
     }
 
     /**
-     * @param {() => void} callback
+     * @param {() => unknown} callback
      */
     loadSegments(callback) {
         this._callback = callback;
@@ -115,7 +119,7 @@ export class DMPSegements {
      * @param {() => void} callback
      */
     loadQuantcastTag(callback) {
-        var tagCallbackName = 'truex_qc_callback';
+        const tagCallbackName = 'truex_qc_callback';
 
         window[tagCallbackName] = (result) => {
             this._quantcastSegments = [];
@@ -153,8 +157,8 @@ export class DMPSegements {
             return MOBILE_ADVERTISING_ID_REGEX.test(userId);
         };
 
-        var baseTagUrl = '//load.exelator.com/load/?p=104&g=700&j=j&t_cb=';
-        var tagCallbackName = 'truex_exelate_callback';
+        let baseTagUrl = '//load.exelator.com/load/?p=104&g=700&j=j&t_cb=';
+        const tagCallbackName = 'truex_exelate_callback';
 
         if (isAndroid() && looksLikeMobileAdvertiserId(this._networkUserId)) {
             baseTagUrl = '//loadus.exelator.com/load?p=104&g=701&xl8Id=' + this._networkUserId + '&idtype=AAID&APP=1&j=j&t_cb=';
