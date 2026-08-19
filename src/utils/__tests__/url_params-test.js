@@ -90,6 +90,7 @@ describe("url_params tests", () => {
         assert.deepStrictEqual(parseQueryArgs(url, '&', '?'), {a: '1', b: '2', empty: ""});
         assert.deepStrictEqual(parseQueryArgs("www.test.com"), {});
         assert.deepStrictEqual(parseQueryArgs("www.test.com?a=1#section"), {a: '1'});
+        assert.deepStrictEqual(parseQueryArgs("www.test.com#section?tab=details"), {});
     });
 
     test('parseArgs', () => {

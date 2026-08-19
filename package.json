@@ -6,6 +6,7 @@
   "files": [
     "src/**/*.js",
     "src/**/*.d.ts",
+    "src/**/*.scss",
     "!src/**/__tests__/**"
   ],
   "main": "./src/",

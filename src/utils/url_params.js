@@ -12,16 +12,16 @@
  * @returns {QueryParams}
  */
 export function parseQueryArgs(url, separatorString = "&", paramChar = "?", decodeArgs = false) {
-    const argsStart = url.indexOf(paramChar);
-
     // only standard `?..` query strings can have a separate hash `#..` fragment
     const fragmentStart = paramChar === "?"
-        ? url.indexOf("#", argsStart + 1)
+        ? url.indexOf("#")
         : -1
     ;
+    const argsStart = url.indexOf(paramChar);
+    const hasArgs = argsStart >= 0 && (fragmentStart < 0 || argsStart < fragmentStart);
 
-    let queryArgs = (argsStart >= 0)
-        ? url.substring(argsStart + 1, fragmentStart >= 0 ? fragmentStart : undefined)
+    let queryArgs = hasArgs
+        ? url.slice(argsStart + 1, fragmentStart >= 0 ? fragmentStart : undefined)
         : ''
     ;
 
