@@ -19,12 +19,15 @@ export class DMPSegements {
             throw new Error("Callback was not provided");
         };
 
+        /** @type {string[] | null} */
         this._quantcastSegments = null;
+        /** @type {string[] | null} */
         this._exelateSegments = null;
     }
 
     /**
      * @param {() => unknown} callback
+     * @returns {void}
      */
     loadSegments(callback) {
         this._callback = callback;
@@ -74,6 +77,9 @@ export class DMPSegements {
         return this._exelateSegments;
     }
 
+    /**
+     * @returns {void}
+     */
     _onSegmentDataTimeout() {
         if (this._quantcastLoaded && this._exelateLoaded) {
             return;
@@ -83,6 +89,11 @@ export class DMPSegements {
         this._callback();
     }
 
+    /**
+     * @param {string} dmpName
+     * @param {string[] | null} segments
+     * @returns {void}
+     */
     _updateUserSegments(dmpName, segments) {
         if (segments && segments.length > 0) {
 
@@ -93,6 +104,10 @@ export class DMPSegements {
         }
     }
 
+    /**
+     * @param {string} url
+     * @returns {void}
+     */
     _createScript(url) {
         var script = document.createElement('script');
         script.type = 'text/javascript';
@@ -117,6 +132,7 @@ export class DMPSegements {
 
     /**
      * @param {() => void} callback
+     * @returns {void}
      */
     loadQuantcastTag(callback) {
         const tagCallbackName = 'truex_qc_callback';
@@ -136,6 +152,7 @@ export class DMPSegements {
 
     /**
      * @param {() => void} callback
+     * @returns {void}
      */
     loadExelateTag(callback) {
         // new eXelate tag
@@ -153,6 +170,10 @@ export class DMPSegements {
             return /Android/.test(navigator.userAgent);
         };
 
+        /**
+         * @param {string} userId
+         * @returns {boolean}
+         */
         var looksLikeMobileAdvertiserId = function(userId) {
             return MOBILE_ADVERTISING_ID_REGEX.test(userId);
         };

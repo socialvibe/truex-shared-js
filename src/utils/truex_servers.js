@@ -18,7 +18,7 @@ export function isTruexProductionUrl(url) {
  */
 export class TruexServers {
     /**
-     * @param {boolean | string | Record<string, unknown>} [vastConfigOrUrlOrFlag]
+     * @param {boolean | string | VastConfigJson} [vastConfigOrUrlOrFlag]
      *   `true`/`false` for prod vs qa, a URL to inspect, or a VAST config object
      */
     constructor(vastConfigOrUrlOrFlag) {
@@ -42,7 +42,7 @@ export class TruexServers {
     }
 
     /**
-     * @param {boolean | string | Record<string, unknown>} [vastConfigOrUrlOrFlag]
+     * @param {boolean | string | VastConfigJson} [vastConfigOrUrlOrFlag]
      * @returns { 'qa' | 'prod' }
      */
     _resolveEnvironment(vastConfigOrUrlOrFlag) {
@@ -53,7 +53,7 @@ export class TruexServers {
         } else if (typeof vastConfigOrUrlOrFlag === 'string') {
             isProd = isTruexProductionUrl(vastConfigOrUrlOrFlag);
         } else if (vastConfigOrUrlOrFlag) {
-            const vc = /** @type {VastConfigLike} */ (vastConfigOrUrlOrFlag);
+            const vc = /** @type {VastConfigJson} */ (vastConfigOrUrlOrFlag);
             const firstAd = vc && vc.ads && vc.ads[0];
             // The adserver generates window_url and service_url for the same environment.
             // card_creative_url is free-form placement data, so it is not authoritative here.
@@ -64,12 +64,7 @@ export class TruexServers {
     }
 }
 
+
 /**
- * @typedef {{
- *   service_url: string,
- *   ads: {
- *      window_url: string,
- *      service_url: string,
- *   }[]
- * }} VastConfigLike
+ * @typedef {import("../types/vast_config_json.js").VastConfigJson} VastConfigJson
  */

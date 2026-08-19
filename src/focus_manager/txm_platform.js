@@ -154,7 +154,7 @@ export class TXMPlatform {
         // halted, thereby causing double back action processing.
         this.useHistoryBackActions = false;
 
-        /** @type {Record<string, string} */
+        /** @type {Record<string, string>} */
         this._inputKeyMap = {};
 
         let userAgent = userAgentOverride || this.window.navigator.userAgent;

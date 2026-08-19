@@ -1,6 +1,27 @@
 import { uuidv4 } from '../utils/uuid.js';
 
 /**
+ * @typedef {Error & { errorCode?: number, clientRequest?: SIMIDMessage }} SIMIDClientError
+ * @typedef {{
+ *     message: SIMIDMessage,
+ *     resolve: (value?: unknown) => void,
+ *     reject: (reason?: unknown) => void,
+ *     timeout: ReturnType<typeof setTimeout> | null
+ * }} SIMIDPendingRequest
+ * @typedef {(event: Record<string, unknown> & { type: string }) => void} SIMIDEventCallback
+ * @typedef {{
+ *     currentSrc?: string,
+ *     currentTime?: number,
+ *     duration?: number,
+ *     ended?: boolean,
+ *     muted?: boolean,
+ *     paused?: boolean,
+ *     volume?: number,
+ *     fullscreen?: boolean
+ * }} SIMIDMediaStateInit
+ */
+
+/**
  * Provides an implementation of the Secure Interactive Media Interface Definition (SIMID) for use in
  * any web page loaded in the iframe created for the VAST <InteractiveCreativeFile> element.
  *
@@ -11,8 +32,11 @@ import { uuidv4 } from '../utils/uuid.js';
  * @see {@link https://interactiveadvertisingbureau.github.io/SIMID}
  */
 export class SIMIDClient {
+    /** @type {boolean} */
     isActive;
+    /** @type {boolean} */
     isStopped;
+    /** @type {boolean} */
     debug;
 
     /**
@@ -26,21 +50,26 @@ export class SIMIDClient {
         // Guard against self messaging
         this._playerWindow = contentWindow === contentWindow.parent ? undefined : contentWindow.parent;
 
+        /** @type {Record<string, SIMIDPendingRequest>} */
         this._pendingClientRequests = {};
         this._nextMessageId = 0;
+        /** @type {string | undefined} */
         this._sessionId = undefined;
         this.isActive = false;
         this.isStopped = false;
         this.debug = false;
         this._onPlayerMessage = this._onPlayerMessage.bind(this);
 
+        /** @type {Record<string, SIMIDEventCallback[]>} */
         this._eventListeners = {};
+        /** @type {SIMIDPlayerConfig | undefined} */
+        this._playerConfig = undefined;
     }
 
     /**
-     * @returns {Promise<unknown> | undefined}
+     * @returns {Promise<void>}
      */
-    start() {
+    async start() {
         if (this.isActive) return;
         this.isActive = true;
         this._contentWindow.addEventListener('message', this._onPlayerMessage);
@@ -48,10 +77,13 @@ export class SIMIDClient {
         this._sessionId = uuidv4();
         this._playerConfig = undefined;
         this._pendingClientRequests = {};
-        return this._sendClientRequest('createSession', {});
+        await this._sendClientRequest('createSession', {});
     }
 
-    stop() {
+    /**
+     * @returns {Promise<void>}
+     */
+    async stop() {
         if (this.isStopped) return;
         this.isStopped = true;
         this._contentWindow.removeEventListener('message', this._onPlayerMessage);
@@ -60,7 +92,7 @@ export class SIMIDClient {
     }
 
     /**
-     * @param {string|Error} errorOrMessage
+     * @param {unknown} errorOrMessage
      * @returns {string}
      */
     getErrorMessage(errorOrMessage) {
@@ -74,6 +106,7 @@ export class SIMIDClient {
     /**
      * @param {number} errorCode
      * @param {string | Error} errorOrMessage
+     * @returns {void}
      */
     fatalError(errorCode, errorOrMessage) {
         const message = this.getErrorMessage(errorOrMessage);
@@ -91,7 +124,7 @@ export class SIMIDClient {
     getMediaState() {
         return this._sendClientRequest('SIMID:Creative:getMediaState')
             .then(response => {
-                return new SIMIDMediaState(response);
+                return new SIMIDMediaState(/** @type {SIMIDMediaStateInit} */ (response));
             });
     }
 
@@ -133,8 +166,7 @@ export class SIMIDClient {
     }
 
     /**
-     * @param {number} volume from 0...1, inclusive
-     * @param {boolean} muted
+     * @param {{ volume: number, muted: boolean }} args volume is 0...1 inclusive
      * @returns {Promise<unknown>}
      */
     requestChangeVolume({ volume, muted }) {
@@ -198,8 +230,7 @@ export class SIMIDClient {
     }
 
     /**
-     * @param {{ x?: number, y?: number, width?: number, height?: number }} mediaDimensions
-     * @param {{ x?: number, y?: number, width?: number, height?: number }} creativeDimensions
+     * @param {{ mediaDimensions?: SIMIDDimensions, creativeDimensions?: SIMIDDimensions }} args
      * @returns {Promise<unknown>}
      */
     requestResize({ mediaDimensions, creativeDimensions }) {
@@ -220,6 +251,10 @@ export class SIMIDClient {
         return this._sendClientRequest('SIMID:Creative:requestStop');
     }
 
+    /**
+     * @param {MessageEvent} event
+     * @returns {void}
+     */
     _onPlayerMessage(event) {
         // Ignore non-SIMID messages, or those for other clients.
         if (!this.isActive) return;
@@ -301,7 +336,8 @@ export class SIMIDClient {
     /**
      * Sends a message to the SIMID player, without waiting for a response.
      * @param {string} type
-     * @param {any} args
+     * @param {unknown} [args]
+     * @returns {void}
      * @private
      */
     _sendClientMessage(type, args) {
@@ -315,19 +351,22 @@ export class SIMIDClient {
     /**
      * Sends a message to the SIMID player, but waits for a response.
      * @param {string} type
-     * @param {any} args
+     * @param {unknown} [args]
      * @returns {Promise<unknown>}
      * @private
      */
     _sendClientRequest(type, args) {
-        if (!this.isActive || this.isStopped) return; // no traffic allowed if not active
+        if (!this.isActive || this.isStopped) {
+            // no traffic allowed if not active
+            return Promise.resolve();
+        }
 
         const message = this._createMessage(type, args);
 
         const promise = new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 const timeoutMsg = "message response timeout";
-                this._rejectClientMessage(message.id, SIMIDErrors.unspecifiedClientError, timeoutMsg);
+                this._rejectClientMessage(message.messageId, SIMIDErrors.unspecifiedClientError, timeoutMsg);
             }, 5000);
 
             this._pendingClientRequests[message.messageId] = { message, resolve, reject, timeout };
@@ -337,6 +376,11 @@ export class SIMIDClient {
         return promise;
     }
 
+    /**
+     * @param {string} prefix
+     * @param {SIMIDMessage} message
+     * @returns {void}
+     */
     _postClientMessage(prefix, message) {
         if (this._playerWindow) {
             this._debugMessage(prefix, message);
@@ -346,18 +390,33 @@ export class SIMIDClient {
         }
     }
 
+    /**
+     * @param {number} errorCode
+     * @param {string} message
+     * @returns {SIMIDClientError}
+     */
     _newClientError(errorCode, message) {
-        const error = new Error(message);
+        const error = /** @type {SIMIDClientError} */ (new Error(message));
         error.errorCode = errorCode;
         return error;
     }
 
+    /**
+     * @param {string} type
+     * @param {unknown} [args]
+     * @returns {SIMIDMessage}
+     */
     _createMessage(type, args) {
         const messageId = this._nextMessageId;
         this._nextMessageId += 1;
         return new SIMIDMessage(this._sessionId, messageId, type, args);
     }
 
+    /**
+     * @param {string} prefix
+     * @param {SIMIDMessage} msg
+     * @returns {void}
+     */
     _debugMessage(prefix, msg) {
         if (!this.debug) return;
 
@@ -374,6 +433,11 @@ export class SIMIDClient {
         console.log(logMsg);
     }
 
+    /**
+     * @param {number} messageId
+     * @param {unknown} value
+     * @returns {void}
+     */
     _resolveClientMessage(messageId, value) {
         const clientRequest = this._pendingClientRequests[messageId];
         if (!clientRequest) return;
@@ -382,6 +446,12 @@ export class SIMIDClient {
         clientRequest.resolve(value);
     }
 
+    /**
+     * @param {number} messageId
+     * @param {number} errorCode
+     * @param {string} errMessage
+     * @returns {void}
+     */
     _rejectClientMessage(messageId, errorCode, errMessage) {
         const clientRequest = this._pendingClientRequests[messageId];
         if (!clientRequest) return;
@@ -391,12 +461,16 @@ export class SIMIDClient {
 
         this._completeClientRequest(messageId);
 
-        const error = new Error(errMessage);
+        const error = /** @type {SIMIDClientError} */ (new Error(errMessage));
         error.errorCode = errorCode;
         error.clientRequest = msg;
         clientRequest.reject(error);
     }
 
+    /**
+     * @param {number} messageId
+     * @returns {void}
+     */
     _completeClientRequest(messageId) {
         const clientRequest = this._pendingClientRequests[messageId];
         if (!clientRequest) return;
@@ -408,6 +482,12 @@ export class SIMIDClient {
         }
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @param {() => unknown} clientAction
+     * @returns {unknown}
+     */
     _playerResponse(requestId, requestType, clientAction) {
         let response;
         try {
@@ -429,10 +509,22 @@ export class SIMIDClient {
         }
     }
 
+    /**
+     * @param {number} requestId
+     * @param {unknown} value
+     * @returns {void}
+     */
     _resolvePlayerRequest(requestId, value) {
         this._sendClientMessage('resolve', { messageId: requestId, value });
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @param {number} errorCode
+     * @param {unknown} errorOrMessage
+     * @returns {void}
+     */
     _rejectPlayerRequest(requestId, requestType, errorCode, errorOrMessage) {
         // Keep the class name for error subclasses/
         const errMessage = this.getErrorMessage(errorOrMessage);
@@ -441,14 +533,25 @@ export class SIMIDClient {
         this._sendClientMessage('reject', { messageId: requestId, value: { errorCode, message: errMessage } });
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @param {unknown} args
+     * @returns {unknown}
+     */
     _init(requestId, requestType, args) {
         this._playerConfig = new SIMIDPlayerConfig(args);
         return this._playerResponse(requestId, requestType, () => {
-            this.onInit(this._playerConfig);
+            this.onInit(/** @type {SIMIDPlayerConfig} */ (this._playerConfig));
             this._invokeEventListeners(requestType, this._playerConfig);
         });
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @returns {unknown}
+     */
     _startCreative(requestId, requestType) {
         return this._playerResponse(requestId, requestType, () => {
             this.onStartCreative();
@@ -456,6 +559,10 @@ export class SIMIDClient {
         });
     }
 
+    /**
+     * @param {{ message?: string }} [args]
+     * @returns {string | undefined}
+     */
     _playerLog(args) {
         const message = args?.message;
         if (!message) return;
@@ -464,6 +571,10 @@ export class SIMIDClient {
         return message;
     }
 
+    /**
+     * @param {{ videoDimensions?: SIMIDDimensions, creativeDimensions?: SIMIDDimensions, fullscreen?: boolean }} [args]
+     * @returns {void}
+     */
     _resize(args) {
         const videoDimensions = new SIMIDDimensions(args?.videoDimensions);
         const creativeDimensions = new SIMIDDimensions(args?.creativeDimensions);
@@ -473,6 +584,11 @@ export class SIMIDClient {
         this._invokeEventListeners('resize', resizeArgs);
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @returns {void}
+     */
     _adSkipped(requestId, requestType) {
         this._playerResponse(requestId, requestType, () => {
             const possiblePromise = this.onAdSkipped();
@@ -482,6 +598,11 @@ export class SIMIDClient {
         });
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @returns {void}
+     */
     _adStopped(requestId, requestType) {
         this._playerResponse(requestId, requestType, () => {
             const possiblePromise = this.onAdStopped();
@@ -491,6 +612,11 @@ export class SIMIDClient {
         });
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @returns {unknown}
+     */
     _adBackgrounded(requestId, requestType) {
         return this._playerResponse(requestId, requestType, () => {
             this.onAdBackgrounded()
@@ -498,12 +624,21 @@ export class SIMIDClient {
         });
     }
 
+    /**
+     * @param {number} requestId
+     * @param {string} requestType
+     * @returns {void}
+     */
     _adForegrounded(requestId, requestType) {
         // No promise response is sent.
         this.onAdForegrounded();
         this._invokeEventListeners(requestType);
     }
 
+    /**
+     * @param {{ errorCode?: number, message?: string }} [args]
+     * @returns {void}
+     */
     _playerFatalError(args) {
         const errorCode = args?.errorCode;
         const message = this.getErrorMessage(args?.message);
@@ -513,6 +648,12 @@ export class SIMIDClient {
         this._invokeEventListeners('fatalError', { errorCode, message });
     }
 
+    /**
+     * @param {number} messageId
+     * @param {string} type
+     * @param {{ message?: string } | undefined} args
+     * @returns {void}
+     */
     _mediaEvent(messageId, type, args) {
         try {
             const eventType = this._getEventType(type);
@@ -549,9 +690,8 @@ export class SIMIDClient {
 
     /**
      * Should not need to do anything by default, since iframe window resizes should already be handled in practice.
-     * @param {SIMIDDimensions} videoDimensions
-     * @param {SIMIDDimensions} creativeDimensions
-     * @param {boolean} fullscreen
+     * @param {{ videoDimension?: SIMIDDimensions, videoDimensions?: SIMIDDimensions, creativeDimensions?: SIMIDDimensions, fullscreen?: boolean }} args
+     * @returns {void}
      */
     onResize({ videoDimension, creativeDimensions, fullscreen }) {
     }
@@ -585,8 +725,9 @@ export class SIMIDClient {
     }
 
     /**
-     * @param {number} errorCode
+     * @param {number | undefined} errorCode
      * @param {string} message
+     * @returns {void}
      */
     onFatalError(errorCode, message) {
     }
@@ -625,17 +766,26 @@ export class SIMIDClient {
         eventCallbacks.splice(foundAt, 1);
     }
 
+    /**
+     * @param {string} type
+     * @param {object} [data]
+     * @returns {void}
+     */
     _invokeEventListeners(type, data) {
         const eventType = this._getEventType(type);
         const eventCallbacks = this._eventListeners[eventType];
         if (!eventCallbacks || eventCallbacks.length <= 0) return;
         if (!data) data = {};
         const event = {...data, type: eventType};
-        eventCallbacks.forEach(callback => {
+        eventCallbacks.forEach(/** @param {SIMIDEventCallback} callback */ callback => {
             callback(event);
         });
     }
 
+    /**
+     * @param {string} messageType
+     * @returns {string}
+     */
     _getEventType(messageType) {
         const typeParts = messageType.split(':');
         const eventType = typeParts.length == 3 ? typeParts[2] : messageType;
@@ -657,11 +807,10 @@ export class SIMIDMessage {
     args;
 
     /**
-     *
-     * @param {string} sessionId
-     * @param {string} messageId
-     * @param {*} type
-     * @param {unknown[]} args
+     * @param {string | undefined} sessionId
+     * @param {number} messageId
+     * @param {string} type
+     * @param {unknown} [args]
      */
     constructor(sessionId, messageId, type, args) {
         this.sessionId = sessionId;
@@ -676,8 +825,11 @@ export class SIMIDPlayerConfig {
     environmentData;
     creativeData;
 
+    /**
+     * @param {unknown} [playerState]
+     */
     constructor(playerState) {
-        const {environmentData, creativeData} = playerState || {};
+        const {environmentData, creativeData} = /** @type {{ environmentData?: unknown, creativeData?: unknown }} */ (playerState || {});
         this.environmentData = new SIMIDEnvironmentData(environmentData);
         this.creativeData = new SIMIDCreativeData(creativeData);
     }
@@ -687,8 +839,11 @@ export class SIMIDCreativeData {
     adParameters;
     clickThruUri;
 
+    /**
+     * @param {unknown} [creativeData]
+     */
     constructor(creativeData) {
-        const {adParameters, clickThruUrl, clickThruUri} = creativeData || {};
+        const {adParameters, clickThruUrl, clickThruUri} = /** @type {{ adParameters?: unknown, clickThruUrl?: string, clickThruUri?: string }} */ (creativeData || {});
         this.adParameters = adParameters;
         this.clickThruUri = clickThruUri || clickThruUrl;
     }
@@ -713,6 +868,9 @@ export class SIMIDEnvironmentData {
     closeButtonSupport;
     nonlinearDuration;
 
+    /**
+     * @param {unknown} [envData]
+     */
     constructor(envData) {
         const {
             videoDimensions,
@@ -732,7 +890,25 @@ export class SIMIDEnvironmentData {
             navigationSupport,
             closeButtonSupport,
             nonlinearDuration
-        } = envData || {};
+        } = /** @type {{
+            videoDimensions?: { x?: number, y?: number, width?: number, height?: number },
+            creativeDimensions?: { x?: number, y?: number, width?: number, height?: number },
+            fullscreen?: boolean,
+            fullscreenAllowed?: boolean,
+            variableDurationAllowed?: boolean,
+            skippableState?: string,
+            skipoffset?: unknown,
+            version?: unknown,
+            siteUrl?: unknown,
+            appId?: unknown,
+            useragent?: unknown,
+            deviceId?: unknown,
+            muted?: boolean,
+            volume?: number,
+            navigationSupport?: string,
+            closeButtonSupport?: string,
+            nonlinearDuration?: number
+        }} */ (envData || {});
 
         this.videoDimensions = new SIMIDDimensions(videoDimensions);
         this.creativeDimensions = new SIMIDDimensions(creativeDimensions);
@@ -747,7 +923,7 @@ export class SIMIDEnvironmentData {
         this.useragent = useragent;
         this.deviceId = deviceId;
         this.muted = !!muted;
-        this.volume = isNaN(volume) ? 1 : volume;
+        this.volume = isNaN(/** @type {number} */ (volume)) ? 1 : volume;
         this.navigationSupport = navigationSupport || 'notSupported';
         this.closeButtonSupport = closeButtonSupport || 'playerHandles';
         this.nonlinearDuration = nonlinearDuration || 0;
@@ -766,8 +942,13 @@ export class SIMIDDimensions {
     constructor(dimensions) {
         const {x, y, width, height} = dimensions || {};
 
+        /**
+         * @param {unknown} value
+         * @returns {number}
+         */
         function toDimension(value) {
-            return isNaN(value) ? -1 : value
+            const n = /** @type {number} */ (value);
+            return isNaN(n) ? -1 : n;
         }
 
         this.x = toDimension(x);
@@ -790,17 +971,7 @@ export class SIMIDMediaState {
     /**
      * Creates an instance of the media state manager, initializing the state of the media playback.
      *
-     * @param {{
-     *     currentSrc?: string,
-     *     currentTime?: number,
-     *     duration?: number,
-     *     ended?: boolean,
-     *     muted?: boolean,
-     *     paused?: boolean,
-     *     volume?: number,
-     *     fullscreen?: boolean
-     * }} [mediaState] - An object representing the initial state of the media.
-     * @returns {void}
+     * @param {SIMIDMediaStateInit} [mediaState]
      */
     constructor(mediaState) {
         const {

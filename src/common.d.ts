@@ -36,9 +36,19 @@ interface Window {
     };
     $badger?: unknown;
 
-    truex_qc_callback?: (result: unknown) => void,
-    truex_exelate_callback?: (result: unknown) => void,
+    truex_qc_callback?: (result: QuantcastSegmentsResult) => void,
+    truex_exelate_callback?: (result: ExelateSegmentsResult) => void,
 }
+
+/** JSONP payload from Quantcast `api/segments.json`. */
+type QuantcastSegmentsResult = {
+    segments: { id: string }[];
+};
+
+/** JSONP payload from Exelate `t_cb` callback. */
+type ExelateSegmentsResult = {
+    segments?: string[];
+};
 
 /**
  * @see {@link https://webostv.developer.lge.com/develop/references/webostvjs-webos#deviceinfo}
