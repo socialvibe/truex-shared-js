@@ -7,9 +7,6 @@ DESCRIBE_CHANGES
 ### Testing
 DESCRIBE_TESTING
 
-### Commit Message Subject(s)
-LIST_PROPOSED_COMMIT_SUBJECT_LINES
-
 ### Additional Context
 OPTIONAL_ADDITIONAL_INFO
 

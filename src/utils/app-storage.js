@@ -8,6 +8,7 @@ export class AppStorage {
    * @param {string} value
    * @param {number} [daysValid] cookie lifetime when falling back from localStorage
    * @param {string} [domain]
+   * @returns {void}
    */
   setItem(key, value, daysValid, domain) {
     if (localStorage) {
@@ -32,6 +33,7 @@ export class AppStorage {
   /**
    * @param {string} key
    * @param {string} [domain]
+   * @returns {void}
    */
   removeItem(key, domain) {
     if (localStorage) {
@@ -41,12 +43,19 @@ export class AppStorage {
     }
   }
 
+  /**
+   * @param {string} name
+   * @param {string} value
+   * @param {number} [daysValid]
+   * @param {string} [domain]
+   * @returns {void}
+   */
   _setCookieVariable(name, value, daysValid, domain) {
     var expires = "";
     if (daysValid) {
       var date = new Date();
       date.setTime(date.getTime()+(daysValid*24*60*60*1000));
-      expires = "; expires="+date.toGMTString();
+      expires = "; expires="+date.toUTCString();
     }
     var cookieStr = name + "=" + value + expires;
     if (domain) {
@@ -56,6 +65,10 @@ export class AppStorage {
     document.cookie = cookieStr;
   }
 
+  /**
+   * @param {string} name
+   * @returns {string | null}
+   */
   _readCookieVariable(name) {
     name += "=";
     var cookieVars = document.cookie.split(";");
@@ -67,6 +80,11 @@ export class AppStorage {
     return null;
   }
 
+  /**
+   * @param {string} name
+   * @param {string} [domain]
+   * @returns {void}
+   */
   _deleteCookieVariable(name, domain) {
     // Delete the cookie by expiring it.
     if(this._readCookieVariable(name)){

@@ -1,27 +1,32 @@
 {
   "name": "@socialvibe/shared",
-  "version": "1.12.1",
+  "version": "1.12.2",
   "description": "Common ES6 JavaScript library shared across TrueX repos",
   "type": "module",
   "files": [
-    "src"
+    "src/**/*.js",
+    "src/**/*.d.ts",
+    "src/**/*.scss",
+    "!src/**/__tests__/**"
   ],
   "main": "./src/",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
-  },
   "scripts": {
     "test:only": "node --test --test-only",
     "test:single": "node --test",
     "test": "node --test 'src/**/__tests__/*-test*.js'",
     "test:ci": "node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml 'src/**/__tests__/*-test*.js'",
     "watch": "node --test --watch 'src/**/__tests__/*-test*.js'",
-    "coverage": "node --test --experimental-test-coverage 'src/**/__tests__/*-test*.js'"
+    "coverage": "node --test --experimental-test-coverage 'src/**/__tests__/*-test*.js'",
+    "typecheck": "tsc --project ./tsconfig.json"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "global-jsdom": "^27.0.0",
-    "jsdom": "^27.4.0"
+    "jsdom": "^27.4.0",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

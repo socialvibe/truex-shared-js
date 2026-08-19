@@ -13,14 +13,21 @@ export class DMPSegements {
         this._quantcastLoaded = false;
         this._exelateLoaded = false;
         this._segmentsTimedOut = false;
-        this._callback = null;
 
+        /** @type {() => unknown} */
+        this._callback = () => {
+            throw new Error("Callback was not provided");
+        };
+
+        /** @type {string[] | null} */
         this._quantcastSegments = null;
+        /** @type {string[] | null} */
         this._exelateSegments = null;
     }
 
     /**
-     * @param {() => void} callback
+     * @param {() => unknown} callback
+     * @returns {void}
      */
     loadSegments(callback) {
         this._callback = callback;
@@ -70,6 +77,9 @@ export class DMPSegements {
         return this._exelateSegments;
     }
 
+    /**
+     * @returns {void}
+     */
     _onSegmentDataTimeout() {
         if (this._quantcastLoaded && this._exelateLoaded) {
             return;
@@ -79,6 +89,11 @@ export class DMPSegements {
         this._callback();
     }
 
+    /**
+     * @param {string} dmpName
+     * @param {string[] | null} segments
+     * @returns {void}
+     */
     _updateUserSegments(dmpName, segments) {
         if (segments && segments.length > 0) {
 
@@ -89,6 +104,10 @@ export class DMPSegements {
         }
     }
 
+    /**
+     * @param {string} url
+     * @returns {void}
+     */
     _createScript(url) {
         var script = document.createElement('script');
         script.type = 'text/javascript';
@@ -113,9 +132,10 @@ export class DMPSegements {
 
     /**
      * @param {() => void} callback
+     * @returns {void}
      */
     loadQuantcastTag(callback) {
-        var tagCallbackName = 'truex_qc_callback';
+        const tagCallbackName = 'truex_qc_callback';
 
         window[tagCallbackName] = (result) => {
             this._quantcastSegments = [];
@@ -132,6 +152,7 @@ export class DMPSegements {
 
     /**
      * @param {() => void} callback
+     * @returns {void}
      */
     loadExelateTag(callback) {
         // new eXelate tag
@@ -149,12 +170,16 @@ export class DMPSegements {
             return /Android/.test(navigator.userAgent);
         };
 
+        /**
+         * @param {string} userId
+         * @returns {boolean}
+         */
         var looksLikeMobileAdvertiserId = function(userId) {
             return MOBILE_ADVERTISING_ID_REGEX.test(userId);
         };
 
-        var baseTagUrl = '//load.exelator.com/load/?p=104&g=700&j=j&t_cb=';
-        var tagCallbackName = 'truex_exelate_callback';
+        let baseTagUrl = '//load.exelator.com/load/?p=104&g=700&j=j&t_cb=';
+        const tagCallbackName = 'truex_exelate_callback';
 
         if (isAndroid() && looksLikeMobileAdvertiserId(this._networkUserId)) {
             baseTagUrl = '//loadus.exelator.com/load?p=104&g=701&xl8Id=' + this._networkUserId + '&idtype=AAID&APP=1&j=j&t_cb=';

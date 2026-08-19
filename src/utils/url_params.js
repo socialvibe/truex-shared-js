@@ -12,11 +12,23 @@
  * @returns {QueryParams}
  */
 export function parseQueryArgs(url, separatorString = "&", paramChar = "?", decodeArgs = false) {
+    // only standard `?..` query strings can have a separate hash `#..` fragment
+    const fragmentStart = paramChar === "?"
+        ? url.indexOf("#")
+        : -1
+    ;
     const argsStart = url.indexOf(paramChar);
-    let queryArgs = argsStart >= 0 && url.substring(argsStart+1);
+    const hasArgs = argsStart >= 0 && (fragmentStart < 0 || argsStart < fragmentStart);
+
+    let queryArgs = hasArgs
+        ? url.slice(argsStart + 1, fragmentStart >= 0 ? fragmentStart : undefined)
+        : ''
+    ;
+
     if (decodeArgs) {
         queryArgs = decodeURIComponent(queryArgs);
     }
+
     return parseArgs(queryArgs, separatorString);
 }
 
@@ -30,9 +42,11 @@ export function parseQueryArgs(url, separatorString = "&", paramChar = "?", deco
  * @returns {string}
  */
 export function updateQueryArgs(url, params, separatorString = "&", paramChar = "?") {
+    params ??= {};
+
     const existingArgs = parseQueryArgs(url, separatorString, paramChar);
-    if (!params) params = {};
-    const updatedArgs = {...existingArgs, ...params};
+    const updatedArgs = { ...existingArgs, ...params };
+
     return setQueryArgs(url, updatedArgs, separatorString, paramChar);
 }
 
@@ -45,38 +59,55 @@ export function updateQueryArgs(url, params, separatorString = "&", paramChar = 
  * @returns {string}
  */
 export function setQueryArgs(url, params, separatorString = "&", paramChar = "?") {
-    if (!params) params = {};
-    const argsStart = url.indexOf(paramChar);
-    const baseUrl = argsStart > 0 ? url.substring(0, argsStart) : url;
-    if (Object.keys(params).length <= 0) return baseUrl; // no args present
-    let queryArgsString = encodeUrlParams(params, undefined, separatorString);
-    return baseUrl + paramChar + queryArgsString;
+    if (!params) {
+        params = {};
+    }
+
+    const fragmentStart = paramChar === "#" ? -1 : url.indexOf("#");
+    const fragment = fragmentStart >= 0 ? url.substring(fragmentStart) : '';
+    const urlWithoutFragment = fragmentStart >= 0 ? url.substring(0, fragmentStart) : url;
+    const argsStart = urlWithoutFragment.indexOf(paramChar);
+    const baseUrl = argsStart >= 0 ? urlWithoutFragment.substring(0, argsStart) : urlWithoutFragment;
+    const queryArgsString = encodeUrlParams(params, undefined, separatorString);
+
+    if (!queryArgsString) {
+        return baseUrl + fragment;
+    }
+
+    return baseUrl + paramChar + queryArgsString + fragment;
 }
 
 /**
  * parseArgs - converts a string of query args into an object
- * @param {string | false | undefined} queryArgs
+ * @param {string | undefined} queryArgs
  * @param {string} [separatorString]
  * @returns {QueryParams}
  */
 export function parseArgs(queryArgs, separatorString = '&') {
+    /** @type {QueryParams} */
     const result = {};
+
     if (queryArgs) {
-        queryArgs.split(separatorString).forEach(nameAndValue => {
-            const parts = nameAndValue.split('=');
-            const name = decodeURIComponent(parts[0]);
-            var value;
-            try {
-                // Tolerate malformed values
-                value = parts[1] && decodeURIComponent(parts[1]);
-            } catch (ignore) {
-                value = parts[1];
+        for (const keyValuePair of queryArgs.split(separatorString)) {
+            const separatorIndex = keyValuePair.indexOf('=');
+            const rawKey = separatorIndex >= 0
+                ? keyValuePair.slice(0, separatorIndex)
+                : keyValuePair
+            ;
+            const rawValue = separatorIndex >= 0
+                ? keyValuePair.slice(separatorIndex + 1)
+                : ''
+            ;
+
+            const key = safeDecodeURIComponent(rawKey);
+
+            if (key !== '__proto__') {
+                result[key] = safeDecodeURIComponent(rawValue);
             }
-            result[name] = value;
-        });
+        }
     }
     return result;
-};
+}
 
 /**
  * Converts a key/value pairs into a url encoded query arg string, usable in urls.
@@ -86,46 +117,56 @@ export function parseArgs(queryArgs, separatorString = '&') {
  * @returns {string}
  */
 export function encodeUrlParams(params, keyPrefix = undefined, separatorString = "&") {
-  const pairs = [];
+    const pairs = [];
 
-  for (const key in params) {
-    if (!params.hasOwnProperty(key)) {
-      continue;
-    }
-
-    const value = params[key];
-
-    // Don't try to serialize actual function members
-    if (value instanceof Function) continue;
-
-    let currentKey;
-
-    // If we have a keyPrefix, it means we're within a nested object.
-    // So we need to include it in our encoded key, in the form "keyPrefix[key]".
-    if (keyPrefix) {
-      currentKey = `${keyPrefix}${encodeURIComponent('['+key+']')}`;
-    }
-    else {
-      currentKey = encodeURIComponent(key);
-    }
-
-    if (value === undefined || value === null) {
-        // Skip missing values.
-
-    } else if (value instanceof Object) {
-        if (value instanceof Date) {
-            // Encode dates as scalar values.
-            pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
-        } else if (Object.keys(value).length > 0) {
-            // Recurse into non-empty, non-scaler objects
-            pairs.push(encodeUrlParams(value, currentKey));
+    for (const key in params) {
+        if (!Object.prototype.hasOwnProperty.call(params, key)) {
+            continue;
         }
 
-    } else {
-      // Encode everything else (e.g. string, number, boolean).
-      pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
-    }
-  }
+        const value = params[key];
 
-  return pairs.join(separatorString);
+        // - don't try to serialize actual function members
+        // - skip missing values.
+        if (value instanceof Function || value == null) {
+            continue;
+        }
+
+        // if we have a keyPrefix, it means we're within a nested object.
+        // so we need to include it in our encoded key, in the form "keyPrefix[key]".
+        const currentKey = keyPrefix
+            ? `${keyPrefix}${encodeURIComponent(`[${key}]`)}`
+            : encodeURIComponent(key)
+        ;
+
+        if (value instanceof Object) {
+            if (value instanceof Date) {
+                // Encode dates as scalar values.
+                pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
+            } else if (Object.keys(value).length > 0) {
+                // Recurse into non-empty, non-scaler objects
+                pairs.push(encodeUrlParams(/** @type {UrlParams} */(value), currentKey, separatorString));
+            }
+        } else {
+            // Encode everything else (e.g. string, number, boolean).
+            pairs.push(`${currentKey}=${encodeURIComponent(value.toString())}`);
+        }
+    }
+
+    return pairs.join(separatorString);
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function safeDecodeURIComponent(value) {
+    // decodeURIComponent does not decode form-encoded `+` characters as spaces.
+    value = value.replace(/\+/g, ' ');
+
+    try {
+        return decodeURIComponent(value);
+    } catch (ignore) {
+        return value;
+    }
 }

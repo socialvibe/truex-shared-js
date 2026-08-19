@@ -8,7 +8,6 @@ import timedTrace from "../utils/timed_trace.js";
 
 /**
  * @typedef {import('./txm_focus_change.js').FocusableLike} FocusableLike
- * @typedef {import('./txm_platform.js').TXMPlatform} TXMPlatform
  */
 
 /**
@@ -25,21 +24,30 @@ export class TXMFocusManager {
 
         this._focus = undefined;
 
+        /** @type {FocusableLike[]} */
         this._topChromeFocusables = [];
+        /** @type {FocusableLike[]} */
         this._contentFocusables = [];
+        /** @type {FocusableLike[]} */
         this._bottomChromeFocusables = [];
 
+        /** @type {FocusableLike | undefined} */
         this._lastTopFocus = undefined;
+        /** @type {FocusableLike | undefined} */
         this._lastContentFocus = undefined;
+        /** @type {FocusableLike | undefined} */
         this._lastBottomFocus = undefined;
 
         this._isBlockingBackActions = false;
         this._onBackAction = undefined;
         this._handlesAllInputs = false; // input handling bubbles up default
+
+        /** @type {Element | null | undefined} */
         this._oldActiveElement = undefined;
 
         // Set to 0 to disable throttling.
         this.keyThrottleDelay = 100; // milliseconds
+        /** @type {number | undefined} */
         this._lastKeyCode = undefined;
         this._lastKeyEventTimestamp = 0;
 
@@ -90,13 +98,19 @@ export class TXMFocusManager {
 
         if (newFocus) {
             this._saveLastFocus(newFocus, newFocus);
-            if (newFocus.onFocusSet) newFocus.onFocusSet(true, focusChange);
+            if (newFocus.onFocusSet) {
+                newFocus.onFocusSet(true, focusChange);
+            }
         } else {
             // We are clearing the focus completely.
             this._saveLastFocus(undefined, oldFocus);
         }
     }
 
+    /**
+     * @param {FocusableLike | undefined} focusValue
+     * @param {FocusableLike | undefined} forFocus
+     */
     _saveLastFocus(focusValue, forFocus) {
         if (this.isInTopChrome(forFocus)) {
             this._lastTopFocus = focusValue;
@@ -147,9 +161,13 @@ export class TXMFocusManager {
      * @param {() => void} [onBackAction] invoked when the user hits back or history.back() runs
      */
     captureKeyboardFocus(withElement, onBackAction) {
-        if (!withElement) throw new Error("captureKeyboardFocus: missing element arg");
+        if (!withElement) {
+            throw new Error("captureKeyboardFocus: missing element arg");
+        }
+
         this.blockBackActions(true);
         this.addKeyEventListener(withElement);
+
         this._onBackAction = onBackAction;
         this._handlesAllInputs = true;
         this._oldActiveElement = document.activeElement;
@@ -173,10 +191,14 @@ export class TXMFocusManager {
         this._bottomChromeFocusables = [];
         this._onBackAction = undefined;
 
-        if (this._oldActiveElement) {
-            this._oldActiveElement.focus();
-            this._oldActiveElement = undefined;
+        // try put focus back
+        try {
+            /** @type {HTMLElement | null} */ (this._oldActiveElement)?.focus();
+        } catch (err) {
+            console.warn("failed to move focus back", this._oldActiveElement);
         }
+
+        this._oldActiveElement = undefined;
     }
 
     /**
@@ -300,7 +322,7 @@ export class TXMFocusManager {
 
             if (this.debug) {
                 const focusPath = this.getCurrentFocusPath();
-                const targetPath = getElementPath(event.target);
+                const targetPath = getElementPath(/** @type {Element | null} */ (event.target));
                 this.debugLog(`onKeyDown: action: ${inputAction} key: ${keyCode} focus: ${focusPath} target: ${targetPath}`);
             }
 
@@ -392,14 +414,16 @@ export class TXMFocusManager {
             this.setFocus(focus, action);
             return true;
         }
-        if (!focus) return this._handlesAllInputs;
+        if (!focus) {
+            return this._handlesAllInputs;
+        }
 
         let capitalizedAction = action[0].toUpperCase() + action.slice(1);
         let actionMethodName = `on${capitalizedAction}Action`;
+        let onActionMethod = /** @type {Record<string, (event?: Event) => void>} */ (focus)[actionMethodName];
 
-        if (focus[actionMethodName]) {
-            let onActionMethod = focus[actionMethodName];
-            if (typeof onActionMethod == "function") {
+        if (onActionMethod) {
+            if (typeof onActionMethod === "function") {
                 // Focused component has an action-specific method.
                 onActionMethod.apply(focus, [event]);
                 return true;
@@ -517,19 +541,23 @@ export class TXMFocusManager {
             actionsAndDelays = actionsAndDelays[0];
         }
 
-        let injectItem = actionOrDelay => {
+        /**
+         * @param {unknown} actionOrDelay
+         * @returns
+         */
+        const injectItem = actionOrDelay => {
             if (typeof actionOrDelay === 'number') {
                 // Return on the delay promise.
                 return this.wait(actionOrDelay);
             } else if (typeof actionOrDelay === 'string' || actionOrDelay instanceof String) {
                 // Inject the input action, nothing explicit to return.
-                this.onInputAction(actionOrDelay);
+                this.onInputAction(String(actionOrDelay));
             }
         };
 
         // An injection is the action input plus a delay.
-        for(let doItem of actionsAndDelays.map(action => () => injectItem(action))) {
-            await doItem();
+        for (const action of actionsAndDelays) {
+            await injectItem(action);
         }
 
         return this.getCurrentFocusPath();
@@ -558,7 +586,7 @@ export class TXMFocusManager {
      * @param {FocusableLike} [defaultTopFocus] top chrome focusable when moving up from content
      */
     setTopChromeFocusables(focusables, defaultTopFocus) {
-        this._topChromeFocusables = this.sortVisually(this.flattenArray(focusables));
+        this._topChromeFocusables = this.sortVisually(this.flattenFocusables(focusables));
         this._lastTopFocus =  this.isInTopChrome(defaultTopFocus) ? defaultTopFocus : undefined;
     }
 
@@ -568,7 +596,7 @@ export class TXMFocusManager {
      * @param {FocusableLike} [defaultBottomFocus] bottom chrome focusable when moving down from content
      */
     setBottomChromeFocusables(focusables, defaultBottomFocus) {
-        this._bottomChromeFocusables = this.sortVisually(this.flattenArray(focusables));
+        this._bottomChromeFocusables = this.sortVisually(this.flattenFocusables(focusables));
         this._lastBottomFocus = this.isInBottomChrome(defaultBottomFocus) ? defaultBottomFocus : undefined;
     }
 
@@ -586,7 +614,7 @@ export class TXMFocusManager {
         const isInBottomChrome = this.isInBottomChrome(current);
         const resetFocus = !current || !isInTopChrome && !isInBottomChrome;
 
-        this._contentFocusables = this.sortVisually(this.flattenArray(focusables));
+        this._contentFocusables = this.sortVisually(this.flattenFocusables(focusables));
 
         // Mark the default content focus, but only if it is actually a valid content focusable.
         this._lastContentFocus = this.isInContent(defaultFocus) ? defaultFocus : undefined;
@@ -654,7 +682,7 @@ export class TXMFocusManager {
      * @returns {boolean}
      */
     isInTopChrome(focusable) {
-        return this._topChromeFocusables.indexOf(focusable) >= 0;
+        return /** @type {unknown[]} */ (this._topChromeFocusables).indexOf(focusable) >= 0;
     }
 
     /**
@@ -662,7 +690,7 @@ export class TXMFocusManager {
      * @returns {boolean}
      */
     isInContent(focusable) {
-        return this._contentFocusables.indexOf(focusable) >= 0;
+        return /** @type {unknown[]} */ (this._contentFocusables).indexOf(focusable) >= 0;
     }
 
     /**
@@ -670,8 +698,10 @@ export class TXMFocusManager {
      * @returns {boolean}
      */
     isInBottomChrome(focusable) {
-        return this._bottomChromeFocusables.indexOf(focusable) >= 0;
+        return /** @type {unknown[]} */ (this._bottomChromeFocusables).indexOf(focusable) >= 0;
     }
+
+
 
     /**
      * @param {FocusableLike | undefined} fromFocus
@@ -684,9 +714,15 @@ export class TXMFocusManager {
 
         const focusBounds = getBoundsOf(fromFocus);
 
-        var getLaneRange;
-        var getNearEdgeDistance;
-        var getFarEdgeDistance;
+        /** @type {(bounds: Rect) => { start: number, end: number }} */
+        let getLaneRange;
+
+        /** @type {(bounds: Rect) => number} */
+        let getNearEdgeDistance;
+
+        /** @type {(bounds: Rect) => number} */
+        let getFarEdgeDistance;
+
         switch (forAction) {
             case inputActions.moveRight:
                 getLaneRange = bounds => { return {start: bounds.top, end: bounds.bottom} };
@@ -724,9 +760,16 @@ export class TXMFocusManager {
         }
         return result;
 
+        /**
+         * @param {boolean} mustOverlapFocusLane
+         * @returns
+         */
         function findNextClosestFocus(mustOverlapFocusLane) {
-            var currResult;
+            /** @type {FocusableLike | undefined} */
+            let currResult;
+            /** @type {number} */
             var currDistanceBeyondFocus;
+            /** @type {number} */
             var currMatchDistance;
             inFocusables.forEach(newFocus => {
                 if (!newFocus || newFocus === fromFocus) return;
@@ -788,23 +831,44 @@ export class TXMFocusManager {
             return currResult;
         }
 
+        /**
+         * @param {FocusableLike} focusable
+         * @returns {Rect}
+         */
         function getBoundsOf(focusable) {
-            return focusable && focusable.element && focusable.element.getBoundingClientRect()
-              || {top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0};
+            return focusable?.element
+                ? focusable.element.getBoundingClientRect()
+                : { top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0 }
+            ;
         }
 
+        /**
+         * @param {Rect} bounds1
+         * @param {Rect} bounds2
+         * @returns {Rect | undefined}
+         */
         function getIntersection(bounds1, bounds2) {
             const intersection = {
               top: Math.max(bounds1.top, bounds2.top),
               left: Math.max(bounds1.left, bounds2.left),
               bottom: Math.min(bounds1.bottom, bounds2.bottom),
-              right: Math.min(bounds1.right, bounds2.right)
+              right: Math.min(bounds1.right, bounds2.right),
             };
-            const w = intersection.right - intersection.left;
-            const h = intersection.bottom - intersection.top;
-            return w > 0 && h > 0 && intersection;
+
+            const width = intersection.right - intersection.left;
+            const height = intersection.bottom - intersection.top;
+
+            return (width > 0 && height > 0)
+                ? { ...intersection, width, height }
+                : undefined
+            ;
         }
 
+        /**
+         * @param {Rect} bounds1
+         * @param {Rect} bounds2
+         * @returns {boolean}
+         */
         function equalBounds(bounds1, bounds2) {
             return bounds1.top == bounds2.top
                 && bounds1.left == bounds2.left
@@ -812,6 +876,12 @@ export class TXMFocusManager {
                 && bounds1.right == bounds2.right;
         }
 
+        /**
+         *
+         * @param {{ start: number, end: number }} newRange
+         * @param {boolean} mustOverlapFocusLane
+         * @returns
+         */
         function getFocusMatchDistance(newRange, mustOverlapFocusLane) {
             if (mustOverlapFocusLane) {
                 // Use the distance to the left/top edge of the focus lane.
@@ -864,21 +934,40 @@ export class TXMFocusManager {
     }
 
     /**
-     * @param {unknown} array
+     * @param {FocusableLike | FocusableLike[]} [array]
      * @returns {FocusableLike[]}
      */
-    flattenArray(array) {
-        const result = [];
-        traverse(array);
-        return result;
+    flattenFocusables(array) {
+        return flatten(array);
 
-        function traverse(value) {
-            if (!value) return;
-            if (Array.isArray(value)) {
-                value.forEach(traverse);
-            } else {
-                result.push(value); // found an element
+        /**
+         * @param {FocusableLike | FocusableLike[] | undefined} value
+         * @param {FocusableLike[]} [result=[]]
+         * @returns {FocusableLike[]}
+         */
+        function flatten(value, result = []) {
+            if (value) {
+                if (Array.isArray(value)) {
+                    for (const item of value) {
+                        flatten(item, result);
+                    }
+                } else {
+                    result.push(value);
+                }
             }
+
+            return result;
         }
     }
 }
+
+/**
+ * @typedef {{
+ *   left   : number,
+ *   right  : number,
+ *   top    : number,
+ *   bottom : number,
+ *   width  : number,
+ *   height : number,
+ * }} Rect
+ */

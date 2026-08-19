@@ -49,6 +49,9 @@ npm run coverage
 
 # CI mode (with JUnit XML output)
 npm run test:ci
+
+# Typecheck JSDoc (src only, not tests)
+npm run typecheck
 ```
 
 ### Test Structure

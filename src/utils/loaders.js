@@ -6,6 +6,15 @@ import StripProtocol from './strip_protocol.js';
  */
 export class BaseLoader {
     /**
+     * @type {((...data: unknown[]) => void) | undefined}
+     */
+    _onLoadCB;
+    /**
+     * @type {((...data: unknown[]) => void) | undefined}
+     */
+    _onErrorCB;
+
+    /**
      * @param {string} url
      * @param {'http:' | 'https:'} [protocol]
      */
@@ -26,11 +35,17 @@ export class BaseLoader {
         this.__resolve = this.__resolve.bind(this);
         this.__reject = this.__reject.bind(this);
         this._promise = new Promise((resolve, reject) => {
+            /** @type {(...data: unknown[]) => void} */
             this._resolve = resolve;
+            /** @type {(...data: unknown[]) => void} */
             this._reject = reject;
         });
     }
 
+    /**
+     * @param {...unknown} data
+     * @returns {void}
+     */
     __resolve(...data) {
         if (this._onLoadCB) {
             this._onLoadCB(...data);
@@ -38,6 +53,10 @@ export class BaseLoader {
         this._resolve(...data);
     }
 
+    /**
+     * @param {...unknown} data
+     * @returns {void}
+     */
     __reject(...data) {
         console.warn('rejected', this._url, ...data);
         if (this._onErrorCB) {
@@ -50,18 +69,30 @@ export class BaseLoader {
         return this._promise;
     }
 
+    /**
+     * @returns {((...data: unknown[]) => void) | undefined}
+     */
     get onload() {
         return this._onLoadCB;
     }
 
+    /**
+     * @returns {((...data: unknown[]) => void) | undefined}
+     */
     get onerror() {
         return this._onErrorCB;
     }
 
+    /**
+     * @param {((...data: unknown[]) => void) | undefined} cb
+     */
     set onload(cb) {
         this._onLoadCB = cb;
     }
 
+    /**
+     * @param {((...data: unknown[]) => void) | undefined} cb
+     */
     set onerror(cb) {
         this._onErrorCB = cb;
     }
@@ -88,7 +119,7 @@ export class ScriptLoader extends BaseLoader {
     /* istanbul ignore next */
     load() {
         const scriptEl = this._scriptEl;
-        const head = document.querySelector('head');
+        const head = /** @type {HTMLHeadElement} */ (document.querySelector('head'));
         const scriptURL = this._protocol + StripProtocol(this._url);
         head.appendChild(scriptEl);
         scriptEl.onload = this.__resolve;
@@ -144,15 +175,20 @@ export class ImageLoader extends BaseLoader {
  */
 export class IframeLoader extends BaseLoader {
     /**
+     * @type {HTMLIFrameElement}
+     */
+    _iframe;
+
+    /**
      * @param {string} url
      * @param {'http:' | 'https:'} [protocol]
      */
     constructor(url, protocol) {
         super(url, protocol);
         this._iframe = document.createElement('iframe');
-        this._iframe.width = 1;
-        this._iframe.width = 1;
-        this._iframe.style.zIndex = -1;
+        this._iframe.width = '1';
+        this._iframe.height = '1';
+        this._iframe.style.zIndex = '-1';
         this._iframe.style.position = 'absolute';
         this._iframe.style.left = '-99999px';
     }
@@ -188,7 +224,7 @@ export class StyleLoader extends BaseLoader {
     /* istanbul ignore next */
     load() {
         const linkEl = this._linkEl;
-        const head = document.querySelector('head');
+        const head = /** @type {HTMLHeadElement} */ (document.querySelector('head'));
         const cssURL = this._protocol + StripProtocol(this._url);
         head.appendChild(linkEl);
 
@@ -239,9 +275,13 @@ export class TextLoader extends BaseLoader {
  * @returns {BaseLoader | undefined}
  */
 export function GetAssetLoader(asset) {
-    let url;
+    /** @type {string | undefined} */
+    let url = undefined;
+    /** @type {string| undefined} */
     let condition;
+    /** @type {BaseLoader | undefined} */
     let loader;
+
     if (typeof asset === 'string') {
         url = asset;
         condition = GetFileExtension(asset).toLowerCase();
@@ -250,6 +290,10 @@ export function GetAssetLoader(asset) {
     if (typeof asset === 'object' && asset.url && asset.type) {
         url = asset.url;
         condition = asset.type;
+    }
+
+    if (!url || !condition) {
+        return;
     }
 
     switch (condition) {

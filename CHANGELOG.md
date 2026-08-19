@@ -4,6 +4,14 @@ Add new entries under a single `## vX.Y.Z` heading that matches `package.json`.
 If that heading already exists, append bullets there — do not create another heading for the same increment.
 At least one top-level bullet per ticket (a PR may include more than one ticket).
 
+## v1.12.2
+* [PI-3515](https://infillion.atlassian.net/browse/PI-3515): add `tsconfig.json`, `npm run typecheck`, and shared JSON wire types
+  * type public APIs with JSDoc so `tsc --strict` passes
+  * publish `VastConfigJson`, `EngageJson`, `CreativeJson`, BlueScript `LayoutJson`, and choice-card configs under `src/types/`
+  * harden URL parameter parsing, encoding, and fragment preservation
+  * SIMID: `start` / `stop` are async; `_sendClientRequest` always returns a Promise; request timeout uses `messageId`
+  * cookie fallback uses `toUTCString`; iframe loader sets `height` as well as `width`
+
 ## v1.12.1
 * [PI-3515](https://infillion.atlassian.net/browse/PI-3515): replace the `uuid` package with a local RFC 4122 v4 helper (Chrome 4 / PS4 safe)
   * make focus-manager key-throttle test deterministic (fake `Date.now`)
@@ -23,7 +31,7 @@ At least one top-level bullet per ticket (a PR may include more than one ticket)
 
 ## v1.11.7
 * [PI-3307](https://infillion.atlassian.net/browse/PI-3307): TAR Kepler: main video "flashes thru" videos playing in webview
-  * add Kepler as a recognized platform 
+  * add Kepler as a recognized platform
 
 ## v1.11.6
 * [PI-3311](https://infillion.atlassian.net/browse/PI-3311): truex_servers, added `qrCodeServerUrl`
@@ -46,7 +54,7 @@ At least one top-level bullet per ticket (a PR may include more than one ticket)
 
 ## v1.9.2
 * [PI-2407](https://infillion.atlassian.net/browse/PI-2407): Bug - C3 Container does not work with Hulu Desktop, specifically hulu.js
-  * add TruexServers.engageServerUrl 
+  * add TruexServers.engageServerUrl
 
 ## v1.9.1
 * [ADX-237](https://infillion.atlassian.net/browse/ADX-237): make encodeUrlParams() recursive

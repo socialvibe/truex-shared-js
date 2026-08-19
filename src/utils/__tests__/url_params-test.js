@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import { parseQueryArgs, encodeUrlParams, setQueryArgs, updateQueryArgs } from '../url_params.js';
+import { parseQueryArgs, parseArgs, encodeUrlParams, setQueryArgs, updateQueryArgs } from '../url_params.js';
 
 describe("url_params tests", () => {
     describe('encodeUrlParams', () => {
@@ -17,6 +17,7 @@ describe("url_params tests", () => {
         test('should encode objects recursively', () => {
             const params = {a: 1, b: 2, c: [1], d: {e: 0}, f: [], g: {}};
             assert.strictEqual(encodeUrlParams(params), 'a=1&b=2&c%5B0%5D=1&d%5Be%5D=0');
+            assert.strictEqual(encodeUrlParams({a: {b: 1, c: 2}, d: 3}, undefined, ';'), 'a%5Bb%5D=1;a%5Bc%5D=2;d=3');
         });
 
         test('should skip missing values', () => {
@@ -50,6 +51,10 @@ describe("url_params tests", () => {
 
             const foo = new Foo(123);
             assert.strictEqual(encodeUrlParams(foo), 'value=123');
+
+            const paramsWithoutPrototype = Object.assign(Object.create(null), {a: 1});
+            assert.strictEqual(encodeUrlParams(paramsWithoutPrototype), 'a=1');
+            assert.strictEqual(encodeUrlParams({hasOwnProperty: 'value', a: 1}), 'hasOwnProperty=value&a=1');
         });
 
         test('should ignore function fields, handle dates', () => {
@@ -73,13 +78,43 @@ describe("url_params tests", () => {
                     return 1
                 }
             }
-            assert.strictEqual(encodeUrlParams(params), 'field=123&foo%5Bvalue%5D=foo&date=' + encodeURIComponent(now.toString()));
+            assert.strictEqual(
+                encodeUrlParams(params),
+                'field=123&foo%5Bvalue%5D=foo&date=' + encodeURIComponent(now.toString())
+            );
         });
     });
 
     test('parseQueryArgs', () => {
         const url = "www.test.com?a=1&b=2&empty=";
         assert.deepStrictEqual(parseQueryArgs(url, '&', '?'), {a: '1', b: '2', empty: ""});
+        assert.deepStrictEqual(parseQueryArgs("www.test.com"), {});
+        assert.deepStrictEqual(parseQueryArgs("www.test.com?a=1#section"), {a: '1'});
+        assert.deepStrictEqual(parseQueryArgs("www.test.com#section?tab=details"), {});
+    });
+
+    test('parseArgs', () => {
+        assert.deepStrictEqual(
+            parseArgs('missing&empty=&token=a=b=c&bad%ZZ=value&badValue=%ZZ&q=hello+world&literalPlus=hello%2Bworld&duplicate=first&duplicate=last&=vasya'),
+            {
+                '': "vasya",
+                missing: '',
+                empty: '',
+                token: 'a=b=c',
+                'bad%ZZ': 'value',
+                badValue: '%ZZ',
+                q: 'hello world',
+                literalPlus: 'hello+world',
+                duplicate: 'last'
+            }
+        );
+
+        const reservedNames = parseArgs('__proto__=value&%5F%5Fproto%5F%5F=encoded&constructor=other&safe=value');
+        assert.deepStrictEqual(Object.keys(reservedNames), ['constructor', 'safe']);
+        assert.strictEqual(Object.hasOwn(reservedNames, '__proto__'), false);
+        assert.strictEqual(reservedNames.constructor, 'other');
+        assert.strictEqual(reservedNames.safe, 'value');
+        assert.strictEqual(Object.getPrototypeOf(reservedNames), Object.prototype);
     });
 
     test("setQueryArgs", () => {
@@ -95,6 +130,10 @@ describe("url_params tests", () => {
             setQueryArgs("www.test.com", {arg1: 'hash-value', arg2: 2}, '&', '#'),
             "www.test.com#arg1=hash-value&arg2=2"
         );
+        assert.strictEqual(setQueryArgs("?old=1", {next: 2}), "?next=2");
+        assert.strictEqual(setQueryArgs("www.test.com?old=1#section", {next: 2}), "www.test.com?next=2#section");
+        assert.strictEqual(setQueryArgs("www.test.com#section", {next: 2}), "www.test.com?next=2#section");
+        assert.strictEqual(setQueryArgs("www.test.com?old=1#section", {next: null}), "www.test.com#section");
     });
 
     test("updateQueryArgs", () => {
@@ -109,6 +148,10 @@ describe("url_params tests", () => {
         assert.strictEqual(
             updateQueryArgs("www.test.com", {arg1: 'hash-value', arg2: 2}, '&', '#'),
             "www.test.com#arg1=hash-value&arg2=2"
+        );
+        assert.strictEqual(
+            updateQueryArgs("www.test.com?old=1#section", {next: 2}),
+            "www.test.com?old=1&next=2#section"
         );
     });
 });

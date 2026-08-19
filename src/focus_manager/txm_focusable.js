@@ -49,7 +49,7 @@ export class Focusable {
     /**
      * If the associated element present, adds mouseEnter and click event listeners to
      * set the focus (for mouseEnter event), or invoke the select action (for click event).
-     * @param {{ setFocus: (focusable: Focusable, event?: Event) => void, lastMouseX?: number, lastMouseY?: number }} focusManager
+     * @param {TXMFocusManager} focusManager
      * @param {() => boolean} [testMouseEnabled] return true if mouse events are allowed; ignored if false
      */
     addMouseEventListeners(focusManager, testMouseEnabled) {
@@ -143,7 +143,8 @@ export class Focusable {
      * @returns {boolean | void}
      */
     onVideoAction(action, event) {
-        const video = this.element;
+        const video = /** @type {HTMLMediaElement} */ (this.element);
+
         if (video && (action == inputActions.playPause || action == inputActions.select)) {
             // Toggle playback.
             if (video.paused) video.play();
