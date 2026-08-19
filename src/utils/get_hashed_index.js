@@ -1,7 +1,7 @@
 /**
  * Returns an index within 0..count-1 by hashing over the characters in the name.
  *
- * @param {string} [name] string to hash over
+ * @param {string} name string to hash over
  * @param {number} count number of buckets; returns 0 unless count > 1
  * @returns {number} index in `0..count-1`
  */

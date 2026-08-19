@@ -32,6 +32,7 @@ export class TruexServers {
         this.mediaServerUrl   = `https://${prefix}media.truex.com`;
         this.measureServerUrl = `https://${prefix}measure.truex.com`;
         this.qrCodeServerUrl  = `https://${prefix}qr.truex.com`;
+        this.eeServerUrl      = `https://${prefix}ee.truex.com`;
 
         /**
          * @deprecated use {@link TruexServers#engageServerUrl} instead.
@@ -54,6 +55,8 @@ export class TruexServers {
         } else if (vastConfigOrUrlOrFlag) {
             const vc = /** @type {VastConfigLike} */ (vastConfigOrUrlOrFlag);
             const firstAd = vc && vc.ads && vc.ads[0];
+            // The adserver generates window_url and service_url for the same environment.
+            // card_creative_url is free-form placement data, so it is not authoritative here.
             isProd = isTruexProductionUrl(firstAd && firstAd.window_url || vc.service_url);
         }
 

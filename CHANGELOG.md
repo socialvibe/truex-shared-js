@@ -6,6 +6,7 @@ At least one top-level bullet per ticket (a PR may include more than one ticket)
 
 ## v1.12.2
 * [PI-3515](https://infillion.atlassian.net/browse/PI-3515): add `tsconfig.json` and `npm run typecheck` for JSDoc
+  * harden URL parameter parsing, encoding, and fragment preservation
 
 ## v1.12.1
 * [PI-3515](https://infillion.atlassian.net/browse/PI-3515): replace the `uuid` package with a local RFC 4122 v4 helper (Chrome 4 / PS4 safe)
@@ -26,7 +27,7 @@ At least one top-level bullet per ticket (a PR may include more than one ticket)
 
 ## v1.11.7
 * [PI-3307](https://infillion.atlassian.net/browse/PI-3307): TAR Kepler: main video "flashes thru" videos playing in webview
-  * add Kepler as a recognized platform 
+  * add Kepler as a recognized platform
 
 ## v1.11.6
 * [PI-3311](https://infillion.atlassian.net/browse/PI-3311): truex_servers, added `qrCodeServerUrl`
@@ -49,7 +50,7 @@ At least one top-level bullet per ticket (a PR may include more than one ticket)
 
 ## v1.9.2
 * [PI-2407](https://infillion.atlassian.net/browse/PI-2407): Bug - C3 Container does not work with Hulu Desktop, specifically hulu.js
-  * add TruexServers.engageServerUrl 
+  * add TruexServers.engageServerUrl
 
 ## v1.9.1
 * [ADX-237](https://infillion.atlassian.net/browse/ADX-237): make encodeUrlParams() recursive

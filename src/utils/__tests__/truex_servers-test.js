@@ -37,45 +37,52 @@ describe("truex_servers testing", () => {
         const multiVideosProd = "https://get.truex.com/72904fe382372efcdcea6314aa1d7a37db6051b9/vast/config?dimension_1=#e{series.title}&dimension_2=#{slot.position}&dimension_3=#e{asset.title}&dimension_4=#e{asset.id}&dimension_5=truex_sold&stream_position=midroll&stream_id=#{request.videoRandom}";
         verifyServers(new TruexServers(multiVideosProd), true);
 
-        const qaConfig = {ads: [{window_url: "https://qa-media.truex.com/container/3.x/current/desktop/?whatever=1234"}]}
+        const qaConfig = {
+            service_url: "qa-measure.truex.com",
+            ads: [{window_url: "https://qa-media.truex.com/container/3.x/current/desktop/?whatever=1234"}]
+        };
         verifyServers(new TruexServers(qaConfig), false);
 
-        const prodConfig = {ads: [{window_url: "https://media.truex.com/container/3.x/current/desktop/?whatever=1234"}]}
+        const prodConfig = {
+            service_url: "measure.truex.com",
+            ads: [{window_url: "https://media.truex.com/container/3.x/current/desktop/?whatever=1234"}]
+        };
         verifyServers(new TruexServers(prodConfig), true);
 
-        const skipCardConfig = {ads: [], "card_creative_url": "https://media.truex.com/integration/ctv/choicecard-ctv.js"};
-        verifyServers(new TruexServers(skipCardConfig), true);
+        const prodServiceConfig = {
+            ads: [],
+            service_url: "measure.truex.com",
+            card_creative_url: "https://qa-media.truex.com/free-form-input.js"
+        };
+        verifyServers(new TruexServers(prodServiceConfig), true);
 
-        const skipCardConfig2 = {ads: [], "card_creative_url": "https://qa-media.truex.com/integration/ctv/choicecard-ctv.js"};
-        verifyServers(new TruexServers(skipCardConfig2), false);
-
-        const demoConfig = {ads: [], "service_url": "measure.truex.com"};
-        verifyServers(new TruexServers(demoConfig), true);
+        const qaServiceConfig = {
+            ads: [],
+            service_url: "qa-measure.truex.com",
+            card_creative_url: "https://media.truex.com/free-form-input.js"
+        };
+        verifyServers(new TruexServers(qaServiceConfig), false);
 
         function verifyServers(servers, isProd) {
             assert.strictEqual(servers.isProduction, isProd);
-
-            assert.strictEqual(servers.serverUrlOf("something.elsewhere.com"), "https://something.elsewhere.com");
-            assert.strictEqual(servers.serverUrlOf("http://localhost:8080"), "http://localhost:8080");
-            assert.strictEqual(servers.serverUrlOf("qa-media.truex.com"), "https://qa-media.truex.com");
-            assert.strictEqual(servers.serverUrlOf("//qa-media.truex.com"), "https://qa-media.truex.com");
-            assert.strictEqual(servers.serverUrlOf("http://qa-media.truex.com"), "http://qa-media.truex.com");
-            assert.strictEqual(servers.serverUrlOf("https://qa-media.truex.com"), "https://qa-media.truex.com");
+            assert.strictEqual(servers.env, isProd ? 'prod' : 'qa');
 
             if (isProd) {
+                assert.strictEqual(servers.rtbServerUrl, "https://qa.truex.com");
                 assert.strictEqual(servers.truexServerUrl, "https://serve.truex.com");
                 assert.strictEqual(servers.mediaServerUrl, "https://media.truex.com");
                 assert.strictEqual(servers.measureServerUrl, "https://measure.truex.com");
                 assert.strictEqual(servers.engageServerUrl, "https://engage.truex.com");
-                assert.strictEqual(servers.serverUrlOf("something.truex.com"), "https://something.truex.com");
                 assert.strictEqual(servers.qrCodeServerUrl, "https://qr.truex.com");
+                assert.strictEqual(servers.eeServerUrl, "https://ee.truex.com");
             } else {
+                assert.strictEqual(servers.rtbServerUrl, "https://qa-qa.truex.com");
                 assert.strictEqual(servers.truexServerUrl, "https://qa-serve.truex.com");
                 assert.strictEqual(servers.mediaServerUrl, "https://qa-media.truex.com");
                 assert.strictEqual(servers.measureServerUrl, "https://qa-measure.truex.com");
                 assert.strictEqual(servers.engageServerUrl, "https://qa-engage.truex.com");
                 assert.strictEqual(servers.qrCodeServerUrl, "https://qa-qr.truex.com");
-                assert.strictEqual(servers.serverUrlOf("something.truex.com"), "https://qa-something.truex.com");
+                assert.strictEqual(servers.eeServerUrl, "https://qa-ee.truex.com");
             }
         }
     });
