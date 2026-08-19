@@ -135,7 +135,7 @@ export function encodeUrlParams(params, keyPrefix = undefined, separatorString =
         // if we have a keyPrefix, it means we're within a nested object.
         // so we need to include it in our encoded key, in the form "keyPrefix[key]".
         const currentKey = keyPrefix
-            ? encodeURIComponent(`${keyPrefix}[${key}]`)
+            ? `${keyPrefix}${encodeURIComponent(`[${key}]`)}`
             : encodeURIComponent(key)
         ;
 
