@@ -30,7 +30,7 @@ export type CreativeAssetType =
     | 'video'
 ;
 
-export type CreativePixelType = 'pixel' | 'click';
+export type CreativePixelType = 'pixel' | 'click' | 'iframe' | 'script';
 
 export type CreativePixelTrigger =
     | 'load'
@@ -45,17 +45,68 @@ export type CreativePixelTrigger =
     | 'click_through'
 ;
 
-export type CreativePixelRestrictionType =
-    | 'start_date'
-    | 'end_date'
-    | 'campaign_id'
-    | 'geolocation'
+/**
+ * Tag restriction kinds applied by container_core `TXMTagManager#_checkRestriction`.
+ */
+export type CreativePixelRestrictionType = CreativePixelRestriction['type'];
+
+export type CreativePixelPlatform =
+    | 'desktop'
+    | 'mobile'
+    | 'tablet_only'
+    | 'phone_only'
+    | 'ios'
+    | 'android'
 ;
 
-export type CreativePixelRestriction = {
-    type: CreativePixelRestrictionType;
-    value: string;
-};
+/**
+ * Per-tag restriction. Unknown `type` values pass the check in the tag manager.
+ */
+export type CreativePixelRestriction =
+    | {
+        /** Inclusive start; `value` is a date string parsed as `YYYY-MM-DD 00:00:00`. */
+        type: 'start_date';
+        value: string;
+    }
+    | {
+        /** Inclusive end; `value` is a date string parsed as `YYYY-MM-DD 23:59:59`. */
+        type: 'end_date';
+        value: string;
+    }
+    | {
+        /** Comma-separated campaign IDs. Leading `!` negates. Empty value always passes. */
+        type: 'campaign_id';
+        value: string;
+    }
+    | {
+        /** Comma-separated placement IDs. Leading `!` negates. Empty value always passes. */
+        type: 'placement_id';
+        value: string;
+    }
+    | {
+        type: 'platform';
+        value: CreativePixelPlatform;
+    }
+    | {
+        /** `numerator/denominator` slice of `txparams.random`. */
+        type: 'rotation';
+        value: string;
+    }
+    | {
+        /** 2-char region, 3-digit DMA, or 5-digit ZIP. */
+        type: 'geolocation';
+        value: string;
+    }
+    | {
+        type: 'unit_type';
+        value: 'normal' | 'value_added';
+    }
+    | {
+        /** Compared to `txparams.variant` (uppercased). */
+        type: 'a_b_test';
+        value: string;
+    }
+;
 
 export type CreativePixelTag = {
     url: string;
