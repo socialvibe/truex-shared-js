@@ -227,12 +227,12 @@ export type BlueScriptButtonElement = BlueScriptElementBase & BlueScriptFocusabl
 /**
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#audio}
  */
-export type BlueScriptAudioElement = {
+export type BlueScriptAudioElement = BlueScriptElementBase & {
     type: 'Audio';
-    /** Name of the element; used to identify it for behaviors. */
-    name: string;
     /** URI of the audio file (MP3; engines may fall back to MP4). */
     audio_url: string;
+    /** Mute audio. Default false. */
+    mute?: boolean;
     /** Restart from the beginning when the end is reached. Default true. */
     loop?: boolean;
     /** Start playback when the card is displayed. Default true. */
