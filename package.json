@@ -1,6 +1,6 @@
 {
   "name": "@socialvibe/shared",
-  "version": "1.12.5",
+  "version": "1.12.6",
   "description": "Common ES6 JavaScript library shared across TrueX repos",
   "type": "module",
   "files": [
