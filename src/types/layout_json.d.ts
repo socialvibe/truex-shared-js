@@ -49,12 +49,12 @@ export type BlueScriptBehaviors = Record<string, BlueScriptBehavior>;
  * Event name → actions to run.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#behavior-events}
  */
-export type BlueScriptBehavior = Partial<Record<BlueScriptBehaviorTrigger, BlueScriptBehaviorAction[]>>;
+export type BlueScriptBehavior = Partial<Record<BlueScriptBehaviorTrigger, BlueScriptAction[]>>;
 
 /**
  * Named function body: a list of actions.
  */
-export type BlueScriptFunction = BlueScriptBehaviorAction[];
+export type BlueScriptFunction = BlueScriptAction[];
 
 /**
  * Map of function name → actions.
@@ -277,49 +277,49 @@ export type BlueScriptElementConfig =
     | BlueScriptAudioElement
     | BlueScriptQRCodeElement;
 
-export type BlueScriptBehaviorAction =
-    | BlueScriptBehaviorActionAllDoneButtonPushed
-    | BlueScriptBehaviorActionAnimateElement
-    | BlueScriptBehaviorActionAssign
-    | BlueScriptBehaviorActionBreak
-    | BlueScriptBehaviorActionBringToFront
-    | BlueScriptBehaviorActionDebugLog
-    | BlueScriptBehaviorActionDisableUserInput
-    | BlueScriptBehaviorActionDisableUserNavigation
-    | BlueScriptBehaviorActionEnableUserInput
-    | BlueScriptBehaviorActionEnableUserNavigation
-    | BlueScriptBehaviorActionFlagActivityForAttention
-    | BlueScriptBehaviorActionFlagActivityForCredit
-    | BlueScriptBehaviorActionFocusElement
-    | BlueScriptBehaviorActionFor
-    | BlueScriptBehaviorActionIf
-    | BlueScriptBehaviorActionInvoke
-    | BlueScriptBehaviorActionMakeWebRequest
-    | BlueScriptBehaviorActionPauseActiveAudio
-    | BlueScriptBehaviorActionPauseVideo
-    | BlueScriptBehaviorActionPlayActiveAudio
-    | BlueScriptBehaviorActionPlaySoundEffect
-    | BlueScriptBehaviorActionPlayVideo
-    | BlueScriptBehaviorActionPopStep
-    | BlueScriptBehaviorActionReplaceStep
-    | BlueScriptBehaviorActionResetActiveAudio
-    | BlueScriptBehaviorActionResetFocus
-    | BlueScriptBehaviorActionResetVideo
-    | BlueScriptBehaviorActionReturn
-    | BlueScriptBehaviorActionSetAttribute
-    | BlueScriptBehaviorActionSetBounds
-    | BlueScriptBehaviorActionSetTimeout
-    | BlueScriptBehaviorActionShowStep
-    | BlueScriptBehaviorActionStopAllTimers
-    | BlueScriptBehaviorActionStopActiveAudio
-    | BlueScriptBehaviorActionStopVideo
-    | BlueScriptBehaviorActionTrackCustomEvent;
+export type BlueScriptAction =
+    | BlueScriptAllDoneButtonPushedAction
+    | BlueScriptAnimateElementAction
+    | BlueScriptAssignAction
+    | BlueScriptBreakAction
+    | BlueScriptBringToFrontAction
+    | BlueScriptDebugLogAction
+    | BlueScriptDisableUserInputAction
+    | BlueScriptDisableUserNavigationAction
+    | BlueScriptEnableUserInputAction
+    | BlueScriptEnableUserNavigationAction
+    | BlueScriptFlagActivityForAttentionAction
+    | BlueScriptFlagActivityForCreditAction
+    | BlueScriptFocusElementAction
+    | BlueScriptForAction
+    | BlueScriptIfAction
+    | BlueScriptInvokeAction
+    | BlueScriptMakeWebRequestAction
+    | BlueScriptPauseActiveAudioAction
+    | BlueScriptPauseVideoAction
+    | BlueScriptPlayActiveAudioAction
+    | BlueScriptPlaySoundEffectAction
+    | BlueScriptPlayVideoAction
+    | BlueScriptPopStepAction
+    | BlueScriptReplaceStepAction
+    | BlueScriptResetActiveAudioAction
+    | BlueScriptResetFocusAction
+    | BlueScriptResetVideoAction
+    | BlueScriptReturnAction
+    | BlueScriptSetAttributeAction
+    | BlueScriptSetBoundsAction
+    | BlueScriptSetTimeoutAction
+    | BlueScriptShowStepAction
+    | BlueScriptStopAllTimersAction
+    | BlueScriptStopActiveAudioAction
+    | BlueScriptStopVideoAction
+    | BlueScriptTrackCustomEventAction;
 
 /**
  * Triggers the Return to Content button, exiting the ad flow for a completed ad.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#alldonebuttonpushed}
  */
-export type BlueScriptBehaviorActionAllDoneButtonPushed = {
+export type BlueScriptAllDoneButtonPushedAction = {
     host: 'allDoneButtonPushed';
 };
 
@@ -327,7 +327,7 @@ export type BlueScriptBehaviorActionAllDoneButtonPushed = {
  * Animates element attributes from their current values.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#animateelement}
  */
-export type BlueScriptBehaviorActionAnimateElement = {
+export type BlueScriptAnimateElementAction = {
     host: 'animateElement';
     /** Name of the element to animate. */
     name?: string;
@@ -353,7 +353,7 @@ export type BlueScriptBehaviorActionAnimateElement = {
  * Assigns a global (`key`) or local (`local`) variable. One of key or local is required.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#assign}
  */
-export type BlueScriptBehaviorActionAssign = {
+export type BlueScriptAssignAction = {
     host: 'assign';
     /** Global variable name; dot-separated path into objects/arrays. May be an expression. */
     key?: BlueScriptValue;
@@ -367,7 +367,7 @@ export type BlueScriptBehaviorActionAssign = {
  * Exits the current `for` loop.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#break}
  */
-export type BlueScriptBehaviorActionBreak = {
+export type BlueScriptBreakAction = {
     host: 'break';
 };
 
@@ -375,7 +375,7 @@ export type BlueScriptBehaviorActionBreak = {
  * Draws the named element on top of all other displayed elements.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#bringtofront}
  */
-export type BlueScriptBehaviorActionBringToFront = {
+export type BlueScriptBringToFrontAction = {
     host: 'bringToFront';
     /** Name of the element to bring to the front. */
     name: string;
@@ -385,7 +385,7 @@ export type BlueScriptBehaviorActionBringToFront = {
  * Prints a log message (BrightScript terminal on Roku, console on HTML5).
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#debuglog}
  */
-export type BlueScriptBehaviorActionDebugLog = {
+export type BlueScriptDebugLogAction = {
     host: 'debugLog';
     /** Value to print; may be an expression. Cast to string. */
     value: BlueScriptValue;
@@ -395,7 +395,7 @@ export type BlueScriptBehaviorActionDebugLog = {
  * Prevent user input from being handled.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#disableuserinput}
  */
-export type BlueScriptBehaviorActionDisableUserInput = {
+export type BlueScriptDisableUserInputAction = {
     host: 'disableUserInput';
 };
 
@@ -403,7 +403,7 @@ export type BlueScriptBehaviorActionDisableUserInput = {
  * Prevent user directional input from being handled.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#disableusernavigation}
  */
-export type BlueScriptBehaviorActionDisableUserNavigation = {
+export type BlueScriptDisableUserNavigationAction = {
     host: 'disableUserNavigation';
 };
 
@@ -411,7 +411,7 @@ export type BlueScriptBehaviorActionDisableUserNavigation = {
  * Allow user input to be handled.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#enableuserinput}
  */
-export type BlueScriptBehaviorActionEnableUserInput = {
+export type BlueScriptEnableUserInputAction = {
     host: 'enableUserInput';
 };
 
@@ -419,7 +419,7 @@ export type BlueScriptBehaviorActionEnableUserInput = {
  * Allow user directional input to be handled.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#enableusernavigation}
  */
-export type BlueScriptBehaviorActionEnableUserNavigation = {
+export type BlueScriptEnableUserNavigationAction = {
     host: 'enableUserNavigation';
 };
 
@@ -427,7 +427,7 @@ export type BlueScriptBehaviorActionEnableUserNavigation = {
  * Flags the engagement as interacted (true[ATTENTION] interaction requirement).
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#flagactivityforattention}
  */
-export type BlueScriptBehaviorActionFlagActivityForAttention = {
+export type BlueScriptFlagActivityForAttentionAction = {
     host: 'flagActivityForAttention';
 };
 
@@ -435,7 +435,7 @@ export type BlueScriptBehaviorActionFlagActivityForAttention = {
  * Flags the engagement to send credit events. Fires credit once.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#flagactivityforcredit}
  */
-export type BlueScriptBehaviorActionFlagActivityForCredit = {
+export type BlueScriptFlagActivityForCreditAction = {
     host: 'flagActivityForCredit';
 };
 
@@ -443,7 +443,7 @@ export type BlueScriptBehaviorActionFlagActivityForCredit = {
  * Sets focus to a button or video. Triggers onFocusGained / onFocusLost.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#focuselement}
  */
-export type BlueScriptBehaviorActionFocusElement = {
+export type BlueScriptFocusElementAction = {
     host: 'focusElement';
     /** Name of the node that will capture focus. */
     name: string;
@@ -453,7 +453,7 @@ export type BlueScriptBehaviorActionFocusElement = {
  * Iterates from `from` to `to` (inclusive) running `do`.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#for}
  */
-export type BlueScriptBehaviorActionFor = {
+export type BlueScriptForAction = {
     host: 'for';
     /** Local or key variable that receives the counter. Default `{ "key": "forI" }`. */
     value?: BlueScriptValue;
@@ -462,28 +462,28 @@ export type BlueScriptBehaviorActionFor = {
     /** Integer the loop counter counts to (inclusive); may be an expression. */
     to: BlueScriptValue;
     /** Actions executed each iteration. */
-    do: BlueScriptBehaviorAction[];
+    do: BlueScriptAction[];
 };
 
 /**
  * Runs `then` or optional `else` based on `expression`.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#ifelse}
  */
-export type BlueScriptBehaviorActionIf = {
+export type BlueScriptIfAction = {
     host: 'if';
     /** Condition; a value or expression. */
     expression: BlueScriptValue;
     /** Actions if expression is true. */
-    then: BlueScriptBehaviorAction[];
+    then: BlueScriptAction[];
     /** Actions if expression is not true. */
-    else?: BlueScriptBehaviorAction[];
+    else?: BlueScriptAction[];
 };
 
 /**
  * Invokes a named function on the current step.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#invoke}
  */
-export type BlueScriptBehaviorActionInvoke = {
+export type BlueScriptInvokeAction = {
     host: 'invoke';
     /** Function name defined in the step's `functions` object. */
     function: string;
@@ -495,7 +495,7 @@ export type BlueScriptBehaviorActionInvoke = {
  * HTTP request from behavior actions.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#makewebrequest}
  */
-export type BlueScriptBehaviorActionMakeWebRequest = {
+export type BlueScriptMakeWebRequestAction = {
     host: 'makeWebRequest';
     /** Server/file location. */
     url: string;
@@ -510,16 +510,16 @@ export type BlueScriptBehaviorActionMakeWebRequest = {
     /** Parse the response as JSON before assigning. Default false. */
     responseAsJson?: boolean;
     /** Actions on success. */
-    onload?: BlueScriptBehaviorAction[];
+    onload?: BlueScriptAction[];
     /** Actions on failure. */
-    onerror?: BlueScriptBehaviorAction[];
+    onerror?: BlueScriptAction[];
 };
 
 /**
  * Pauses playback for the active audio element.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#pauseactiveaudio}
  */
-export type BlueScriptBehaviorActionPauseActiveAudio = {
+export type BlueScriptPauseActiveAudioAction = {
     host: 'pauseActiveAudio';
 };
 
@@ -527,7 +527,7 @@ export type BlueScriptBehaviorActionPauseActiveAudio = {
  * Pauses playback for the target video.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#pausevideo}
  */
-export type BlueScriptBehaviorActionPauseVideo = {
+export type BlueScriptPauseVideoAction = {
     host: 'pauseVideo';
     /** Name of the video to pause. */
     target?: string;
@@ -537,7 +537,7 @@ export type BlueScriptBehaviorActionPauseVideo = {
  * Starts or resumes playback for the active audio element.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#playactiveaudio}
  */
-export type BlueScriptBehaviorActionPlayActiveAudio = {
+export type BlueScriptPlayActiveAudioAction = {
     host: 'playActiveAudio';
 };
 
@@ -545,7 +545,7 @@ export type BlueScriptBehaviorActionPlayActiveAudio = {
  * Triggers a sound effect for playback.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#playsoundeffect}
  */
-export type BlueScriptBehaviorActionPlaySoundEffect = {
+export type BlueScriptPlaySoundEffectAction = {
     host: 'playSoundEffect';
     /** URI of the sound file. */
     uri: string;
@@ -555,7 +555,7 @@ export type BlueScriptBehaviorActionPlaySoundEffect = {
  * Starts or resumes playback for the target video.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#playvideo}
  */
-export type BlueScriptBehaviorActionPlayVideo = {
+export type BlueScriptPlayVideoAction = {
     host: 'playVideo';
     /** Name of the video to play. */
     target?: string;
@@ -565,7 +565,7 @@ export type BlueScriptBehaviorActionPlayVideo = {
  * @deprecated Step stacking is no longer supported. Use `replaceStep`.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#popstep}
  */
-export type BlueScriptBehaviorActionPopStep = {
+export type BlueScriptPopStepAction = {
     host: 'popStep';
 };
 
@@ -573,7 +573,7 @@ export type BlueScriptBehaviorActionPopStep = {
  * Navigates to a different step, replacing the current one.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#replacestep}
  */
-export type BlueScriptBehaviorActionReplaceStep = {
+export type BlueScriptReplaceStepAction = {
     host: 'replaceStep';
     /** Name of the step to transition to. */
     cardName: string;
@@ -583,7 +583,7 @@ export type BlueScriptBehaviorActionReplaceStep = {
  * Resets playback for the active audio element to the beginning.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#resetactiveaudio}
  */
-export type BlueScriptBehaviorActionResetActiveAudio = {
+export type BlueScriptResetActiveAudioAction = {
     host: 'resetActiveAudio';
 };
 
@@ -591,7 +591,7 @@ export type BlueScriptBehaviorActionResetActiveAudio = {
  * Re-initializes focus, usually the top-most / left-most button.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#resetfocus}
  */
-export type BlueScriptBehaviorActionResetFocus = {
+export type BlueScriptResetFocusAction = {
     host: 'resetFocus';
 };
 
@@ -599,7 +599,7 @@ export type BlueScriptBehaviorActionResetFocus = {
  * Resets playback for the target video to the beginning.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#resetvideo}
  */
-export type BlueScriptBehaviorActionResetVideo = {
+export type BlueScriptResetVideoAction = {
     host: 'resetVideo';
     /** Name of the video to reset. */
     target?: string;
@@ -609,7 +609,7 @@ export type BlueScriptBehaviorActionResetVideo = {
  * Exits the current event handler or function invocation.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#return}
  */
-export type BlueScriptBehaviorActionReturn = {
+export type BlueScriptReturnAction = {
     host: 'return';
     /** Optional return value for a function invocation. */
     value?: BlueScriptValue;
@@ -619,7 +619,7 @@ export type BlueScriptBehaviorActionReturn = {
  * Assigns a property on a script element.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#setattribute}
  */
-export type BlueScriptBehaviorActionSetAttribute = {
+export type BlueScriptSetAttributeAction = {
     host: 'setAttribute';
     /** Name of the BlueScript element. */
     name: string;
@@ -634,7 +634,7 @@ export type BlueScriptBehaviorActionSetAttribute = {
  * All new values are optional by omitting them.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#setbounds}
  */
-export type BlueScriptBehaviorActionSetBounds = {
+export type BlueScriptSetBoundsAction = {
     host: 'setBounds';
     /** Name of the target node. */
     target?: string;
@@ -652,7 +652,7 @@ export type BlueScriptBehaviorActionSetBounds = {
  * Runs actions after a delay, once or repeating.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#settimeout}
  */
-export type BlueScriptBehaviorActionSetTimeout = {
+export type BlueScriptSetTimeoutAction = {
     host: 'setTimeout';
     /** If true, the timer fires repeatedly. Default false. */
     repeat?: boolean;
@@ -661,14 +661,14 @@ export type BlueScriptBehaviorActionSetTimeout = {
     timeout?: number;
     delay?: number;
     /** Actions to execute. */
-    do: BlueScriptBehaviorAction[];
+    do: BlueScriptAction[];
 };
 
 /**
  * @deprecated Step stacking is no longer supported. Use `replaceStep`.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#showstep}
  */
-export type BlueScriptBehaviorActionShowStep = {
+export type BlueScriptShowStepAction = {
     host: 'showStep';
     /** Name of the step to transition to. */
     cardName: string;
@@ -678,7 +678,7 @@ export type BlueScriptBehaviorActionShowStep = {
  * Stops all timers created by setTimeout.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#stopalltimers}
  */
-export type BlueScriptBehaviorActionStopAllTimers = {
+export type BlueScriptStopAllTimersAction = {
     host: 'stopAllTimers';
 };
 
@@ -686,7 +686,7 @@ export type BlueScriptBehaviorActionStopAllTimers = {
  * Stops playback for the active audio element.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#stopactiveaudio}
  */
-export type BlueScriptBehaviorActionStopActiveAudio = {
+export type BlueScriptStopActiveAudioAction = {
     host: 'stopActiveAudio';
 };
 
@@ -694,7 +694,7 @@ export type BlueScriptBehaviorActionStopActiveAudio = {
  * Stops playback for the target video.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#stopvideo}
  */
-export type BlueScriptBehaviorActionStopVideo = {
+export type BlueScriptStopVideoAction = {
     host: 'stopVideo';
     /** Name of the video to stop. */
     target?: string;
@@ -704,7 +704,7 @@ export type BlueScriptBehaviorActionStopVideo = {
  * Tracks a custom event to the true[X] server.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#trackcustomevent}
  */
-export type BlueScriptBehaviorActionTrackCustomEvent = {
+export type BlueScriptTrackCustomEventAction = {
     host: 'trackCustomEvent';
     /** Tracking taxonomy category. Default fep_roku_layout. */
     category?: string;
