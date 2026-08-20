@@ -260,6 +260,12 @@ export type BlueScriptQRCodeElement = BlueScriptElementBase & {
     minify?: boolean | string;
     /** Tag-manager label (trigger qr_code). When set, `url` is ignored if a matching click tag exists. */
     tagLabel?: string;
+    /**
+     * Name of a predefined QR-code style. When provided, the QR-code service
+     * resolves it to a saved configuration for rendering parameters such as its
+     * logo, gradient, dot style, and anchor style.
+     */
+    style?: string;
 };
 
 export type BlueScriptElementConfig =
