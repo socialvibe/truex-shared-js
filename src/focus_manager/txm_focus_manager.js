@@ -7,7 +7,13 @@ import { uuidv4 } from '../utils/uuid.js';
 import timedTrace from "../utils/timed_trace.js";
 
 /**
- * @typedef {import('./txm_focus_change.js').FocusableLike} FocusableLike
+ * /**
+ * @typedef {{
+ *   element?: HTMLElement | null,
+ *   onFocusSet?: (hasFocus: boolean, focusChange?: FocusChange) => void,
+ *   onInputAction?: (action: string, event?: Event) => boolean | void,
+ *   canHandleFocusEvents?: boolean,
+ * }} FocusableLike
  */
 
 /**
@@ -52,7 +58,9 @@ export class TXMFocusManager {
         this._lastKeyEventTimestamp = 0;
 
         // Used to filter out spurious mouseenter events.
+        /** @type {number | undefined} */
         this.lastMouseX = undefined;
+        /** @type {number | undefined} */
         this.lastMouseY = undefined;
 
         // make convenient for direct callbacks
