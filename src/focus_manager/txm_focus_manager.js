@@ -7,7 +7,6 @@ import { uuidv4 } from '../utils/uuid.js';
 import timedTrace from "../utils/timed_trace.js";
 
 /**
- * /**
  * @typedef {{
  *   element?: HTMLElement | null,
  *   onFocusSet?: (hasFocus: boolean, focusChange?: FocusChange) => void,
