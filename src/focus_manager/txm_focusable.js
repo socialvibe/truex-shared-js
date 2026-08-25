@@ -3,6 +3,7 @@ import { FocusChange } from './txm_focus_change.js';
 
 /**
  * @typedef {import('./txm_focus_manager.js').TXMFocusManager} TXMFocusManager
+ * @typedef {import('./txm_focus_manager.js').FocusableLike} FocusableLike
  */
 
 /**
@@ -21,6 +22,7 @@ import { FocusChange } from './txm_focus_change.js';
  *    will attempted to be invoked. E.g. onSelectAction().
  *
  *    If no such method is present, onInputAction(action, keyEvent) is invoked instead.
+ * @implements {FocusableLike}
  */
 export class Focusable {
 

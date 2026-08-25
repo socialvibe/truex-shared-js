@@ -1,10 +1,4 @@
-/**
- * @typedef {{
- *   element?: HTMLElement | null,
- *   onFocusSet?: (hasFocus: boolean, focusChange?: FocusChange) => void,
- *   onInputAction?: (action: string, event?: Event) => boolean | void,
- * }} FocusableLike
- */
+/** @typedef {import('./txm_focus_manager.js').FocusableLike} FocusableLike */
 
 /**
  * Describes the context of a focus change. Used to allow variations on focus processing

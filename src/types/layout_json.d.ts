@@ -30,26 +30,24 @@ export type LayoutJson = {
 export type BlueScriptStepConfig = {
     /** Name of the step; used to identify it for navigation. */
     name: string;
-    /** Optional comment about this step. */
-    __comment__?: string;
     /** Visual elements of this step. First element is drawn on top. */
     elements: BlueScriptElementConfig[];
     /** Event handlers keyed by element name. */
-    behaviors?: BlueScriptBehaviors;
+    behaviors?: BlueScriptStepBehaviors;
     /** Named functions invoked from behaviors or other functions. */
-    functions?: BlueScriptFunctions;
+    functions?: BlueScriptStepFunctions;
 };
 
 /**
  * Map of element name → event handlers for that element.
  */
-export type BlueScriptBehaviors = Record<string, BlueScriptBehavior>;
+export type BlueScriptStepBehaviors = Record<string, BlueScriptBehaviors>;
 
 /**
  * Event name → actions to run.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#behavior-events}
  */
-export type BlueScriptBehavior = Partial<Record<BlueScriptBehaviorTrigger, BlueScriptAction[]>>;
+export type BlueScriptBehaviors = Partial<Record<BlueScriptBehaviorTrigger, BlueScriptAction[]>>;
 
 /**
  * Named function body: a list of actions.
@@ -59,7 +57,7 @@ export type BlueScriptFunction = BlueScriptAction[];
 /**
  * Map of function name → actions.
  */
-export type BlueScriptFunctions = Record<string, BlueScriptFunction>;
+export type BlueScriptStepFunctions = Record<string, BlueScriptFunction>;
 
 /**
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#behavior-events}
@@ -221,7 +219,7 @@ export type BlueScriptButtonElement = BlueScriptElementBase & BlueScriptFocusabl
     /** Use native resolution on memory-constrained Roku devices. Default false. */
     forceHighResolution?: boolean;
     /** Inline behaviors on the element (in addition to step-level `behaviors`). */
-    behavior?: BlueScriptBehavior;
+    behavior?: BlueScriptBehaviors;
 };
 
 /**
@@ -559,6 +557,12 @@ export type BlueScriptPlayVideoAction = {
     host: 'playVideo';
     /** Name of the video to play. */
     target?: string;
+    /** position */
+    atTime?: string,
+    /** default: true, not supported on `roku` */
+    stopActiveAudio?: boolean,
+    /** URI of the replace video */
+    video_url?: string,
 };
 
 /**
@@ -577,6 +581,10 @@ export type BlueScriptReplaceStepAction = {
     host: 'replaceStep';
     /** Name of the step to transition to. */
     cardName: string;
+    /**
+     * alias to `cardName`, not supported on `roku`
+     */
+    stepName?: string;
 };
 
 /**
