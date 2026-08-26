@@ -10,7 +10,8 @@ export type BlueScriptJson =
     | boolean
     | null
     | BlueScriptJson[]
-    | { [key: string]: BlueScriptJson };
+    | { [key: string]: BlueScriptJson }
+;
 
 /** Literal or expression value used in BlueScript actions. */
 export type BlueScriptValue = BlueScriptJson;
@@ -77,7 +78,8 @@ export type BlueScriptBehaviorTrigger =
     | 'videoCompleted'
     | 'videoLooped'
     | 'videoDidEnterFullscreen'
-    | 'videoDidExitFullscreen';
+    | 'videoDidExitFullscreen'
+;
 
 export type BlueScriptNumber = number | string;
 
@@ -144,8 +146,8 @@ export type BlueScriptImageElement = BlueScriptElementBase & {
  */
 export type BlueScriptVideoElement = BlueScriptElementBase & BlueScriptFocusable & {
     type: 'Video';
-    /** URI of the video file (MP4). */
-    video_url?: string;
+    /** URI of the video file (MP4). [required] */
+    video_url: string;
     /** Restart from the beginning when the end is reached. Default true. */
     loop?: boolean;
     /** Start playback when the card is displayed. Default true. */
@@ -170,6 +172,26 @@ export type BlueScriptVideoElement = BlueScriptElementBase & BlueScriptFocusable
     useRotation?: boolean;
     /** Opacity of the static video image overlay. */
     staticVideoImageOpacity?: number;
+
+    /**
+     * Show native playback controls in HTML and desktop environments.
+     * Ignored on CTV platforms.
+     */
+    controls?: boolean;
+
+    /**
+     * Allow HTML users to start or pause playback by clicking the video,
+     * supporting user-initiated playback when autoplay is restricted.
+     * Ignored on Roku and tvOS.
+     */
+    allowClickToPlay?: boolean;
+
+    /**
+     * Allow HTML users to toggle sound by clicking the video,
+     * supporting user-initiated audio when autoplay is restricted.
+     * Ignored on Roku and tvOS.
+     */
+    allowClickForSound?: boolean;
 };
 
 /**
@@ -273,7 +295,8 @@ export type BlueScriptElementConfig =
     | BlueScriptTextElement
     | BlueScriptButtonElement
     | BlueScriptAudioElement
-    | BlueScriptQRCodeElement;
+    | BlueScriptQRCodeElement
+;
 
 export type BlueScriptAction =
     | BlueScriptAllDoneButtonPushedAction
@@ -312,6 +335,7 @@ export type BlueScriptAction =
     | BlueScriptStopActiveAudioAction
     | BlueScriptStopVideoAction
     | BlueScriptTrackCustomEventAction;
+
 
 /**
  * Triggers the Return to Content button, exiting the ad flow for a completed ad.
@@ -709,7 +733,7 @@ export type BlueScriptStopVideoAction = {
 };
 
 /**
- * Tracks a custom event to the true[X] server.
+ * Tracks a custom event to the TrueX server.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#trackcustomevent}
  */
 export type BlueScriptTrackCustomEventAction = {
