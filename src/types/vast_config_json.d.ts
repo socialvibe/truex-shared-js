@@ -19,7 +19,8 @@ export type PartnerDimension =
     | 'dimension_2'
     | 'dimension_3'
     | 'dimension_4'
-    | 'dimension_5';
+    | 'dimension_5'
+;
 
 /** Publisher-supplied request dimensions (keys dimension_1…dimension_5). */
 export type PartnerDimensions = Partial<Record<PartnerDimension, string>>;
