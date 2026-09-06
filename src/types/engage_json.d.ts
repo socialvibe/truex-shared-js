@@ -7,7 +7,9 @@
 
 import type { CreativeJson } from './creative_json.js';
 
-/** Placement subset from `Placement#public_attributes`. */
+/**
+ * Placement subset from `Placement#public_attributes`.
+ */
 export type EngagePlacementJson = {
     id: string | number;
     name: string;
@@ -21,7 +23,9 @@ export type EngagePlacementJson = {
     identifier_hash: string;
 };
 
-/** Campaign subset: `campaign.attributes.to_json(only: [:id, :io_unit_type])`. */
+/**
+ * Campaign subset: `campaign.attributes.to_json(only: [:id, :io_unit_type])`.
+ */
 export type EngageCampaignJson = {
     id: string | number;
     io_unit_type: string;
@@ -52,7 +56,6 @@ export type EngageJson = {
     referring_source: string;
     variant: string;
     initials: string;
-    brand_lift_survey: unknown;
     survey_config_url: string;
     network_user_id: string;
     placement_hash: string;
@@ -68,13 +71,41 @@ export type EngageJson = {
     placement_json: EngagePlacementJson;
     campaign_json: EngageCampaignJson;
     location_json: EngageLocationJson;
-    pending_true_targeting_requirements_json: unknown;
+    pending_true_targeting_requirements_json: TrueTargetingRequirement[];
     extra_parameters_json: Record<string, unknown>;
-    vote_summary_json: unknown;
-    recent_comments_json: unknown;
-    error_message: string;
+    /** indicates the session state */
     simulated: boolean;
+    error_message: string;
+
     bidder_embed_code: string;
     bidder_vast_url: string;
     cachebuster_version: string;
+    brand_lift_survey: unknown;
+
+    /** @deprecated something very obsolete */
+    vote_summary_json: unknown[];
+    /** @deprecated something very obsolete */
+    recent_comments_json: unknown[];
 };
+
+export type TrueTargetingAgeRequirement = { type: 'AgeTrueTargetingRequirement' };
+export type TrueTargetingGenderRequirement = { type: 'GenderTrueTargetingRequirement' };
+export type TrueTargetingCustomRequirement = {
+    type: 'CustomTrueTargetingRequirement';
+    true_targeting_question: TrueTargetingCustomQuestion;
+};
+
+export type TrueTargetingCustomQuestion = {
+    id: number;
+    body: string;
+    standard: boolean;
+    optional?: unknown;
+    target_answer?: number;
+};
+
+export type TrueTargetingRequirement =
+    | TrueTargetingAgeRequirement
+    | TrueTargetingGenderRequirement
+    | TrueTargetingCustomRequirement
+;
+
