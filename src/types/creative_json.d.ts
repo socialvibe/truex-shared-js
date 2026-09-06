@@ -147,7 +147,7 @@ export type CreativeJson = {
     tablet: boolean;
     mobile: boolean;
     /** Default false. */
-    ctv?: boolean;
+    ctv: boolean;
     /** Set of technology names (JSON array). */
     technologies: string[];
     /** Default false. */

@@ -8,7 +8,7 @@
         "checkJs": true,
         "noEmit": true,
         "strict": true,
-        "skipLibCheck": true,
+        "skipLibCheck": false,
         "maxNodeModuleJsDepth": 0
     },
     "include": [
