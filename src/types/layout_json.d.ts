@@ -128,7 +128,7 @@ export type BlueScriptExpression =
  * Input to `evalExpr`: a JSON literal, or an expression.
  * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#bluescript-values-and-expressions}
  */
-export type BlueScriptGenericValue = BlueScriptExpression | unknown;
+export type BlueScriptGenericValue = BlueScriptExpression | BlueScriptJson;
 
 /**
  * Top-level BlueScript layout.
