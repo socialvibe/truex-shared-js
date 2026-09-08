@@ -4,7 +4,10 @@ Add new entries under a single `## vX.Y.Z` heading that matches `package.json`.
 If that heading already exists, append bullets there — do not create another heading for the same increment.
 At least one top-level bullet per ticket (a PR may include more than one ticket).
 
-## v1.18.9
+## v1.12.10
+* [PI-3515](https://infillion.atlassian.net/browse/PI-3515): type BlueScript action fields that `evalExpr` evaluates as `BlueScriptValue` (`BlueScriptJson` | `BlueScriptExpression`)
+
+## v1.12.9
 * [PI-3515](https://infillion.atlassian.net/browse/PI-3515): engage_json type fixes
 
 ## v1.12.8

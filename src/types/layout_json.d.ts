@@ -13,8 +13,122 @@ export type BlueScriptJson =
     | { [key: string]: BlueScriptJson }
 ;
 
-/** Literal or expression value used in BlueScript actions. */
-export type BlueScriptValue = BlueScriptJson;
+export type BlueScriptLiteralExpression = {
+    literal: BlueScriptJson;
+};
+
+export type BlueScriptKeyExpression = {
+    key: BlueScriptExpression | string;
+};
+
+export type BlueScriptLocalExpression = {
+    local: BlueScriptExpression | string;
+};
+
+export type BlueScriptArgExpression = {
+    arg: BlueScriptGenericValue;
+    default?: BlueScriptGenericValue;
+};
+
+export type BlueScriptInvokeExpression = {
+    invoke: string;
+    args?: Record<string, BlueScriptGenericValue>;
+};
+
+/**
+ * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#date-expressions}
+ */
+export type BlueScriptDateExpression = {
+    date:'now' | BlueScriptExpression | BlueScriptDateExpressionOptions;
+};
+
+export type BlueScriptDateExpressionOptions = {
+    year?: number | string;
+    month?: number | string;
+    day?: number | string;
+    hours?: number | string;
+    minutes?: number | string;
+    seconds?: number | string;
+    milliseconds?: number | string;
+};
+
+/**
+ * Get value of element's attribute
+ */
+export type BlueScriptAttributeExpression = {
+    element: BlueScriptExpression | string;
+    attribute: BlueScriptExpression | string;
+};
+
+/**
+ * Simplified `{ "+": [...] }` form recognized by `evalExpr`.
+ * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#expressions}
+ */
+export type BlueScriptSimplifiedOperationExpression =
+    | { '+'  : BlueScriptReducableOperationArguments<BlueScriptExpression | string | number> }
+    | { '-'  : BlueScriptReducableOperationArguments<BlueScriptExpression | string | number> }
+    | { '*'  : BlueScriptReducableOperationArguments<BlueScriptExpression | number> }
+    | { '/'  : BlueScriptReducableOperationArguments<BlueScriptExpression | number> }
+    | { '&&' : BlueScriptReducableOperationArguments<BlueScriptGenericValue> }
+    | { '||' : BlueScriptReducableOperationArguments<BlueScriptGenericValue> }
+    | { '%'  : BlueScriptExpression | number }
+    | { '>'  : BlueScriptExpression | number }
+    | { '<'  : BlueScriptExpression | number }
+    | { '>=' : BlueScriptExpression | number }
+    | { '<=' : BlueScriptExpression | number }
+    | { '==' : BlueScriptGenericValue }
+    | { '!=' : BlueScriptGenericValue }
+    | { '!'  : BlueScriptGenericValue }
+    | { floor      : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { round      : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { ceil       : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { max        : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { min        : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { replace    : [ BlueScriptExpression | string, BlueScriptExpression | string, BlueScriptExpression | string] }
+    | { replaceAll : [ BlueScriptExpression | string, BlueScriptExpression | string, BlueScriptExpression | string] }
+    | { length     : BlueScriptGenericValue }
+    | { random     : BlueScriptExpression | number }
+    | { toFixed                   : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { toTrimFixed               : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { zeroFill                  : [ BlueScriptExpression | number, BlueScriptExpression | number ] }
+    | { formatMinutesSeconds      : BlueScriptExpression | number }
+    | { formatHoursMinutesSeconds : BlueScriptExpression | number }
+;
+
+/** `keyof` on a union is the *intersection* of keys; this distributes so you get every member's keys. */
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+
+/** Operators recognized by `evalExpr` (simplified form and legacy `{ operation, values }`). */
+export type BlueScriptOperator = KeysOfUnion<BlueScriptSimplifiedOperationExpression>;
+
+export type BlueScriptOperationExpression = {
+    operation: BlueScriptOperator;
+    values?: BlueScriptGenericValue[];
+};
+
+export type BlueScriptReducableOperationArguments<T> = T[];
+
+/**
+ * Object/array forms evaluated by `evalExpr` (not a JSON literal).
+ * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#expressions}
+ */
+export type BlueScriptExpression =
+    | BlueScriptLiteralExpression
+    | BlueScriptKeyExpression
+    | BlueScriptLocalExpression
+    | BlueScriptArgExpression
+    | BlueScriptInvokeExpression
+    | BlueScriptDateExpression
+    | BlueScriptOperationExpression
+    | BlueScriptSimplifiedOperationExpression
+    | BlueScriptAttributeExpression
+;
+
+/**
+ * Input to `evalExpr`: a JSON literal, or an expression.
+ * @see {@link https://github.com/socialvibe/truex-ads-docs/blob/master/bluescript-reference.md#bluescript-values-and-expressions}
+ */
+export type BlueScriptGenericValue = BlueScriptExpression | unknown;
 
 /**
  * Top-level BlueScript layout.
@@ -352,19 +466,19 @@ export type BlueScriptAllDoneButtonPushedAction = {
 export type BlueScriptAnimateElementAction = {
     host: 'animateElement';
     /** Name of the element to animate. */
-    name?: string;
+    name?: BlueScriptExpression | string;
     /** Attributes to animate (x, y, width, height, opacity; position and size are legacy). */
     attributes: {
-        x?: BlueScriptNumber;
-        y?: BlueScriptNumber;
-        width?: BlueScriptNumber;
-        height?: BlueScriptNumber;
-        opacity?: number;
-        position?: BlueScriptValue;
-        size?: BlueScriptValue;
+        x?: BlueScriptExpression | string | number;
+        y?: BlueScriptExpression | string | number;
+        width?: BlueScriptExpression | string | number;
+        height?: BlueScriptExpression | string | number;
+        opacity?: BlueScriptExpression | string | number;
+        position?: BlueScriptExpression | string | number;
+        size?: BlueScriptExpression | string | number;
     };
     /** Length of the animation in seconds. Default 0.35. */
-    duration?: number;
+    duration?: BlueScriptExpression | string | number;
     /** How values evolve over the duration. Default outCubic. */
     easeFunction?: string;
     /** Roku only: whether the animation can be skipped on stressed low-end devices. Default false. */
@@ -378,11 +492,11 @@ export type BlueScriptAnimateElementAction = {
 export type BlueScriptAssignAction = {
     host: 'assign';
     /** Global variable name; dot-separated path into objects/arrays. May be an expression. */
-    key?: BlueScriptValue;
+    key?: BlueScriptExpression | string;
     /** Local variable name. Either `key` or `local` must be specified. */
-    local?: string;
+    local?: BlueScriptExpression | string;
     /** Value to assign; may be an expression. */
-    value: BlueScriptValue;
+    value: BlueScriptGenericValue;
 };
 
 /**
@@ -400,7 +514,7 @@ export type BlueScriptBreakAction = {
 export type BlueScriptBringToFrontAction = {
     host: 'bringToFront';
     /** Name of the element to bring to the front. */
-    name: string;
+    name?: BlueScriptExpression | string;
 };
 
 /**
@@ -410,7 +524,7 @@ export type BlueScriptBringToFrontAction = {
 export type BlueScriptDebugLogAction = {
     host: 'debugLog';
     /** Value to print; may be an expression. Cast to string. */
-    value: BlueScriptValue;
+    value: BlueScriptGenericValue;
 };
 
 /**
@@ -468,7 +582,7 @@ export type BlueScriptFlagActivityForCreditAction = {
 export type BlueScriptFocusElementAction = {
     host: 'focusElement';
     /** Name of the node that will capture focus. */
-    name: string;
+    name: BlueScriptExpression | string;
 };
 
 /**
@@ -478,13 +592,13 @@ export type BlueScriptFocusElementAction = {
 export type BlueScriptForAction = {
     host: 'for';
     /** Local or key variable that receives the counter. Default `{ "key": "forI" }`. */
-    value?: BlueScriptValue;
+    value?: BlueScriptKeyExpression | BlueScriptLocalExpression;
     /** Integer the loop counter starts from; may be an expression. */
-    from: BlueScriptValue;
+    from: BlueScriptExpression | number;
     /** Integer the loop counter counts to (inclusive); may be an expression. */
-    to: BlueScriptValue;
+    to: BlueScriptExpression | number;
     /** Actions executed each iteration. */
-    do: BlueScriptAction[];
+    do: BlueScriptAction | BlueScriptAction[];
 };
 
 /**
@@ -494,11 +608,11 @@ export type BlueScriptForAction = {
 export type BlueScriptIfAction = {
     host: 'if';
     /** Condition; a value or expression. */
-    expression: BlueScriptValue;
+    expression: BlueScriptExpression | boolean;
     /** Actions if expression is true. */
-    then: BlueScriptAction[];
+    then: BlueScriptAction | BlueScriptAction[];
     /** Actions if expression is not true. */
-    else?: BlueScriptAction[];
+    else?: BlueScriptAction | BlueScriptAction[];
 };
 
 /**
@@ -510,7 +624,7 @@ export type BlueScriptInvokeAction = {
     /** Function name defined in the step's `functions` object. */
     function: string;
     /** Optional map of named arguments to pass to the function. */
-    args?: Record<string, BlueScriptValue>;
+    args?: Record<string, BlueScriptGenericValue>;
 };
 
 /**
@@ -520,21 +634,21 @@ export type BlueScriptInvokeAction = {
 export type BlueScriptMakeWebRequestAction = {
     host: 'makeWebRequest';
     /** Server/file location. */
-    url: string;
+    url: BlueScriptExpression | string;
     /** One of GET, PUT, POST, DELETE, HEAD. Default GET. */
-    method?: string;
+    method?: BlueScriptExpression | string;
     /** Header name → value. Default Accept and Content-Type application/json. */
-    headers?: Record<string, string>;
+    headers?: Record<string, BlueScriptExpression | string>;
     /** Body for PUT/POST. Strings sent as-is; objects form-encoded or JSON. */
-    body?: BlueScriptValue;
+    body?: BlueScriptGenericValue;
     /** `key` or `local` variable that receives the response. */
     assignResponseTo?: { key?: string; local?: string };
     /** Parse the response as JSON before assigning. Default false. */
     responseAsJson?: boolean;
     /** Actions on success. */
-    onload?: BlueScriptAction[];
+    onload?: BlueScriptAction | BlueScriptAction[];
     /** Actions on failure. */
-    onerror?: BlueScriptAction[];
+    onerror?: BlueScriptAction | BlueScriptAction[];
 };
 
 /**
@@ -552,7 +666,7 @@ export type BlueScriptPauseActiveAudioAction = {
 export type BlueScriptPauseVideoAction = {
     host: 'pauseVideo';
     /** Name of the video to pause. */
-    target?: string;
+    target?: BlueScriptExpression | string;
 };
 
 /**
@@ -570,7 +684,7 @@ export type BlueScriptPlayActiveAudioAction = {
 export type BlueScriptPlaySoundEffectAction = {
     host: 'playSoundEffect';
     /** URI of the sound file. */
-    uri: string;
+    uri: BlueScriptExpression | string;
 };
 
 /**
@@ -580,13 +694,13 @@ export type BlueScriptPlaySoundEffectAction = {
 export type BlueScriptPlayVideoAction = {
     host: 'playVideo';
     /** Name of the video to play. */
-    target?: string;
+    target?: BlueScriptExpression | string;
     /** position */
-    atTime?: string,
+    atTime?: BlueScriptExpression | string | number;
     /** default: true, not supported on `roku` */
-    stopActiveAudio?: boolean,
+    stopActiveAudio?: BlueScriptExpression | boolean;
     /** URI of the replace video */
-    video_url?: string,
+    video_url?: BlueScriptExpression | string;
 };
 
 /**
@@ -604,11 +718,11 @@ export type BlueScriptPopStepAction = {
 export type BlueScriptReplaceStepAction = {
     host: 'replaceStep';
     /** Name of the step to transition to. */
-    cardName: string;
+    cardName?: BlueScriptExpression | string;
     /**
      * alias to `cardName`, not supported on `roku`
      */
-    stepName?: string;
+    stepName?: BlueScriptExpression | string;
 };
 
 /**
@@ -634,7 +748,7 @@ export type BlueScriptResetFocusAction = {
 export type BlueScriptResetVideoAction = {
     host: 'resetVideo';
     /** Name of the video to reset. */
-    target?: string;
+    target?: BlueScriptExpression | string;
 };
 
 /**
@@ -644,7 +758,7 @@ export type BlueScriptResetVideoAction = {
 export type BlueScriptReturnAction = {
     host: 'return';
     /** Optional return value for a function invocation. */
-    value?: BlueScriptValue;
+    value?: BlueScriptGenericValue;
 };
 
 /**
@@ -654,11 +768,11 @@ export type BlueScriptReturnAction = {
 export type BlueScriptSetAttributeAction = {
     host: 'setAttribute';
     /** Name of the BlueScript element. */
-    name: string;
+    name: BlueScriptExpression | string;
     /** Name of the underlying property to update. */
     key: string;
     /** New value for the property. */
-    value: BlueScriptValue;
+    value: BlueScriptGenericValue;
 };
 
 /**
@@ -671,13 +785,13 @@ export type BlueScriptSetBoundsAction = {
     /** Name of the target node. */
     target?: string;
     /** New x position. */
-    x?: BlueScriptNumber;
+    x?: BlueScriptExpression | number;
     /** New y position. */
-    y?: BlueScriptNumber;
+    y?: BlueScriptExpression | number;
     /** New width. */
-    width?: BlueScriptNumber;
+    width?: BlueScriptExpression | number;
     /** New height. */
-    height?: BlueScriptNumber;
+    height?: BlueScriptExpression | number;
 };
 
 /**
@@ -687,13 +801,13 @@ export type BlueScriptSetBoundsAction = {
 export type BlueScriptSetTimeoutAction = {
     host: 'setTimeout';
     /** If true, the timer fires repeatedly. Default false. */
-    repeat?: boolean;
+    repeat?: BlueScriptExpression | boolean;
     /** Seconds before execution. `timeout` and `delay` are also accepted. */
-    duration?: number;
-    timeout?: number;
-    delay?: number;
+    duration?: BlueScriptExpression | number | string;
+    timeout?: BlueScriptExpression | number | string;
+    delay?: BlueScriptExpression | number | string;
     /** Actions to execute. */
-    do: BlueScriptAction[];
+    do: BlueScriptAction | BlueScriptAction[];
 };
 
 /**
@@ -729,7 +843,7 @@ export type BlueScriptStopActiveAudioAction = {
 export type BlueScriptStopVideoAction = {
     host: 'stopVideo';
     /** Name of the video to stop. */
-    target?: string;
+    target?: BlueScriptExpression | string;
 };
 
 /**
@@ -739,9 +853,9 @@ export type BlueScriptStopVideoAction = {
 export type BlueScriptTrackCustomEventAction = {
     host: 'trackCustomEvent';
     /** Tracking taxonomy category. Default fep_roku_layout. */
-    category?: string;
+    category?: BlueScriptExpression | string;
     /** Name of the tracking event. */
-    name: string;
+    name: BlueScriptExpression | string;
     /** Optional event value. */
-    value?: string;
+    value?: BlueScriptGenericValue;
 };
