@@ -15,7 +15,6 @@ OPTIONAL_ADD_PR_LINKS
 
 ### Checks
 - [ ] Includes unit test coverage _(if applicable)_
-- [ ] Includes functional test coverage _(at feature-level, if applicable)_
 - [ ] Updated [CHANGELOG.md](../CHANGELOG.md) under the same `## vX.Y.Z` heading as `package.json`
 - [ ] Incremented the version in [package.json](../package.json)
 
