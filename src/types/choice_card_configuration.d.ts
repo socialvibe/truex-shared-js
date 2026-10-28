@@ -96,8 +96,11 @@ export type GenericChoiceCardConfiguration = {
   /** Object to configure the watch live button. */
   watch_live_button?: ChoiceCardButton;
 
-  /** Object to configure the xtended_view watch button. */
-  xtended_view?: Partial<GenericChoiceCardConfiguration>;
+  /**
+   * Fields merged over the regular choice card when Xtended View is enabled.
+   * This used to override only the watch button. Nested `xtended_view` is omitted.
+   */
+  xtended_view?: Partial<Omit<GenericChoiceCardConfiguration, 'xtended_view'>>;
 
   /**
    * Number of seconds to delay the showing of all buttons within a card

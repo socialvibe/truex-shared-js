@@ -996,7 +996,8 @@ export type BlueScriptCardOptOutAction = {
 };
 
 /**
- * Placehoder for the unsupported action
+ * Placeholder for a BlueScript `host` this client does not implement.
+ * Keeps that action in the `BlueScriptAction` union.
  */
 export type BlueScriptUnsupportedAction = {
   host: "unsupportedAction";
